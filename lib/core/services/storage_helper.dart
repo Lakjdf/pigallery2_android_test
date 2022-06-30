@@ -24,7 +24,7 @@ class StorageHelper {
       prefs.setInt("selectedServer", 0);
     }
     if (!prefs.containsKey("serverUrls")) {
-      prefs.setStringList("serverUrls", ["https://pigallery2.herokuapp.com"]);
+      prefs.setStringList("serverUrls", []);
     }
     // Return currently selected server
     String? url = await getSelectedServer();
