@@ -7,10 +7,9 @@ import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
 
 class PhotoViewWidget extends StatelessWidget {
-  final Directory directory;
   final Media item;
 
-  const PhotoViewWidget(this.directory, this.item, {Key? key}) : super(key: key);
+  const PhotoViewWidget(this.item, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

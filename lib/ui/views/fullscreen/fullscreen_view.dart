@@ -56,7 +56,6 @@ class _FullscreenViewState extends State<FullscreenView> {
                           )
                         : PhotoViewWidget(
                             key: ValueKey(item.id),
-                            directory,
                             item,
                           ),
                   );
