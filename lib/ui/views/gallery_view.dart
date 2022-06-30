@@ -84,7 +84,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                   ? const ErrorImage()
                   : ThumbnailImage(
                       key: ObjectKey(dir),
-                      "${dir.preview['directory']['path']}${dir.preview['directory']['name']}/${dir.preview['name']}",
+                      dir,
                       fit: BoxFit.cover,
                     ),
             ),
@@ -114,7 +114,6 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   }
 
   Widget mediaItem(context, Media item) {
-    Directory? directory = Provider.of<HomeModel>(context).currentDir;
     return GestureDetector(
       onTap: () async {
         Media lastItem = await Navigator.push(
@@ -134,38 +133,34 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           Provider.of<HomeModel>(context, listen: false).files.indexOf(lastItem),
         );
       },
-      child: directory == null // should never be the case
-          ? Center(
-              child: SpinKitSpinningLines(color: Theme.of(context).colorScheme.secondary),
-            )
-          : Hero(
-              tag: item.id.toString(),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(borderRadius),
-                child: ThumbnailImage(
-                  key: ObjectKey(item),
-                  "${directory.path}${directory.name}/${item.name}",
-                  imageBuilder: (context, imageProvider) {
-                    return Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image(
-                          image: imageProvider,
-                          fit: BoxFit.cover,
-                        ),
-                        isVideo(item)
-                            ? Icon(
-                                Icons.play_arrow,
-                                size: 70,
-                                color: Colors.white.withAlpha(175),
-                              )
-                            : Container(),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
+      child: Hero(
+        tag: item.id.toString(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: ThumbnailImage(
+            key: ObjectKey(item),
+            item,
+            imageBuilder: (context, imageProvider) {
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                  isVideo(item)
+                      ? Icon(
+                          Icons.play_arrow,
+                          size: 70,
+                          color: Colors.white.withAlpha(175),
+                        )
+                      : Container(),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 
@@ -187,7 +182,15 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
         mainAxisSpacing: gridSpacing,
       ),
       itemBuilder: (BuildContext context, int index) {
-        return widget.files[index].runtimeType == Directory ? directoryItem(context, widget.files[index] as Directory) : mediaItem(context, widget.files[index] as Media);
+        return widget.files[index].runtimeType == Directory
+            ? directoryItem(
+                context,
+                widget.files[index] as Directory,
+              )
+            : mediaItem(
+                context,
+                widget.files[index] as Media,
+              );
       },
     );
   }
@@ -203,6 +206,7 @@ class GalleryView extends StatefulWidget {
 
 class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin {
   void checkForError(BuildContext context, HomeModel model) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     if (model.error != null) {
       SnackBar snackBar = SnackBar(
         action: SnackBarAction(
@@ -222,10 +226,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
         ),
         duration: const Duration(days: 365),
       );
-      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } else {
-      ScaffoldMessenger.of(context).clearSnackBars();
     }
   }
 

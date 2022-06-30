@@ -14,18 +14,22 @@ class PhotoViewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return PhotoView(
       loadingBuilder: (context, event) => Hero(
         tag: item.id.toString(),
-        child: ThumbnailImage(key: ObjectKey(item), "${directory.path}${directory.name}/${item.name}"),
+        child: ThumbnailImage(
+          key: ObjectKey(item),
+          item,
+        ),
       ),
       backgroundDecoration: const BoxDecoration(
         color: Colors.transparent,
       ),
       minScale: PhotoViewComputedScale.contained * 1.0,
       imageProvider: NetworkImage(
-        "${Provider.of<HomeModel>(context, listen: false).serverUrl}/api/gallery/content/${directory.path}${directory.name}/${item.name}",
-        headers: Provider.of<HomeModel>(context, listen: false).getHeaders(),
+        model.getItemPath(item),
+        headers: model.getHeaders(),
       ),
       heroAttributes: PhotoViewHeroAttributes(
         tag: item.id.toString(),

@@ -33,7 +33,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        ThumbnailImage(key: ObjectKey(widget.item), "${widget.directory.path}${widget.directory.name}/${widget.item.name}"),
+        ThumbnailImage(key: ObjectKey(widget.item), widget.item),
         SpinKitRipple(
           color: Colors.white,
           size: 0.5 * MediaQuery.of(context).size.width,
@@ -70,11 +70,11 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
       playerVisibilityChangedBehavior: onVisibilityChanged,
     );
 
-    String src = "${Provider.of<HomeModel>(context, listen: false).serverUrl}/api/gallery/content/${widget.directory.path}${widget.directory.name}/${widget.item.name}";
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      src,
-      headers: Provider.of<HomeModel>(context, listen: false).getHeaders(),
+      model.getItemPath(widget.item),
+      headers: model.getHeaders(),
     );
 
     _betterPlayerController = BetterPlayerController(

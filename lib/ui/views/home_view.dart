@@ -42,9 +42,10 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return WillPopScope(
       onWillPop: () async {
-        Provider.of<HomeModel>(context, listen: false).popStack();
+        model.popStack();
         return true;
       },
       child: Scaffold(
@@ -52,7 +53,7 @@ class HomeView extends StatelessWidget {
         appBar: AppBar(
           title: Text(baseDirectory),
           actions: [
-            Provider.of<HomeModel>(context, listen: false).isHomeView
+            model.isHomeView
                 ? IconButton(
                     onPressed: () {
                       showServerSettings(context);
@@ -65,7 +66,6 @@ class HomeView extends StatelessWidget {
           ],
         ),
         body: GalleryView(
-          key: ValueKey("${Provider.of<HomeModel>(context, listen: false).serverUrl ?? ''}$baseDirectory"),
           baseDirectory: baseDirectory,
         ),
       ),

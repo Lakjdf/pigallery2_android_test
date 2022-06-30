@@ -23,11 +23,12 @@ class _FullscreenViewState extends State<FullscreenView> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    Directory directory = Provider.of<HomeModel>(context).currentDir!;
+    HomeModel homeModel = Provider.of<HomeModel>(context, listen: false);
+    FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
     return WillPopScope(
       onWillPop: (() {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
-        Navigator.pop(context, Provider.of<FullscreenModel>(context, listen: false).currentItem);
+        Navigator.pop(context, fullscreenModel.currentItem);
         return Future.value(false);
       }),
       child: Scaffold(
@@ -38,17 +39,26 @@ class _FullscreenViewState extends State<FullscreenView> {
             child: PhotoViewGestureDetectorScope(
               axis: Axis.vertical,
               child: HorizontalCarouselWrapper(
-                onPageChanged: (idx) {
-                  Provider.of<FullscreenModel>(context, listen: false).currentItem = Provider.of<HomeModel>(context, listen: false).media[idx];
-                },
-                initialIndex: Provider.of<HomeModel>(context, listen: false).media.indexOf(Provider.of<FullscreenModel>(context, listen: false).currentItem),
+                onPageChanged: (idx) => fullscreenModel.currentItem = homeModel.media[idx],
+                initialIndex: homeModel.media.indexOf(fullscreenModel.currentItem),
                 builder: ((context, index) {
-                  Media item = Provider.of<HomeModel>(context, listen: false).media[index];
+                  Media item = homeModel.media[index];
+                  Directory directory = homeModel.currentDir!;
                   return VerticalDismissWrapper(
                     onOpacityChanged: (val) {
-                      Provider.of<FullscreenModel>(context, listen: false).opacity = val;
+                      fullscreenModel.opacity = val;
                     },
-                    child: lookupMimeType(item.name)!.contains("video") ? VideoViewWidget(key: ValueKey(item.id), directory: directory, item: item) : PhotoViewWidget(key: ValueKey(item.id), directory, item),
+                    child: lookupMimeType(item.name)!.contains("video")
+                        ? VideoViewWidget(
+                            key: ValueKey(item.id),
+                            directory: directory,
+                            item: item,
+                          )
+                        : PhotoViewWidget(
+                            key: ValueKey(item.id),
+                            directory,
+                            item,
+                          ),
                   );
                 }),
               ),

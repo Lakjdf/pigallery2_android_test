@@ -6,36 +6,67 @@ List<Directory> allDirectoriesFromJson(List<Map<String, dynamic>> jsonData) {
   return res;
 }
 
-class Directory extends File {
+class DirectoryPath extends File {
   String path;
+
+  DirectoryPath({
+    required id,
+    required name,
+    required this.path,
+  }) : super(id: id, name: name);
+
+  factory DirectoryPath.fromJson(Map<String, dynamic> json) {
+    return DirectoryPath(
+      id: json['id'],
+      name: json['name'],
+      path: json['path'],
+    );
+  }
+}
+
+class DirectoryPreview extends File {
+  DirectoryPath directory;
+
+  DirectoryPreview({
+    required id,
+    required name,
+    required this.directory,
+  }) : super(id: id, name: name);
+
+  factory DirectoryPreview.fromJson(Map<String, dynamic> json) {
+    return DirectoryPreview(
+      id: json['id'],
+      name: json['name'],
+      directory: DirectoryPath.fromJson(json['directory']),
+    );
+  }
+}
+
+class Directory extends DirectoryPath {
   int mediaCount;
   List<Directory> directories;
-  dynamic preview; //todo
+  DirectoryPreview? preview;
   List<Media> media;
 
   Directory({
     required id,
     required name,
-    required this.path,
+    required path,
     required this.mediaCount,
     required this.directories,
     required this.preview,
     required this.media,
-  }) : super(id: id, name: name);
+  }) : super(id: id, name: name, path: path);
 
   factory Directory.fromJson(Map<String, dynamic> json) {
-    try {
-      return Directory(
-        id: json['id'],
-        name: json['name'],
-        path: json['path'],
-        mediaCount: json['mediaCount'],
-        directories: json['directories'] != null ? allDirectoriesFromJson(List.from(json['directories'])) : [],
-        preview: json['preview'],
-        media: json['media'] != null ? allMediaFromJson(List.from(json['media'])) : [],
-      );
-    } catch (e) {
-      return Directory(id: 1, name: '', directories: [], media: [], path: '', mediaCount: 1, preview: null);
-    }
+    return Directory(
+      id: json['id'],
+      name: json['name'],
+      path: json['path'],
+      mediaCount: json['mediaCount'],
+      directories: json['directories'] != null ? allDirectoriesFromJson(List.from(json['directories'])) : [],
+      preview: json['preview'] != null ? DirectoryPreview.fromJson(json['preview']) : null,
+      media: json['media'] != null ? allMediaFromJson(List.from(json['media'])) : [],
+    );
   }
 }

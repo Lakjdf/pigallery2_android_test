@@ -4,19 +4,17 @@ import 'package:pigallery2_android/core/services/api.dart';
 
 extension LastEmptyCheckExtension<T> on List<T> {
   T? get lastOrNull => isEmpty ? null : last;
+  T? tryGet(int index) => index >= 0 && index < length ? this[index] : null;
 }
 
 class HomeModelState {
   final List<File> files = [];
-  bool loading = false;
-  bool returnedEmpty = false;
   Directory? currentDir;
 }
 
 class HomeModel extends ChangeNotifier {
   final List<HomeModelState> state = [HomeModelState()];
 
-  bool get loading => state.lastOrNull?.loading ?? false;
   List<File> get files => state.lastOrNull?.files ?? [];
   List<Directory> get directories => files.whereType<Directory>().toList();
   List<Media> get media => files.whereType<Media>().toList();
@@ -35,33 +33,43 @@ class HomeModel extends ChangeNotifier {
   void addStack() {
     error = null;
     state.add(HomeModelState());
-    notifyListeners();
   }
 
   void popStack() {
     error = null;
     state.removeLast();
-    notifyListeners();
   }
 
   Map<String, String> getHeaders() => api.getHeaders();
+
+  String getItemPath(File item) {
+    DirectoryPath parentDirectory = currentDir!;
+    if (item.runtimeType == Directory) {
+      item = (item as Directory).preview!;
+      parentDirectory = (item as DirectoryPreview).directory;
+    }
+    return "$serverUrl/api/gallery/content/${parentDirectory.path}${parentDirectory.name}/${item.name}";
+  }
+
+  String getThumbnailPath(File item) {
+    return "${getItemPath(item)}/thumbnail";
+  }
 
   Future<void> addDirectories({String baseDirectory = ""}) async {
     if (serverUrl == null) {
       error = 'Please add a Server';
       state.last.files.clear();
       state.last.currentDir = null;
-      return Future.value(null);
+      return Future.value();
     }
 
     Directory? currentDirBefore = currentDir;
-    state.last.loading = true;
     error = null;
+
     Directory? result = await api.getDirectories(path: baseDirectory).catchError((e) {
       error = e.toString();
       return Future<Directory?>.value(null);
     });
-    state.last.loading = false;
     // Ensure that state has not been updated before this call completed.
     if (currentDirBefore == currentDir) {
       state.last.currentDir = result;
@@ -70,7 +78,6 @@ class HomeModel extends ChangeNotifier {
         state.last.files.addAll(result.directories);
         state.last.files.addAll(result.media);
       }
-      notifyListeners();
     }
   }
 

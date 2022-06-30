@@ -1,5 +1,4 @@
 import 'package:pigallery2_android/core/models/file.dart';
-import 'dart:math' as math;
 
 import 'package:pigallery2_android/core/models/media_metadata.dart';
 
@@ -19,7 +18,7 @@ class Media extends File {
 
   factory Media.fromJson(Map<String, dynamic> json) {
     return Media(
-      id: json['id'] ?? math.Random().nextInt(4294967296), // create own id if not existing
+      id: json['id'],
       name: json['name'],
       metadata: MediaMetadata.fromJson(json['metadata']),
     );
