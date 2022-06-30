@@ -54,8 +54,7 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
       child: Row(
         children: [
           Text(
-            formatDuration(controller.videoPlayerController?.value.position ??
-                Duration.zero),
+            formatDuration(controller.videoPlayerController?.value.position ?? Duration.zero),
           ),
           Flexible(
             child: Padding(
@@ -73,8 +72,7 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
             ),
           ),
           Text(
-            formatDuration(controller.videoPlayerController?.value.duration ??
-                Duration.zero),
+            formatDuration(controller.videoPlayerController?.value.duration ?? Duration.zero),
           ),
         ],
       ),

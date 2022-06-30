@@ -4,8 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/video/fade_animation.dart';
 
 class VideoControls extends StatefulWidget {
-  const VideoControls(this.controller, this.onTap, {Key? key})
-      : super(key: key);
+  const VideoControls(this.controller, this.onTap, {Key? key}) : super(key: key);
 
   final BetterPlayerController controller;
   final VoidCallback onTap;
@@ -44,11 +43,7 @@ class _VideoControlsState extends State<VideoControls> {
   void initState() {
     super.initState();
     controller.addEventsListener((event) {
-      if (event.betterPlayerEventType == BetterPlayerEventType.pause ||
-          event.betterPlayerEventType == BetterPlayerEventType.play ||
-          event.betterPlayerEventType == BetterPlayerEventType.bufferingStart ||
-          event.betterPlayerEventType == BetterPlayerEventType.bufferingEnd ||
-          event.betterPlayerEventType == BetterPlayerEventType.seekTo) {
+      if (event.betterPlayerEventType == BetterPlayerEventType.pause || event.betterPlayerEventType == BetterPlayerEventType.play || event.betterPlayerEventType == BetterPlayerEventType.bufferingStart || event.betterPlayerEventType == BetterPlayerEventType.bufferingEnd || event.betterPlayerEventType == BetterPlayerEventType.seekTo) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           if (!controller.isVideoInitialized()!) return;
@@ -86,8 +81,7 @@ class _VideoControlsState extends State<VideoControls> {
         ],
       ),
     );
-    Duration newPosition = controller.videoPlayerController!.value.position -
-        const Duration(seconds: 10);
+    Duration newPosition = controller.videoPlayerController!.value.position - const Duration(seconds: 10);
     if (newPosition > Duration.zero) {
       controller.seekTo(newPosition);
     } else {
@@ -113,8 +107,7 @@ class _VideoControlsState extends State<VideoControls> {
         ],
       ),
     );
-    Duration newPosition = controller.videoPlayerController!.value.position +
-        const Duration(seconds: 10);
+    Duration newPosition = controller.videoPlayerController!.value.position + const Duration(seconds: 10);
     if (newPosition < controller.videoPlayerController!.value.duration!) {
       controller.seekTo(newPosition);
     } else {
@@ -130,9 +123,7 @@ class _VideoControlsState extends State<VideoControls> {
       );
       controller.pause();
     } else {
-      imageFadeAnim = FadeAnimation(
-          duration: fadeAnimationDuration,
-          child: const Icon(Icons.play_arrow, size: 100));
+      imageFadeAnim = FadeAnimation(duration: fadeAnimationDuration, child: const Icon(Icons.play_arrow, size: 100));
       controller.play();
     }
   }
@@ -165,15 +156,7 @@ class _VideoControlsState extends State<VideoControls> {
       }),
       onTap: () async {
         // Reset tapCount if too much time has passed or a different input has been made.
-        if (newInputPosition == null ||
-            currentInputPosition == null ||
-            currentInputDateTime == null ||
-            newInputPosition != currentInputPosition ||
-            DateTime.now()
-                    .difference(currentInputDateTime!)
-                    .compareTo(fadeAnimationDuration) >
-                0 ||
-            (tapCount == 2 && newInputPosition == 1)) {
+        if (newInputPosition == null || currentInputPosition == null || currentInputDateTime == null || newInputPosition != currentInputPosition || DateTime.now().difference(currentInputDateTime!).compareTo(fadeAnimationDuration) > 0 || (tapCount == 2 && newInputPosition == 1)) {
           tapCount = 0;
         }
         tapCount += 1;
@@ -210,11 +193,7 @@ class _VideoControlsState extends State<VideoControls> {
               child: controller.isBuffering()!
                   ? SpinKitRipple(
                       color: Colors.white,
-                      size: 0.5 *
-                          (MediaQuery.of(context).orientation ==
-                                  Orientation.landscape
-                              ? MediaQuery.of(context).size.height
-                              : MediaQuery.of(context).size.width),
+                      size: 0.5 * (MediaQuery.of(context).orientation == Orientation.landscape ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width),
                     )
                   : null,
             ),

@@ -12,8 +12,7 @@ class VideoViewWidget extends StatefulWidget {
   final Directory directory;
   final Media item;
 
-  const VideoViewWidget({Key? key, required this.directory, required this.item})
-      : super(key: key);
+  const VideoViewWidget({Key? key, required this.directory, required this.item}) : super(key: key);
 
   @override
   State<VideoViewWidget> createState() => _VideoViewWidgetState();
@@ -34,9 +33,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        ThumbnailImage(
-            key: ObjectKey(widget.item),
-            "${widget.directory.path}${widget.directory.name}/${widget.item.name}"),
+        ThumbnailImage(key: ObjectKey(widget.item), "${widget.directory.path}${widget.directory.name}/${widget.item.name}"),
         SpinKitRipple(
           color: Colors.white,
           size: 0.5 * MediaQuery.of(context).size.width,
@@ -52,8 +49,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
       _betterPlayerController.setVolume(0);
     } else {
       _betterPlayerController.setVolume(1);
-      Provider.of<FullscreenModel>(context, listen: false)
-          .addController(_betterPlayerController);
+      Provider.of<FullscreenModel>(context, listen: false).addController(_betterPlayerController);
     }
   }
 
@@ -67,16 +63,14 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
       autoPlay: true,
       looping: true,
       fit: BoxFit.contain,
-      aspectRatio:
-          widget.item.metadata.size.width / widget.item.metadata.size.height,
+      aspectRatio: widget.item.metadata.size.width / widget.item.metadata.size.height,
       errorBuilder: (context, error) {
         return const ErrorImage();
       },
       playerVisibilityChangedBehavior: onVisibilityChanged,
     );
 
-    String src =
-        "${Provider.of<HomeModel>(context, listen: false).serverUrl}/api/gallery/content/${widget.directory.path}${widget.directory.name}/${widget.item.name}";
+    String src = "${Provider.of<HomeModel>(context, listen: false).serverUrl}/api/gallery/content/${widget.directory.path}${widget.directory.name}/${widget.item.name}";
     BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       src,
@@ -89,8 +83,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     );
     _betterPlayerController.setControlsEnabled(false);
     _betterPlayerController.addEventsListener((p0) {
-      if (p0.betterPlayerEventType == BetterPlayerEventType.initialized ||
-          p0.betterPlayerEventType == BetterPlayerEventType.exception) {
+      if (p0.betterPlayerEventType == BetterPlayerEventType.initialized || p0.betterPlayerEventType == BetterPlayerEventType.exception) {
         _betterPlayerController.setVolume(0);
         setState(() {
           isInitialized = true;
@@ -101,10 +94,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    double heightDiff = MediaQuery.of(context).size.width *
-            (widget.item.metadata.size.height /
-                widget.item.metadata.size.width) -
-        MediaQuery.of(context).size.width;
+    double heightDiff = MediaQuery.of(context).size.width * (widget.item.metadata.size.height / widget.item.metadata.size.width) - MediaQuery.of(context).size.width;
     return Hero(
       // always use thumbnail for hero animation
       flightShuttleBuilder: (
@@ -124,8 +114,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
                 fit: BoxFit.fitWidth,
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.width +
-                      ((animation.value) * heightDiff),
+                  height: MediaQuery.of(context).size.width + ((animation.value) * heightDiff),
                   child: hero.child,
                 ),
               );

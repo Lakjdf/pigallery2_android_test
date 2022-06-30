@@ -10,17 +10,14 @@ class PhotoViewWidget extends StatelessWidget {
   final Directory directory;
   final Media item;
 
-  const PhotoViewWidget(this.directory, this.item, {Key? key})
-      : super(key: key);
+  const PhotoViewWidget(this.directory, this.item, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return PhotoView(
       loadingBuilder: (context, event) => Hero(
         tag: item.id.toString(),
-        child: ThumbnailImage(
-            key: ObjectKey(item),
-            "${directory.path}${directory.name}/${item.name}"),
+        child: ThumbnailImage(key: ObjectKey(item), "${directory.path}${directory.name}/${item.name}"),
       ),
       backgroundDecoration: const BoxDecoration(
         color: Colors.transparent,

@@ -5,8 +5,7 @@ class BadCertificateSelection extends StatefulWidget {
   const BadCertificateSelection({Key? key}) : super(key: key);
 
   @override
-  State<BadCertificateSelection> createState() =>
-      _BadCertificateSelectionState();
+  State<BadCertificateSelection> createState() => _BadCertificateSelectionState();
 }
 
 class _BadCertificateSelectionState extends State<BadCertificateSelection> {
@@ -24,8 +23,7 @@ class _BadCertificateSelectionState extends State<BadCertificateSelection> {
   }
 
   Future<void> storeValue(bool val) async {
-    SharedPreferences.getInstance()
-        .then((prefs) => prefs.setBool(prefsKey, val));
+    SharedPreferences.getInstance().then((prefs) => prefs.setBool(prefsKey, val));
   }
 
   @override
@@ -45,9 +43,7 @@ class _BadCertificateSelectionState extends State<BadCertificateSelection> {
               padding: const EdgeInsets.fromLTRB(6, 0, 15, 0),
               child: Stack(
                 children: [
-                  allowBadCertificate
-                      ? const Icon(Icons.check_circle_rounded)
-                      : const Icon(Icons.check_circle_outline_rounded),
+                  allowBadCertificate ? const Icon(Icons.check_circle_rounded) : const Icon(Icons.check_circle_outline_rounded),
                 ],
               ),
             ),

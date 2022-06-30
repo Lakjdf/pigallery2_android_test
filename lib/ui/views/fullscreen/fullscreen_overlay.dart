@@ -15,8 +15,7 @@ class FullscreenOverlay extends StatefulWidget {
   State<FullscreenOverlay> createState() => _FullscreenOverlayState();
 }
 
-class _FullscreenOverlayState extends State<FullscreenOverlay>
-    with TickerProviderStateMixin {
+class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     duration: const Duration(milliseconds: 200),
     vsync: this,
@@ -55,8 +54,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay>
               ? GestureDetector(
                   onTap: handleTap,
                 )
-              : VideoControls(
-                  key: ObjectKey(controller), controller, handleTap),
+              : VideoControls(key: ObjectKey(controller), controller, handleTap),
         ),
         FadeTransition(
           opacity: _animation,
@@ -76,11 +74,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay>
                             constraints: const BoxConstraints(),
                             onPressed: () {
                               _controller.value = 0.0;
-                              Navigator.maybePop(
-                                  context,
-                                  Provider.of<FullscreenModel>(context,
-                                          listen: false)
-                                      .currentItem);
+                              Navigator.maybePop(context, Provider.of<FullscreenModel>(context, listen: false).currentItem);
                             },
                             icon: Icon(
                               Icons.close,
@@ -95,8 +89,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay>
                                 item.name,
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
-                                  color:
-                                      Colors.white.withOpacity(controlsOpacity),
+                                  color: Colors.white.withOpacity(controlsOpacity),
                                 ),
                               ),
                             ),
@@ -107,25 +100,22 @@ class _FullscreenOverlayState extends State<FullscreenOverlay>
                   );
                 },
               ),
-              !isVideo(Provider.of<FullscreenModel>(context, listen: true)
-                      .currentItem)
+              !isVideo(Provider.of<FullscreenModel>(context, listen: true).currentItem)
                   ? Container()
                   : Selector<FullscreenModel, BetterPlayerController?>(
-                      selector: (context, model) =>
-                          model.betterPlayerController,
-                      builder: (context, controller, child) =>
-                          controller == null
-                              ? Container()
-                              : Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: SizedBox(
-                                    height: 50,
-                                    child: VideoSeekBar(
-                                      key: ObjectKey(controller),
-                                      controller,
-                                    ),
-                                  ),
+                      selector: (context, model) => model.betterPlayerController,
+                      builder: (context, controller, child) => controller == null
+                          ? Container()
+                          : Align(
+                              alignment: Alignment.bottomCenter,
+                              child: SizedBox(
+                                height: 50,
+                                child: VideoSeekBar(
+                                  key: ObjectKey(controller),
+                                  controller,
                                 ),
+                              ),
+                            ),
                     ),
             ],
           ),

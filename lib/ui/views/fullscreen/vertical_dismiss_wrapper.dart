@@ -47,9 +47,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
   }
 
   setOpacity() {
-    double tmp = positionYDelta < 0
-        ? 1 - ((positionYDelta / 300) * -1)
-        : 1 - (positionYDelta / 300);
+    double tmp = positionYDelta < 0 ? 1 - ((positionYDelta / 300) * -1) : 1 - (positionYDelta / 300);
 
     if (tmp > 1) {
       opacity = 1;
@@ -62,8 +60,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
 
   _endVerticalDrag(DragEndDetails details) {
     if (positionYDelta > disposeLimit || positionYDelta < -disposeLimit) {
-      Navigator.of(context).maybePop(
-          Provider.of<FullscreenModel>(context, listen: false).currentItem);
+      Navigator.of(context).maybePop(Provider.of<FullscreenModel>(context, listen: false).currentItem);
     } else {
       setState(() {
         animationDuration = const Duration(milliseconds: 300);

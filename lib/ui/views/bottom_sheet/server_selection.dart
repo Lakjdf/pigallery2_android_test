@@ -42,8 +42,7 @@ class ServerSelection extends StatelessWidget {
           return const AddServerDialog();
         }).then((returnValues) {
       if (returnValues != null) {
-        Provider.of<ServerModel>(context, listen: false)
-            .addServer(returnValues[0], returnValues[1], returnValues[2]);
+        Provider.of<ServerModel>(context, listen: false).addServer(returnValues[0], returnValues[1], returnValues[2]);
       }
     });
   }
@@ -66,8 +65,7 @@ class ServerSelection extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
       child: InkWell(
-        onTap: () =>
-            Provider.of<ServerModel>(context, listen: false).selectServer(url),
+        onTap: () => Provider.of<ServerModel>(context, listen: false).selectServer(url),
         child: Padding(
           padding: const EdgeInsets.all(5),
           child: Row(
@@ -119,10 +117,7 @@ class ServerSelection extends StatelessWidget {
               height: 35,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                child: MaterialButton(
-                    color: Colors.white.withAlpha((0.15 * 255).toInt()),
-                    onPressed: () => addServerDialog(context),
-                    child: const Text('Add Server')),
+                child: MaterialButton(color: Colors.white.withAlpha((0.15 * 255).toInt()), onPressed: () => addServerDialog(context), child: const Text('Add Server')),
               ),
             ),
             const SizedBox(height: 24),

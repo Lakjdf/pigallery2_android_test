@@ -56,8 +56,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
               ));
   }
 
-  InputDecoration buildInputDecorationAuth(
-      BuildContext context, InputDecoration defaultDecoration) {
+  InputDecoration buildInputDecorationAuth(BuildContext context, InputDecoration defaultDecoration) {
     ServerModel model = Provider.of<ServerModel>(context, listen: true);
     return model.testFailedAuth
         ? const InputDecoration(
@@ -92,8 +91,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
             context,
           ),
           onSubmitted: (url) => testConnection(context),
-          onChanged: (_) =>
-              Provider.of<ServerModel>(context, listen: false).urlChanged(),
+          onChanged: (_) => Provider.of<ServerModel>(context, listen: false).urlChanged(),
         ),
       ),
       const SizedBox(
@@ -102,25 +100,14 @@ class _AddServerDialogState extends State<AddServerDialog> {
       MaterialButton(
         color: Colors.white.withAlpha((0.15 * 255).toInt()),
         onPressed: () {
-          if (Provider.of<ServerModel>(context, listen: false).testSuccessUrl &&
-              Provider.of<ServerModel>(context, listen: false)
-                  .testSuccessAuth) {
-            Navigator.pop(context, [
-              addServerController.text.isEmpty
-                  ? null
-                  : addServerController.text,
-              usernameController.text.isEmpty ? null : usernameController.text,
-              passwordController.text.isEmpty ? null : passwordController.text
-            ]);
+          if (Provider.of<ServerModel>(context, listen: false).testSuccessUrl && Provider.of<ServerModel>(context, listen: false).testSuccessAuth) {
+            Navigator.pop(context, [addServerController.text.isEmpty ? null : addServerController.text, usernameController.text.isEmpty ? null : usernameController.text, passwordController.text.isEmpty ? null : passwordController.text]);
           } else {
             testConnection(context);
           }
         },
         height: 40,
-        child: Text(Provider.of<ServerModel>(context).testSuccessAuth &&
-                Provider.of<ServerModel>(context).testSuccessUrl
-            ? 'Add'
-            : 'Test'),
+        child: Text(Provider.of<ServerModel>(context).testSuccessAuth && Provider.of<ServerModel>(context).testSuccessUrl ? 'Add' : 'Test'),
       ),
     ]);
   }
@@ -142,9 +129,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
                   ),
                   TextField(
                     controller: usernameController,
-                    onChanged: (_) =>
-                        Provider.of<ServerModel>(context, listen: false)
-                            .credentialsChanged(),
+                    onChanged: (_) => Provider.of<ServerModel>(context, listen: false).credentialsChanged(),
                     decoration: buildInputDecorationAuth(
                       context,
                       const InputDecoration(
@@ -157,13 +142,8 @@ class _AddServerDialogState extends State<AddServerDialog> {
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
-                    onChanged: (_) =>
-                        Provider.of<ServerModel>(context, listen: false)
-                            .credentialsChanged(),
-                    decoration: buildInputDecorationAuth(
-                        context,
-                        const InputDecoration(
-                            labelText: "Password (optional)")),
+                    onChanged: (_) => Provider.of<ServerModel>(context, listen: false).credentialsChanged(),
+                    decoration: buildInputDecorationAuth(context, const InputDecoration(labelText: "Password (optional)")),
                   ),
                 ],
               ),

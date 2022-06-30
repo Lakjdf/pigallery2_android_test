@@ -26,10 +26,8 @@ class _FullscreenViewState extends State<FullscreenView> {
     Directory directory = Provider.of<HomeModel>(context).currentDir!;
     return WillPopScope(
       onWillPop: (() {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-            overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
-        Navigator.pop(context,
-            Provider.of<FullscreenModel>(context, listen: false).currentItem);
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+        Navigator.pop(context, Provider.of<FullscreenModel>(context, listen: false).currentItem);
         return Future.value(false);
       }),
       child: Scaffold(
@@ -41,30 +39,16 @@ class _FullscreenViewState extends State<FullscreenView> {
               axis: Axis.vertical,
               child: HorizontalCarouselWrapper(
                 onPageChanged: (idx) {
-                  Provider.of<FullscreenModel>(context, listen: false)
-                          .currentItem =
-                      Provider.of<HomeModel>(context, listen: false).media[idx];
+                  Provider.of<FullscreenModel>(context, listen: false).currentItem = Provider.of<HomeModel>(context, listen: false).media[idx];
                 },
-                initialIndex: Provider.of<HomeModel>(context, listen: false)
-                    .media
-                    .indexOf(
-                        Provider.of<FullscreenModel>(context, listen: false)
-                            .currentItem),
+                initialIndex: Provider.of<HomeModel>(context, listen: false).media.indexOf(Provider.of<FullscreenModel>(context, listen: false).currentItem),
                 builder: ((context, index) {
-                  Media item = Provider.of<HomeModel>(context, listen: false)
-                      .media[index];
+                  Media item = Provider.of<HomeModel>(context, listen: false).media[index];
                   return VerticalDismissWrapper(
                     onOpacityChanged: (val) {
-                      Provider.of<FullscreenModel>(context, listen: false)
-                          .opacity = val;
+                      Provider.of<FullscreenModel>(context, listen: false).opacity = val;
                     },
-                    child: lookupMimeType(item.name)!.contains("video")
-                        ? VideoViewWidget(
-                            key: ValueKey(item.id),
-                            directory: directory,
-                            item: item)
-                        : PhotoViewWidget(
-                            key: ValueKey(item.id), directory, item),
+                    child: lookupMimeType(item.name)!.contains("video") ? VideoViewWidget(key: ValueKey(item.id), directory: directory, item: item) : PhotoViewWidget(key: ValueKey(item.id), directory, item),
                   );
                 }),
               ),

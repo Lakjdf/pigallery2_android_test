@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:provider/provider.dart';
 
-typedef ExtendedIndexedWidgetBuilder = Widget Function(
-    BuildContext context, int index);
+typedef ExtendedIndexedWidgetBuilder = Widget Function(BuildContext context, int index);
 
 class HorizontalCarouselWrapper extends StatefulWidget {
   final int initialIndex;
@@ -17,8 +16,7 @@ class HorizontalCarouselWrapper extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<HorizontalCarouselWrapper> createState() =>
-      _HorizontalCarouselWrapperState();
+  State<HorizontalCarouselWrapper> createState() => _HorizontalCarouselWrapperState();
 }
 
 class _HorizontalCarouselWrapperState extends State<HorizontalCarouselWrapper> {

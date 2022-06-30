@@ -79,10 +79,8 @@ class ServerModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> testConnection(
-      String url, String? username, String? password) async {
-    TestConnectionResult result =
-        await api.testConnection(url, username, password);
+  Future<void> testConnection(String url, String? username, String? password) async {
+    TestConnectionResult result = await api.testConnection(url, username, password);
     if (result.serverUnreachable) {
       testFailedUrl = true;
       testFailedAuth = false;

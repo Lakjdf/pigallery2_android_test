@@ -10,15 +10,12 @@ class ThumbnailImage extends StatelessWidget {
   final BoxFit fit;
   final ImageWidgetBuilder? imageBuilder;
 
-  const ThumbnailImage(this.path,
-      {Key? key, this.fit = BoxFit.contain, this.imageBuilder})
-      : super(key: key);
+  const ThumbnailImage(this.path, {Key? key, this.fit = BoxFit.contain, this.imageBuilder}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
-      imageUrl:
-          "${Provider.of<HomeModel>(context, listen: false).serverUrl}/api/gallery/content/$path/thumbnail",
+      imageUrl: "${Provider.of<HomeModel>(context, listen: false).serverUrl}/api/gallery/content/$path/thumbnail",
       httpHeaders: Provider.of<HomeModel>(context, listen: false).getHeaders(),
       imageBuilder: imageBuilder,
       placeholder: (context, url) => SpinKitRipple(

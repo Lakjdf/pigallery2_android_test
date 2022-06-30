@@ -8,14 +8,11 @@ class StorageHelper {
         encryptedSharedPreferences: true,
       );
 
-  Future<void> _storeSecureString(String key, String value) =>
-      _storage.write(key: key, value: value, aOptions: _getAndroidOptions());
+  Future<void> _storeSecureString(String key, String value) => _storage.write(key: key, value: value, aOptions: _getAndroidOptions());
 
-  Future<String?> _readSecureString(String key) =>
-      _storage.read(key: key, aOptions: _getAndroidOptions());
+  Future<String?> _readSecureString(String key) => _storage.read(key: key, aOptions: _getAndroidOptions());
 
-  Future<void> _deleteSecureString(String key) =>
-      _storage.delete(key: key, aOptions: _getAndroidOptions());
+  Future<void> _deleteSecureString(String key) => _storage.delete(key: key, aOptions: _getAndroidOptions());
 
   String _getUsernameKey(String url) => "$url-username";
   String _getPasswordKey(String url) => "$url-password";
@@ -58,13 +55,11 @@ class StorageHelper {
 
   Future<void> selectServer(String url) {
     return SharedPreferences.getInstance().then(
-      (prefs) => prefs.setInt('selectedServer',
-          prefs.getStringList('serverUrls')?.indexOf(url) ?? 0),
+      (prefs) => prefs.setInt('selectedServer', prefs.getStringList('serverUrls')?.indexOf(url) ?? 0),
     );
   }
 
-  Future<void> storeServer(
-      String url, String? username, String? password) async {
+  Future<void> storeServer(String url, String? username, String? password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> serverUrls = prefs.getStringList('serverUrls') ?? [];
     if (!serverUrls.contains(url)) {

@@ -16,15 +16,13 @@ const double gridSpacing = 0; //9
 class GalleryViewGridView extends StatefulWidget {
   final String baseDirectory;
   final List<File> files;
-  const GalleryViewGridView(this.baseDirectory, this.files, {Key? key})
-      : super(key: key);
+  const GalleryViewGridView(this.baseDirectory, this.files, {Key? key}) : super(key: key);
 
   @override
   State<GalleryViewGridView> createState() => _GalleryViewGridViewState();
 }
 
-class _GalleryViewGridViewState extends State<GalleryViewGridView>
-    with TickerProviderStateMixin {
+class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerProviderStateMixin {
   late ScrollController _scrollController;
 
   bool isVideo(Media item) {
@@ -45,18 +43,11 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView>
       if (imageTop - error < _scrollController.position.pixels) {
         // image is above visible
         double offset = imageTop - error;
-        _scrollController.animateTo(offset,
-            duration: const Duration(milliseconds: 400), curve: Curves.ease);
-      } else if (imageTop + imageHeight + error >
-          _scrollController.position.pixels +
-              _scrollController.position.extentInside) {
+        _scrollController.animateTo(offset, duration: const Duration(milliseconds: 400), curve: Curves.ease);
+      } else if (imageTop + imageHeight + error > _scrollController.position.pixels + _scrollController.position.extentInside) {
         // image is below visible
-        double offset = imageTop +
-            imageHeight +
-            2 * error -
-            _scrollController.position.extentInside;
-        _scrollController.animateTo(offset,
-            duration: const Duration(milliseconds: 400), curve: Curves.ease);
+        double offset = imageTop + imageHeight + 2 * error - _scrollController.position.extentInside;
+        _scrollController.animateTo(offset, duration: const Duration(milliseconds: 400), curve: Curves.ease);
       }
     }
   }
@@ -64,8 +55,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView>
   Widget directoryItem(context, Directory dir) {
     return GestureDetector(
       onTap: () {
-        String target =
-            "${widget.baseDirectory.isEmpty ? '' : '${widget.baseDirectory}/'}${dir.name}";
+        String target = "${widget.baseDirectory.isEmpty ? '' : '${widget.baseDirectory}/'}${dir.name}";
         Provider.of<HomeModel>(context, listen: false).addStack();
         Navigator.push(
           context,
@@ -141,15 +131,12 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView>
         );
         _scrollToShowedItem(
           context,
-          Provider.of<HomeModel>(context, listen: false)
-              .files
-              .indexOf(lastItem),
+          Provider.of<HomeModel>(context, listen: false).files.indexOf(lastItem),
         );
       },
       child: directory == null // should never be the case
           ? Center(
-              child: SpinKitSpinningLines(
-                  color: Theme.of(context).colorScheme.secondary),
+              child: SpinKitSpinningLines(color: Theme.of(context).colorScheme.secondary),
             )
           : Hero(
               tag: item.id.toString(),
@@ -200,9 +187,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView>
         mainAxisSpacing: gridSpacing,
       ),
       itemBuilder: (BuildContext context, int index) {
-        return widget.files[index].runtimeType == Directory
-            ? directoryItem(context, widget.files[index] as Directory)
-            : mediaItem(context, widget.files[index] as Media);
+        return widget.files[index].runtimeType == Directory ? directoryItem(context, widget.files[index] as Directory) : mediaItem(context, widget.files[index] as Media);
       },
     );
   }
@@ -216,8 +201,7 @@ class GalleryView extends StatefulWidget {
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView>
-    with TickerProviderStateMixin {
+class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin {
   void checkForError(BuildContext context, HomeModel model) {
     if (model.error != null) {
       SnackBar snackBar = SnackBar(
@@ -248,8 +232,7 @@ class _GalleryViewState extends State<GalleryView>
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Provider.of<HomeModel>(context, listen: false)
-          .addDirectories(baseDirectory: widget.baseDirectory),
+      future: Provider.of<HomeModel>(context, listen: false).addDirectories(baseDirectory: widget.baseDirectory),
       builder: (context, snapshot) {
         HomeModel model = Provider.of<HomeModel>(context, listen: true);
         WidgetsBinding.instance.addPostFrameCallback((_) {

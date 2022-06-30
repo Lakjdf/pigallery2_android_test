@@ -19,8 +19,7 @@ class Media extends File {
 
   factory Media.fromJson(Map<String, dynamic> json) {
     return Media(
-      id: json['id'] ??
-          math.Random().nextInt(4294967296), // create own id if not existing
+      id: json['id'] ?? math.Random().nextInt(4294967296), // create own id if not existing
       name: json['name'],
       metadata: MediaMetadata.fromJson(json['metadata']),
     );

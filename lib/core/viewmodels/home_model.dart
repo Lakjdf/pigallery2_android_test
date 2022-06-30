@@ -57,8 +57,7 @@ class HomeModel extends ChangeNotifier {
     Directory? currentDirBefore = currentDir;
     state.last.loading = true;
     error = null;
-    Directory? result =
-        await api.getDirectories(path: baseDirectory).catchError((e) {
+    Directory? result = await api.getDirectories(path: baseDirectory).catchError((e) {
       error = e.toString();
       return Future<Directory?>.value(null);
     });

@@ -2,8 +2,7 @@ import 'package:pigallery2_android/core/models/file.dart';
 import 'package:pigallery2_android/core/models/media.dart';
 
 List<Directory> allDirectoriesFromJson(List<Map<String, dynamic>> jsonData) {
-  dynamic res =
-      List<Directory>.from(jsonData.map((x) => Directory.fromJson(x)));
+  dynamic res = List<Directory>.from(jsonData.map((x) => Directory.fromJson(x)));
   return res;
 }
 
@@ -31,23 +30,12 @@ class Directory extends File {
         name: json['name'],
         path: json['path'],
         mediaCount: json['mediaCount'],
-        directories: json['directories'] != null
-            ? allDirectoriesFromJson(List.from(json['directories']))
-            : [],
+        directories: json['directories'] != null ? allDirectoriesFromJson(List.from(json['directories'])) : [],
         preview: json['preview'],
-        media: json['media'] != null
-            ? allMediaFromJson(List.from(json['media']))
-            : [],
+        media: json['media'] != null ? allMediaFromJson(List.from(json['media'])) : [],
       );
     } catch (e) {
-      return Directory(
-          id: 1,
-          name: '',
-          directories: [],
-          media: [],
-          path: '',
-          mediaCount: 1,
-          preview: null);
+      return Directory(id: 1, name: '', directories: [], media: [], path: '', mediaCount: 1, preview: null);
     }
   }
 }

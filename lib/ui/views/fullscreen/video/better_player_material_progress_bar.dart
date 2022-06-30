@@ -29,8 +29,7 @@ class BetterPlayerMaterialVideoProgressBar extends StatefulWidget {
   }
 }
 
-class _VideoProgressBarState
-    extends State<BetterPlayerMaterialVideoProgressBar> {
+class _VideoProgressBarState extends State<BetterPlayerMaterialVideoProgressBar> {
   _VideoProgressBarState() {
     listener = () {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -42,8 +41,7 @@ class _VideoProgressBarState
   late VoidCallback listener;
   bool _controllerWasPlaying = false;
 
-  BetterPlayerController? get betterPlayerController =>
-      widget.betterPlayerController;
+  BetterPlayerController? get betterPlayerController => widget.betterPlayerController;
 
   bool shouldPlayAfterDragEnd = false;
   Duration? lastSeek;
@@ -64,18 +62,15 @@ class _VideoProgressBarState
 
   @override
   Widget build(BuildContext context) {
-    final bool enableProgressBarDrag = betterPlayerController!
-        .betterPlayerConfiguration.controlsConfiguration.enableProgressBarDrag;
+    final bool enableProgressBarDrag = betterPlayerController!.betterPlayerConfiguration.controlsConfiguration.enableProgressBarDrag;
 
     return GestureDetector(
       onHorizontalDragStart: (DragStartDetails details) {
-        if (!betterPlayerController!.videoPlayerController!.value.initialized ||
-            !enableProgressBarDrag) {
+        if (!betterPlayerController!.videoPlayerController!.value.initialized || !enableProgressBarDrag) {
           return;
         }
 
-        _controllerWasPlaying =
-            betterPlayerController!.videoPlayerController!.value.isPlaying;
+        _controllerWasPlaying = betterPlayerController!.videoPlayerController!.value.isPlaying;
         if (_controllerWasPlaying) {
           betterPlayerController!.videoPlayerController!.pause();
         }
@@ -85,8 +80,7 @@ class _VideoProgressBarState
         }
       },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
-        if (!betterPlayerController!.videoPlayerController!.value.initialized ||
-            !enableProgressBarDrag) {
+        if (!betterPlayerController!.videoPlayerController!.value.initialized || !enableProgressBarDrag) {
           return;
         }
 
@@ -112,8 +106,7 @@ class _VideoProgressBarState
         }
       },
       onTapDown: (TapDownDetails details) {
-        if (!betterPlayerController!.videoPlayerController!.value.initialized ||
-            !enableProgressBarDrag) {
+        if (!betterPlayerController!.videoPlayerController!.value.initialized || !enableProgressBarDrag) {
           return;
         }
         seekToRelativePosition(details.globalPosition);
@@ -152,8 +145,7 @@ class _VideoProgressBarState
 
   VideoPlayerValue _getValue() {
     if (lastSeek != null) {
-      return betterPlayerController!.videoPlayerController!.value
-          .copyWith(position: lastSeek);
+      return betterPlayerController!.videoPlayerController!.value.copyWith(position: lastSeek);
     } else {
       return betterPlayerController!.videoPlayerController!.value;
     }
@@ -166,17 +158,13 @@ class _VideoProgressBarState
       final Offset tapPos = box.globalToLocal(globalPosition);
       final double relative = tapPos.dx / box.size.width;
       if (relative > 0) {
-        final Duration position =
-            betterPlayerController!.videoPlayerController!.value.duration! *
-                relative;
+        final Duration position = betterPlayerController!.videoPlayerController!.value.duration! * relative;
         lastSeek = position;
         await betterPlayerController!.seekTo(position);
         onFinishedLastSeek();
         if (relative >= 1) {
-          lastSeek =
-              betterPlayerController!.videoPlayerController!.value.duration;
-          await betterPlayerController!.seekTo(
-              betterPlayerController!.videoPlayerController!.value.duration!);
+          lastSeek = betterPlayerController!.videoPlayerController!.value.duration;
+          await betterPlayerController!.seekTo(betterPlayerController!.videoPlayerController!.value.duration!);
           onFinishedLastSeek();
         }
       }
@@ -219,13 +207,11 @@ class _ProgressBarPainter extends CustomPainter {
     if (!value.initialized) {
       return;
     }
-    double playedPartPercent =
-        value.position.inMilliseconds / value.duration!.inMilliseconds;
+    double playedPartPercent = value.position.inMilliseconds / value.duration!.inMilliseconds;
     if (playedPartPercent.isNaN) {
       playedPartPercent = 0;
     }
-    final double playedPart =
-        playedPartPercent > 1 ? size.width : playedPartPercent * size.width;
+    final double playedPart = playedPartPercent > 1 ? size.width : playedPartPercent * size.width;
     for (final range in value.buffered) {
       double start = range.startFraction(value.duration!) * size.width;
       if (start.isNaN) {

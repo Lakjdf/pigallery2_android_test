@@ -6,8 +6,7 @@ class CustomThemeData {
   static ThemeData oledThemeData = themeData(oledColorScheme, _darkFocusColor);
 
   static ThemeData themeData(ColorScheme colorScheme, Color focusColor) {
-    Color customTextColor = Color.alphaBlend(
-        Colors.white.withAlpha((0.48 * 255).toInt()), colorScheme.primary);
+    Color customTextColor = Color.alphaBlend(Colors.white.withAlpha((0.48 * 255).toInt()), colorScheme.primary);
     return ThemeData(
       colorScheme: colorScheme,
       primaryColor: colorScheme.primary,

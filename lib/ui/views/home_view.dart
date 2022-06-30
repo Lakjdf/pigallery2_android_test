@@ -37,8 +37,7 @@ class HomeView extends StatelessWidget {
           ),
         );
       },
-    ).whenComplete(
-        () => Provider.of<HomeModel>(context, listen: false).reset());
+    ).whenComplete(() => Provider.of<HomeModel>(context, listen: false).reset());
   }
 
   @override
@@ -66,8 +65,7 @@ class HomeView extends StatelessWidget {
           ],
         ),
         body: GalleryView(
-          key: ValueKey(
-              "${Provider.of<HomeModel>(context, listen: false).serverUrl ?? ''}$baseDirectory"),
+          key: ValueKey("${Provider.of<HomeModel>(context, listen: false).serverUrl ?? ''}$baseDirectory"),
           baseDirectory: baseDirectory,
         ),
       ),

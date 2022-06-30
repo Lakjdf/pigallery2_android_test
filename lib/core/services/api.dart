@@ -34,18 +34,15 @@ class ApiService {
   }
 
   Future<Directory?> getDirectories({String path = ""}) async {
-    ApiResponse<Directory> response = await api.getDirectories(
-        serverUrl: _serverUrl, path: path, sessionData: sessionData);
+    ApiResponse<Directory> response = await api.getDirectories(serverUrl: _serverUrl, path: path, sessionData: sessionData);
 
     if (response.code == 401) {
       /// retry with stored credentials
-      LoginCredentials? credentials =
-          await storageHelper.getServerCredentials(_serverUrl);
+      LoginCredentials? credentials = await storageHelper.getServerCredentials(_serverUrl);
       if (credentials != null) {
         sessionData ??= (await api.login(_serverUrl, credentials)).result;
         if (sessionData != null) {
-          response = await api.getDirectories(
-              serverUrl: _serverUrl, path: path, sessionData: sessionData);
+          response = await api.getDirectories(serverUrl: _serverUrl, path: path, sessionData: sessionData);
           if (response.code == 200 && response.error == null) {
             await storageHelper.storeSessionData(_serverUrl, sessionData!);
           }
@@ -58,11 +55,9 @@ class ApiService {
     return response.result;
   }
 
-  Future<TestConnectionResult> testConnection(
-      String url, String? username, String? password) async {
+  Future<TestConnectionResult> testConnection(String url, String? username, String? password) async {
     if (username != null && password != null) {
-      ApiResponse<SessionData> loginResponse =
-          await api.login(url, LoginCredentials(username, password));
+      ApiResponse<SessionData> loginResponse = await api.login(url, LoginCredentials(username, password));
       if (loginResponse.result == null) {
         if (loginResponse.code == 200) {
           return TestConnectionResult(authFailed: true);
@@ -72,8 +67,7 @@ class ApiService {
       }
       return TestConnectionResult(sessionData: loginResponse.result);
     }
-    ApiResponse<Directory> response =
-        await api.getDirectories(serverUrl: url, path: "", sessionData: null);
+    ApiResponse<Directory> response = await api.getDirectories(serverUrl: url, path: "", sessionData: null);
     if (response.code == 200 && response.error == null) {
       return TestConnectionResult();
     } else if (response.code == 401) {
