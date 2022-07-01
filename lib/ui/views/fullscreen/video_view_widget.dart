@@ -59,6 +59,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     _config = BetterPlayerConfiguration(
       controlsConfiguration: const BetterPlayerControlsConfiguration(
         showControls: false,
+        backgroundColor: Colors.transparent,
       ),
       autoPlay: true,
       looping: true,

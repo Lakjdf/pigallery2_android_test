@@ -15,7 +15,7 @@ class FullscreenOverlay extends StatefulWidget {
   State<FullscreenOverlay> createState() => _FullscreenOverlayState();
 }
 
-class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProviderStateMixin {
+class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _controller = AnimationController(
     duration: const Duration(milliseconds: 200),
     vsync: this,
@@ -24,11 +24,36 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     parent: _controller,
     curve: Curves.easeIn,
   );
+  bool controlsVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.dismissed) {
+        setState(() {
+          controlsVisible = false;
+        });
+      } else if (status == AnimationStatus.completed) {
+        setState(() {
+          controlsVisible = true;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    /// Reset scale on orientation change
+    Provider.of<FullscreenModel>(context, listen: false).videoScale = 1.0;
   }
 
   bool isVideo(Media item) {
@@ -43,11 +68,103 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     }
   }
 
+  void handleAspectRatioToggle(BuildContext context) {
+    BetterPlayerController? controller = Provider.of<FullscreenModel>(context, listen: false).betterPlayerController;
+    if (controller != null) {
+      double aspectRatio = controller.getAspectRatio()!;
+      double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
+      double currentScale = Provider.of<FullscreenModel>(context, listen: false).videoScale;
+      double newScale = 1;
+      if (currentScale == 1) {
+        if (aspectRatio > screenAspectRatio) {
+          newScale = aspectRatio / screenAspectRatio;
+        } else {
+          newScale = screenAspectRatio / aspectRatio;
+        }
+      }
+      Provider.of<FullscreenModel>(context, listen: false).videoScale = newScale;
+    }
+  }
+
+  Widget buildControlsTop(BuildContext context, double controlsOpacity) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Selector<FullscreenModel, Media>(
+        selector: (context, model) => model.currentItem,
+        builder: (context, item, child) => Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            IconButton(
+              padding: const EdgeInsets.all(0),
+              constraints: const BoxConstraints(),
+              onPressed: () {
+                _controller.value = 0.0;
+                Navigator.maybePop(context, Provider.of<FullscreenModel>(context, listen: false).currentItem);
+              },
+              icon: Icon(
+                Icons.close,
+                color: Colors.white.withOpacity(controlsOpacity),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 0, 2),
+                child: Text(
+                  overflow: TextOverflow.fade,
+                  maxLines: 1,
+                  softWrap: false,
+                  item.name,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(controlsOpacity),
+                  ),
+                ),
+              ),
+            ),
+            !isVideo(item)
+                ? Container()
+                : IconButton(
+                    padding: const EdgeInsets.all(0),
+                    constraints: const BoxConstraints(),
+                    icon: Icon(Icons.aspect_ratio, color: Colors.white.withOpacity(controlsOpacity)),
+                    onPressed: () => handleAspectRatioToggle(context),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildVideoSeekBar(BuildContext context) {
+    return Selector<FullscreenModel, BetterPlayerController?>(
+      selector: (context, model) => model.betterPlayerController,
+      builder: (context, controller, child) => controller == null
+          ? Container()
+          : Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                height: 50,
+                child: VideoSeekBar(
+                  key: ObjectKey(controller),
+                  controller,
+                ),
+              ),
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        widget.child,
+        Selector<FullscreenModel, double>(
+          selector: (context, model) => model.videoScale,
+          builder: (context, scale, child) {
+            return Transform.scale(
+              scale: scale,
+              child: widget.child,
+            );
+          },
+        ),
         Selector<FullscreenModel, BetterPlayerController?>(
           selector: (context, model) => model.betterPlayerController,
           builder: (context, controller, child) => controller == null
@@ -56,68 +173,28 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                 )
               : VideoControls(key: ObjectKey(controller), controller, handleTap),
         ),
-        FadeTransition(
-          opacity: _animation,
-          child: Stack(
-            children: [
-              Selector<FullscreenModel, double>(
-                selector: (context, model) => model.opacity,
-                builder: (context, controlsOpacity, child) {
-                  return Container(
-                    color: Colors.black.withOpacity(0.3 * controlsOpacity),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            padding: const EdgeInsets.all(4),
-                            constraints: const BoxConstraints(),
-                            onPressed: () {
-                              _controller.value = 0.0;
-                              Navigator.maybePop(context, Provider.of<FullscreenModel>(context, listen: false).currentItem);
-                            },
-                            icon: Icon(
-                              Icons.close,
-                              color: Colors.white.withOpacity(controlsOpacity),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(6, 0, 0, 2),
-                            child: Selector<FullscreenModel, Media>(
-                              selector: (context, model) => model.currentItem,
-                              builder: (context, item, child) => Text(
-                                item.name,
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(controlsOpacity),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-              !isVideo(Provider.of<FullscreenModel>(context, listen: true).currentItem)
-                  ? Container()
-                  : Selector<FullscreenModel, BetterPlayerController?>(
-                      selector: (context, model) => model.betterPlayerController,
-                      builder: (context, controller, child) => controller == null
-                          ? Container()
-                          : Align(
-                              alignment: Alignment.bottomCenter,
-                              child: SizedBox(
-                                height: 50,
-                                child: VideoSeekBar(
-                                  key: ObjectKey(controller),
-                                  controller,
-                                ),
-                              ),
-                            ),
-                    ),
-            ],
+        IgnorePointer(
+          ignoring: !controlsVisible,
+          child: FadeTransition(
+            opacity: _animation,
+            child: Stack(
+              children: [
+                Selector<FullscreenModel, double>(
+                  selector: (context, model) => model.opacity,
+                  builder: (context, controlsOpacity, child) {
+                    return Container(
+                      color: Colors.black.withOpacity(0.3 * controlsOpacity),
+                      height: 40,
+                      child: buildControlsTop(context, controlsOpacity),
+                    );
+                  },
+                ),
+                Selector<FullscreenModel, Media>(
+                  selector: (context, model) => model.currentItem,
+                  builder: (context, item, child) => !isVideo(item) ? Container() : buildVideoSeekBar(context),
+                ),
+              ],
+            ),
           ),
         ),
       ],

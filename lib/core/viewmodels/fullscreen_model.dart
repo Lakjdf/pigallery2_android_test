@@ -6,6 +6,7 @@ import 'package:pigallery2_android/core/models/models.dart';
 class FullscreenModel extends ChangeNotifier {
   Media _currentItem;
   double _opacity = 1.0;
+  double _videoScale = 1.0;
   BetterPlayerController? _betterPlayerController;
   bool awaitingNewController = true;
 
@@ -30,10 +31,18 @@ class FullscreenModel extends ChangeNotifier {
       _betterPlayerController = null;
     }
     awaitingNewController = true;
+    _videoScale = 1.0;
     notifyListeners();
   }
 
   Media get currentItem => _currentItem;
+
+  set videoScale(double val) {
+    _videoScale = val;
+    notifyListeners();
+  }
+
+  double get videoScale => _videoScale;
 
   set opacity(double val) {
     _opacity = val;
