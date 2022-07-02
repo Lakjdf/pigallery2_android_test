@@ -68,22 +68,32 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     }
   }
 
-  void handleAspectRatioToggle(BuildContext context) {
-    BetterPlayerController? controller = Provider.of<FullscreenModel>(context, listen: false).betterPlayerController;
-    if (controller != null) {
-      double aspectRatio = controller.getAspectRatio()!;
-      double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
-      double currentScale = Provider.of<FullscreenModel>(context, listen: false).videoScale;
-      double newScale = 1;
-      if (currentScale == 1) {
-        if (aspectRatio > screenAspectRatio) {
-          newScale = aspectRatio / screenAspectRatio;
-        } else {
-          newScale = screenAspectRatio / aspectRatio;
-        }
-      }
-      Provider.of<FullscreenModel>(context, listen: false).videoScale = newScale;
-    }
+  Widget buildAspectRatioToggle(BuildContext context, double controlsOpacity) {
+    return Selector<FullscreenModel, bool>(
+      selector: (context, model) => model.awaitingNewController,
+      builder: (context, awaiting, child) => IconButton(
+        padding: const EdgeInsets.all(0),
+        color: Colors.white.withOpacity(controlsOpacity),
+        constraints: const BoxConstraints(),
+        icon: const Icon(Icons.aspect_ratio),
+        onPressed: awaiting
+            ? null
+            : () {
+                double aspectRatio = Provider.of<FullscreenModel>(context, listen: false).betterPlayerController!.getAspectRatio()!;
+                double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
+                double currentScale = Provider.of<FullscreenModel>(context, listen: false).videoScale;
+                double newScale = 1;
+                if (currentScale == 1) {
+                  if (aspectRatio > screenAspectRatio) {
+                    newScale = aspectRatio / screenAspectRatio;
+                  } else {
+                    newScale = screenAspectRatio / aspectRatio;
+                  }
+                }
+                Provider.of<FullscreenModel>(context, listen: false).videoScale = newScale;
+              },
+      ),
+    );
   }
 
   Widget buildControlsTop(BuildContext context, double controlsOpacity) {
@@ -120,14 +130,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                 ),
               ),
             ),
-            !isVideo(item)
-                ? Container()
-                : IconButton(
-                    padding: const EdgeInsets.all(0),
-                    constraints: const BoxConstraints(),
-                    icon: Icon(Icons.aspect_ratio, color: Colors.white.withOpacity(controlsOpacity)),
-                    onPressed: () => handleAspectRatioToggle(context),
-                  ),
+            !isVideo(item) ? Container() : buildAspectRatioToggle(context, controlsOpacity),
           ],
         ),
       ),

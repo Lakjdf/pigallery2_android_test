@@ -14,10 +14,14 @@ class MediaDimension {
 
 class MediaMetadata {
   MediaDimension size;
-  MediaMetadata({required this.size});
+  int fileSize;
+  int creationDate;
+  MediaMetadata({required this.size, required this.fileSize, required this.creationDate});
   factory MediaMetadata.fromJson(Map<String, dynamic> json) {
     return MediaMetadata(
       size: MediaDimension.fromJson(json['size']),
+      fileSize: json['fileSize'],
+      creationDate: json['creationDate'],
     );
   }
 }

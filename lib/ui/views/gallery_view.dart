@@ -233,7 +233,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Provider.of<HomeModel>(context, listen: false).addDirectories(baseDirectory: widget.baseDirectory),
+      future: Provider.of<HomeModel>(context, listen: false).fetchItems(baseDirectory: widget.baseDirectory),
       builder: (context, snapshot) {
         HomeModel model = Provider.of<HomeModel>(context, listen: true);
         WidgetsBinding.instance.addPostFrameCallback((_) {

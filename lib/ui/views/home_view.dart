@@ -40,6 +40,44 @@ class HomeView extends StatelessWidget {
     ).whenComplete(() => Provider.of<HomeModel>(context, listen: false).reset());
   }
 
+  PopupMenuItem<dynamic> buildPopupItem(dynamic thisValue, dynamic selectedValue, String name) {
+    return PopupMenuItem(
+      value: thisValue,
+      padding: const EdgeInsets.all(0),
+      child: ListTile(
+        visualDensity: const VisualDensity(vertical: -3),
+        title: Text(name),
+        trailing: IgnorePointer(
+          child: Radio(
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            value: thisValue,
+            groupValue: selectedValue,
+            onChanged: null,
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuButton buildSortOptions(HomeModel model) {
+    return PopupMenuButton<dynamic>(
+      icon: const Icon(Icons.sort),
+      onSelected: (dynamic option) {
+        if (option.runtimeType == SortOption) {
+          model.sortOption = option;
+        } else {
+          model.sortOrder = option;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<dynamic>>[
+        ...SortOption.values.map((e) => buildPopupItem(e, model.sortOption, e.getName())).toList(),
+        const PopupMenuDivider(),
+        buildPopupItem(true, model.sortAscending, "Ascending"),
+        buildPopupItem(false, model.sortAscending, "Descending"),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
@@ -63,6 +101,7 @@ class HomeView extends StatelessWidget {
                     ),
                   )
                 : Container(),
+            buildSortOptions(model),
           ],
         ),
         body: GalleryView(

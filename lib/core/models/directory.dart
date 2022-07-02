@@ -44,6 +44,7 @@ class DirectoryPreview extends File {
 
 class Directory extends DirectoryPath {
   int mediaCount;
+  int lastModified;
   List<Directory> directories;
   DirectoryPreview? preview;
   List<Media> media;
@@ -53,6 +54,7 @@ class Directory extends DirectoryPath {
     required name,
     required path,
     required this.mediaCount,
+    required this.lastModified,
     required this.directories,
     required this.preview,
     required this.media,
@@ -64,6 +66,7 @@ class Directory extends DirectoryPath {
       name: json['name'],
       path: json['path'],
       mediaCount: json['mediaCount'],
+      lastModified: json['lastModified'],
       directories: json['directories'] != null ? allDirectoriesFromJson(List.from(json['directories'])) : [],
       preview: json['preview'] != null ? DirectoryPreview.fromJson(json['preview']) : null,
       media: json['media'] != null ? allMediaFromJson(List.from(json['media'])) : [],

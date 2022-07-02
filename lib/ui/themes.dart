@@ -19,6 +19,7 @@ class CustomThemeData {
       focusColor: focusColor,
       canvasColor: colorScheme.primary,
       dialogBackgroundColor: colorScheme.primary,
+      cardColor: colorScheme.primary,
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: customTextColor,
         selectionColor: customTextColor,

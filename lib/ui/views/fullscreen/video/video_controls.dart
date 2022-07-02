@@ -158,6 +158,7 @@ class _VideoControlsState extends State<VideoControls> {
         // Reset tapCount if too much time has passed or a different input has been made.
         if (newInputPosition == null || currentInputPosition == null || currentInputDateTime == null || newInputPosition != currentInputPosition || DateTime.now().difference(currentInputDateTime!).compareTo(fadeAnimationDuration) > 0 || (tapCount == 2 && newInputPosition == 1)) {
           tapCount = 0;
+          imageFadeAnim = Container();
         }
         tapCount += 1;
         currentInputDateTime = DateTime.now();
