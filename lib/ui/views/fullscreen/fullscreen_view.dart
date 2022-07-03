@@ -20,6 +20,49 @@ class FullscreenView extends StatefulWidget {
 }
 
 class _FullscreenViewState extends State<FullscreenView> {
+  Widget buildItemWithHero(BuildContext context, Media item) {
+    double heightDiff = MediaQuery.of(context).size.width * (item.metadata.size.height / item.metadata.size.width) - MediaQuery.of(context).size.width;
+    return Hero(
+      // always use thumbnail for hero animation
+      flightShuttleBuilder: (
+        BuildContext flightContext,
+        Animation<double> animation,
+        HeroFlightDirection flightDirection,
+        BuildContext fromHeroContext,
+        BuildContext toHeroContext,
+      ) {
+        final Hero hero = toHeroContext.widget as Hero;
+        if (flightDirection == HeroFlightDirection.pop) {
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, value) {
+              // make sure that thumbnail does not expand
+              return FittedBox(
+                fit: BoxFit.fitWidth,
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.width + ((animation.value) * heightDiff),
+                  child: hero.child,
+                ),
+              );
+            },
+          );
+        }
+        return hero.child;
+      },
+      tag: item.id.toString(),
+      child: lookupMimeType(item.name)!.contains("video")
+          ? VideoViewWidget(
+              key: ValueKey(item.id),
+              item: item,
+            )
+          : PhotoViewWidget(
+              key: ValueKey(item.id),
+              item,
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -34,34 +77,16 @@ class _FullscreenViewState extends State<FullscreenView> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: FullscreenOverlay(
-          child: PhotoViewGestureDetectorScope(
-            axis: Axis.horizontal,
-            child: PhotoViewGestureDetectorScope(
-              axis: Axis.vertical,
-              child: HorizontalCarouselWrapper(
-                onPageChanged: (idx) => fullscreenModel.currentItem = homeModel.media[idx],
-                initialIndex: homeModel.media.indexOf(fullscreenModel.currentItem),
-                builder: ((context, index) {
-                  Media item = homeModel.media[index];
-                  Directory directory = homeModel.currentDir!;
-                  return VerticalDismissWrapper(
-                    onOpacityChanged: (val) {
-                      fullscreenModel.opacity = val;
-                    },
-                    child: lookupMimeType(item.name)!.contains("video")
-                        ? VideoViewWidget(
-                            key: ValueKey(item.id),
-                            directory: directory,
-                            item: item,
-                          )
-                        : PhotoViewWidget(
-                            key: ValueKey(item.id),
-                            item,
-                          ),
-                  );
-                }),
-              ),
-            ),
+          child: HorizontalCarouselWrapper(
+            onPageChanged: (idx) => fullscreenModel.currentItem = homeModel.media[idx],
+            initialIndex: homeModel.media.indexOf(fullscreenModel.currentItem),
+            builder: ((context, index) => PhotoViewGestureDetectorScope(
+                  axis: Axis.horizontal,
+                  child: VerticalDismissWrapper(
+                    onOpacityChanged: (val) => fullscreenModel.opacity = val,
+                    child: buildItemWithHero(context, homeModel.media[index]),
+                  ),
+                )),
           ),
         ),
       ),

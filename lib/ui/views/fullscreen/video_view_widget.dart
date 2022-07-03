@@ -9,10 +9,9 @@ import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
 
 class VideoViewWidget extends StatefulWidget {
-  final Directory directory;
   final Media item;
 
-  const VideoViewWidget({Key? key, required this.directory, required this.item}) : super(key: key);
+  const VideoViewWidget({Key? key, required this.item}) : super(key: key);
 
   @override
   State<VideoViewWidget> createState() => _VideoViewWidgetState();
@@ -34,10 +33,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
       fit: StackFit.passthrough,
       children: [
         ThumbnailImage(key: ObjectKey(widget.item), widget.item),
-        SpinKitRipple(
-          color: Colors.white,
-          size: 0.5 * MediaQuery.of(context).size.width,
-        ),
+        SpinKitRipple(color: Colors.white, size: 0.5 * MediaQuery.of(context).size.width),
       ],
     );
   }
@@ -65,9 +61,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
       looping: true,
       fit: BoxFit.contain,
       aspectRatio: widget.item.metadata.size.width / widget.item.metadata.size.height,
-      errorBuilder: (context, error) {
-        return const ErrorImage();
-      },
+      errorBuilder: (context, error) => const ErrorImage(),
       playerVisibilityChangedBehavior: onVisibilityChanged,
     );
 
@@ -95,42 +89,11 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    double heightDiff = MediaQuery.of(context).size.width * (widget.item.metadata.size.height / widget.item.metadata.size.width) - MediaQuery.of(context).size.width;
-    return Hero(
-      // always use thumbnail for hero animation
-      flightShuttleBuilder: (
-        BuildContext flightContext,
-        Animation<double> animation,
-        HeroFlightDirection flightDirection,
-        BuildContext fromHeroContext,
-        BuildContext toHeroContext,
-      ) {
-        final Hero hero = toHeroContext.widget as Hero;
-        if (flightDirection == HeroFlightDirection.pop) {
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, value) {
-              // make sure that thumbnail does not expand
-              return FittedBox(
-                fit: BoxFit.fitWidth,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.width + ((animation.value) * heightDiff),
-                  child: hero.child,
-                ),
-              );
-            },
-          );
-        }
-        return hero.child;
-      },
-      tag: widget.item.id.toString(),
-      child: isInitialized
-          ? BetterPlayer(
-              key: ValueKey(widget.item.id),
-              controller: _betterPlayerController,
-            )
-          : buildPlaceholder(),
-    );
+    return isInitialized
+        ? BetterPlayer(
+            key: ValueKey(widget.item.id),
+            controller: _betterPlayerController,
+          )
+        : buildPlaceholder();
   }
 }
