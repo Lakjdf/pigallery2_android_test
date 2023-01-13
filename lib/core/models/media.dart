@@ -18,7 +18,7 @@ class Media extends File {
 
   factory Media.fromJson(Map<String, dynamic> json) {
     return Media(
-      id: json['id'] ?? json['t'],
+      id: json['id'], // don't use 't' as its not unique
       name: json['name'] ?? json['n'],
       metadata: MediaMetadata.fromJson(json['metadata'] ?? json['m']),
     );
