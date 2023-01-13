@@ -170,7 +170,7 @@ class HomeModel extends ChangeNotifier {
       item = (item as Directory).preview!;
       parentDirectory = (item as DirectoryPreview).directory;
     }
-    return "$serverUrl/api/gallery/content/${parentDirectory.path}${parentDirectory.name}/${item.name}";
+    return "$serverUrl/pgapi/gallery/content/${parentDirectory.path}${parentDirectory.name}/${item.name}";
   }
 
   String getThumbnailPath(File item) {

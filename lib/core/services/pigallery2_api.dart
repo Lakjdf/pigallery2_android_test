@@ -7,7 +7,7 @@ import 'package:pigallery2_android/core/services/models/session_data.dart';
 import 'package:http/http.dart' as http;
 
 class PiGallery2API {
-  String getBaseEndpoint(String? serverUrl) => '$serverUrl/api';
+  String getBaseEndpoint(String? serverUrl) => '$serverUrl/pgapi';
   String getDirectoriesEndpoint(String? serverUrl) => "${getBaseEndpoint(serverUrl)}/gallery/content/";
   String getLoginEndpoint(String? serverUrl) => "${getBaseEndpoint(serverUrl)}/user/login";
 
