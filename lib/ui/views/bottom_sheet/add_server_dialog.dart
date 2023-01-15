@@ -14,7 +14,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   FocusNode addServerFocus = FocusNode();
-  final String hintText = "https://pigallery2.herokuapp.com";
+  final String hintText = "https://pigallery2.example.com";
 
   @override
   void dispose() {
