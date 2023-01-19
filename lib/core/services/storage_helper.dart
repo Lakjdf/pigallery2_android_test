@@ -1,3 +1,4 @@
+import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web_view;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pigallery2_android/core/services/models/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,10 +98,19 @@ class StorageHelper {
     await _deleteSecureString(_getPasswordKey(url));
   }
 
+  void _setCookies(String url, String cookieString) {
+    var cookieManager = web_view.CookieManager.instance();
+    for (var cookie in cookieString.split(';')) {
+      var splitIndex = cookie.indexOf('=');
+      cookieManager.setCookie(url: web_view.WebUri(url), name: cookie.substring(0, splitIndex), value: cookie.substring(splitIndex + 1));
+    }
+  }
+
   Future<void> storeSessionData(String url, SessionData data) {
     return SharedPreferences.getInstance().then((prefs) {
       prefs.setString("$url-cookies", data.sessionCookies);
       prefs.setString("$url-token", data.csrfToken);
+      _setCookies(url, data.sessionCookies);
     });
   }
 

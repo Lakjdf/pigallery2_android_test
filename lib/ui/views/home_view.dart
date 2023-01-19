@@ -4,6 +4,7 @@ import 'package:pigallery2_android/ui/views/bottom_sheet/bad_certificate_selecti
 import 'package:pigallery2_android/ui/views/bottom_sheet/bottom_sheet_handle.dart';
 import 'package:pigallery2_android/ui/views/bottom_sheet/server_selection.dart';
 import 'package:pigallery2_android/ui/views/gallery_view.dart';
+import 'package:pigallery2_android/ui/views/website_view.dart';
 import 'package:provider/provider.dart';
 
 class HomeView extends StatelessWidget {
@@ -38,6 +39,15 @@ class HomeView extends StatelessWidget {
         );
       },
     ).whenComplete(() => Provider.of<HomeModel>(context, listen: false).reset());
+  }
+
+  void showAdminPanel(BuildContext context, String serverUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WebsiteView(serverUrl),
+      ),
+    );
   }
 
   PopupMenuItem<dynamic> buildPopupItem(dynamic thisValue, dynamic selectedValue, String name) {
@@ -101,6 +111,18 @@ class HomeView extends StatelessWidget {
                     ),
                   )
                 : Container(),
+            Consumer<HomeModel>(
+              builder: (context, model, child) => model.isHomeView && model.serverUrl != null
+                  ? IconButton(
+                      onPressed: () {
+                        showAdminPanel(context, model.serverUrl!);
+                      },
+                      icon: const Icon(
+                        Icons.manage_accounts,
+                      ),
+                    )
+                  : Container(),
+            ),
             buildSortOptions(model),
           ],
         ),
