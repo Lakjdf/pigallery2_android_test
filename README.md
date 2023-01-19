@@ -2,6 +2,8 @@
 
 This is a basic android app capable of displaying images and videos of a PiGallery2 instance - no metadata, search, albums, etc.
 
+Most likely works only with version >= 1.9.5.
+
 The mobile view of the PiGallery2 frontend is great. I only created this app to get more familiar with Flutter.
 
 ## Packages used
@@ -15,6 +17,7 @@ The mobile view of the PiGallery2 frontend is great. I only created this app to 
 - [mime](https://pub.dev/packages/mime) - distinguish between images and videos
 - [better_player](https://pub.dev/packages/better_player) - display videos with HTTP headers
 - [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) - store credentials
+- [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) - show admin panel within a webview that respects cookies
 
 ## Credits
 

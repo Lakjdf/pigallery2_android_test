@@ -24,8 +24,7 @@ dependencies:
   flutter_inappwebview: ^6.0.0-beta.22
 
 dev_dependencies:
-  # app icon generation, conflicts with flutter_native_path
-  # does not work for Android 12
+  # app icon generation; does not work for Android 12
   # run: flutter pub run flutter_launcher_icons:main
   flutter_launcher_icons: "^0.9.3"
 
