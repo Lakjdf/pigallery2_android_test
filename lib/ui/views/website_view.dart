@@ -25,7 +25,12 @@ class _WebsiteViewState extends State<WebsiteView> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+        ),
         body: InAppWebView(
           onWebViewCreated: (controller) => _controller = controller,
           initialUrlRequest: URLRequest(url: WebUri("${widget.serverUrl}/admin")),
