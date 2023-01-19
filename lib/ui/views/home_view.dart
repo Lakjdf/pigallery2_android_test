@@ -44,8 +44,21 @@ class HomeView extends StatelessWidget {
   void showAdminPanel(BuildContext context, String serverUrl) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => WebsiteView(serverUrl),
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => WebsiteView(serverUrl),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // animation that slides the page in from the right
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.ease;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
       ),
     );
   }
