@@ -34,6 +34,12 @@ class _WebsiteViewState extends State<WebsiteView> {
         body: InAppWebView(
           onWebViewCreated: (controller) => _controller = controller,
           initialUrlRequest: URLRequest(url: WebUri("${widget.serverUrl}/admin")),
+          initialSettings: InAppWebViewSettings(
+            forceDark: ForceDark.ON,
+            mediaPlaybackRequiresUserGesture: false,
+            allowsInlineMediaPlayback: true,
+            transparentBackground: true,
+          ),
         ),
       ),
     );
