@@ -10,12 +10,17 @@ import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
+}
+
+Future<void> clearDownloadedFiles() {
+  return getTemporaryDirectory().then((value) => value.delete(recursive: true));
 }
 
 void main() async {
@@ -25,6 +30,7 @@ void main() async {
   if (allowBadCertificate) {
     HttpOverrides.global = MyHttpOverrides();
   }
+  clearDownloadedFiles();
   runApp(const MyApp());
 }
 

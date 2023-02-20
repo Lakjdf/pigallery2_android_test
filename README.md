@@ -18,6 +18,8 @@ The mobile view of the PiGallery2 frontend is great. I only created this app to 
 - [better_player](https://pub.dev/packages/better_player) - display videos with HTTP headers
 - [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) - store credentials
 - [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) - show admin panel within a webview that respects cookies
+- [path_provider](https://pub.dev/packages/path_provider) - retrieve path to temporarily store media
+- [share_plus](https://pub.dev/packages/share_plus) - open dialog to share downloaded media
 
 ## Credits
 

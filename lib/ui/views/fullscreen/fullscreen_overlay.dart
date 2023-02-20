@@ -5,6 +5,7 @@ import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/video/video_controls.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/video/video_seek_bar.dart';
+import 'package:pigallery2_android/ui/views/fullscreen/download_widget.dart';
 import 'package:provider/provider.dart';
 
 class FullscreenOverlay extends StatefulWidget {
@@ -109,7 +110,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
               constraints: const BoxConstraints(),
               onPressed: () {
                 _controller.value = 0.0;
-                Navigator.maybePop(context, Provider.of<FullscreenModel>(context, listen: false).currentItem);
+                Navigator.maybePop(context, item);
               },
               icon: Icon(
                 Icons.close,
@@ -128,6 +129,14 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                     color: Colors.white.withOpacity(controlsOpacity),
                   ),
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+              child: DownloadWidget(
+                item: item,
+                opacity: controlsOpacity,
+                key: ObjectKey(item),
               ),
             ),
             !isVideo(item) ? Container() : buildAspectRatioToggle(context, controlsOpacity),

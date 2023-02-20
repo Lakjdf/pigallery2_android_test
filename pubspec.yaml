@@ -22,6 +22,17 @@ dependencies:
   better_player: ^0.0.83
   flutter_secure_storage: ^5.0.2
   flutter_inappwebview: ^6.0.0-beta.22
+  path_provider: ^2.0.12
+  share_plus: ^6.3.1
+  
+  # file selector dialog to download media:
+  # flutter_plugin_android_lifecycle: ^2.0.1
+  # file_selector_platform_interface: ^2.4.0
+  # file_selector_android:
+  #   git:
+  #     url: https://github.com/southworks/plugins.git
+  #     ref: 9082aaf4336880db6a40458d2e502b86bcff453c
+  #     path: packages/file_selector/file_selector_android
 
 dev_dependencies:
   # app icon generation; does not work for Android 12
