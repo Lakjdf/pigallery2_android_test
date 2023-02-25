@@ -41,11 +41,15 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
   /// Mute if switching to next video.
   /// Inform [FullscreenModel] about controller change to update controls.
   void onVisibilityChanged(double visibleFraction) async {
-    if (visibleFraction < 0.5) {
+    var fullScreenModel = Provider.of<FullscreenModel>(context, listen: false);
+    double scaledThreshold = 1 / (2 * fullScreenModel.videoScale);
+    // VisibilityDetector does not handle scaling properly; Add scaling to visibleFraction manually
+    double fixedVisibleFraction = visibleFraction * fullScreenModel.videoScale;
+    if (fixedVisibleFraction < scaledThreshold) {
       _betterPlayerController.setVolume(0);
     } else {
       _betterPlayerController.setVolume(1);
-      Provider.of<FullscreenModel>(context, listen: false).addController(_betterPlayerController);
+      fullScreenModel.addController(_betterPlayerController);
     }
   }
 
