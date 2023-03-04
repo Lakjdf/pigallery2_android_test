@@ -24,6 +24,7 @@ dependencies:
   flutter_inappwebview: ^6.0.0-beta.22
   path_provider: ^2.0.12
   share_plus: ^6.3.1
+  collection: ^1.16.0
   
   # file selector dialog to download media:
   # flutter_plugin_android_lifecycle: ^2.0.1

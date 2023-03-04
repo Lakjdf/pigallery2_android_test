@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
@@ -83,7 +84,7 @@ class HomeModelState {
       case SortOption.name:
         compareFunction = _comparePreferDictionaries(
           (Directory a, Directory b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-          (Media a, Media b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          (Media a, Media b) => compareNatural(a.name.toLowerCase(), b.name.toLowerCase()),
         );
         break;
       case SortOption.size:

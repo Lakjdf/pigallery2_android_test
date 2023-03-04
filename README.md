@@ -20,6 +20,7 @@ The mobile view of the PiGallery2 frontend is great. I only created this app to 
 - [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) - show admin panel within a webview that respects cookies
 - [path_provider](https://pub.dev/packages/path_provider) - retrieve path to temporarily store media
 - [share_plus](https://pub.dev/packages/share_plus) - open dialog to share downloaded media
+- [collection](https://pub.dev/packages/collection) - natural sorting
 
 ## Credits
 
