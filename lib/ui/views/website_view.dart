@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WebsiteView extends StatefulWidget {
   final String serverUrl;
@@ -40,6 +41,14 @@ class _WebsiteViewState extends State<WebsiteView> {
             allowsInlineMediaPlayback: true,
             transparentBackground: true,
           ),
+          onReceivedServerTrustAuthRequest: (controller, challenge) async {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            if (prefs.getBool('allowBadCertificate') == true) {
+              return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.PROCEED);
+            } else {
+              return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.CANCEL);
+            }
+          },
         ),
       ),
     );
