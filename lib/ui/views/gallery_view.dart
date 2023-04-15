@@ -16,7 +16,8 @@ const double gridSpacing = 0; //9
 class GalleryViewGridView extends StatefulWidget {
   final String baseDirectory;
   final List<File> files;
-  const GalleryViewGridView(this.baseDirectory, this.files, {Key? key}) : super(key: key);
+
+  GalleryViewGridView(this.baseDirectory, this.files) : super(key: ValueKey(baseDirectory));
 
   @override
   State<GalleryViewGridView> createState() => _GalleryViewGridViewState();
@@ -60,9 +61,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: ((context) => HomeView(
-                  baseDirectory: target,
-                )),
+            builder: ((context) => HomeView(target)),
           ),
         );
       },
@@ -198,13 +197,22 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
 
 class GalleryView extends StatefulWidget {
   final String baseDirectory;
-  const GalleryView({Key? key, this.baseDirectory = ""}) : super(key: key);
+
+  GalleryView(this.baseDirectory) : super(key: ValueKey(baseDirectory));
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
 }
 
 class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin {
+  late Future<void>? fetchRequestTrigger;
+
+  @override
+  void initState() {
+    fetchRequestTrigger = Provider.of<HomeModel>(context, listen: false).fetchItems(baseDirectory: widget.baseDirectory);
+    super.initState();
+  }
+
   void checkForError(BuildContext context, HomeModel model) {
     ScaffoldMessenger.of(context).clearSnackBars();
     if (model.error != null) {
@@ -233,7 +241,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Provider.of<HomeModel>(context, listen: false).fetchItems(baseDirectory: widget.baseDirectory),
+      future: fetchRequestTrigger,
       builder: (context, snapshot) {
         HomeModel model = Provider.of<HomeModel>(context, listen: true);
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -247,7 +255,6 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           );
         }
         return GalleryViewGridView(
-          key: UniqueKey(),
           widget.baseDirectory,
           model.files,
         );

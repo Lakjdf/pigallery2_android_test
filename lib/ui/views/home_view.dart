@@ -9,9 +9,8 @@ import 'package:provider/provider.dart';
 
 class HomeView extends StatelessWidget {
   final String baseDirectory;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  HomeView({Key? key, this.baseDirectory = ""}) : super(key: key);
+  HomeView(this.baseDirectory) : super(key: ValueKey(baseDirectory));
 
   void showServerSettings(BuildContext context) {
     showModalBottomSheet<int>(
@@ -110,7 +109,7 @@ class HomeView extends StatelessWidget {
         return true;
       },
       child: Scaffold(
-        key: _scaffoldKey,
+        key: ValueKey(baseDirectory),
         appBar: AppBar(
           title: Text(baseDirectory),
           actions: [
@@ -139,9 +138,7 @@ class HomeView extends StatelessWidget {
             buildSortOptions(model),
           ],
         ),
-        body: GalleryView(
-          baseDirectory: baseDirectory,
-        ),
+        body: GalleryView(baseDirectory),
       ),
     );
   }

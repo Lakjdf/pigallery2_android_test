@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
               title: 'PiGallery2',
               themeMode: ThemeMode.dark,
               darkTheme: CustomThemeData.oledThemeData,
-              home: HomeView(),
+              home: HomeView(""),
             ),
           );
         });
