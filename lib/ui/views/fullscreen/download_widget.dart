@@ -86,7 +86,7 @@ class _DownloadWidgetState extends State<DownloadWidget> {
           _downloading
               ? CircularProgressIndicator(
                   value: _received / _total,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(widget.opacity),
                   strokeWidth: 2.0,
                 )
               : Container(),
@@ -103,7 +103,7 @@ class _DownloadWidgetState extends State<DownloadWidget> {
             icon: Icon(
               _downloading ? Icons.stop : Icons.share,
               size: 20,
-              color: Colors.white.withOpacity(widget.opacity),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(widget.opacity),
             ),
           )
         ],

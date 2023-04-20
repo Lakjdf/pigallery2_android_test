@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:mime/mime.dart';
@@ -41,7 +43,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       int imageTop = (currentIndex ~/ crossAxisCount) * imageHeight;
       double error = imageHeight * 0.3;
 
-      if (imageTop - error < _scrollController.position.pixels) {
+      if (max(imageTop - error, 0) < _scrollController.position.pixels) {
         // image is above visible
         double offset = imageTop - error;
         _scrollController.animateTo(offset, duration: const Duration(milliseconds: 400), curve: Curves.ease);
@@ -71,12 +73,12 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           fit: StackFit.expand,
           children: [
             Container(
-              foregroundDecoration: const BoxDecoration(
+              foregroundDecoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black],
-                  stops: [0.6, 1.0],
+                  colors: [Colors.transparent, Theme.of(context).colorScheme.surface],
+                  stops: const [0.6, 1.0],
                 ),
               ),
               child: dir.preview == null
@@ -151,7 +153,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                       ? Icon(
                           Icons.play_arrow,
                           size: 70,
-                          color: Colors.white.withAlpha(175),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(175),
                         )
                       : Container(),
                 ],

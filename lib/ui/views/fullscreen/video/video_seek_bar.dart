@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/video/better_player_material_progress_bar.dart';
 
 class VideoSeekBar extends StatefulWidget {
-  const VideoSeekBar(
-    this.controller, {
+  const VideoSeekBar({
     Key? key,
+    required this.controller,
+    required this.opacity,
   }) : super(key: key);
 
   final BetterPlayerController controller;
+  final double opacity;
 
   @override
   State createState() => _VideoSeekBarState();
@@ -49,12 +51,17 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
 
   @override
   Widget build(BuildContext context) {
+    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
       child: Row(
         children: [
-          Text(
-            formatDuration(controller.videoPlayerController?.value.position ?? Duration.zero),
+          Padding(
+            padding: const EdgeInsets.only(top: 2.0),
+            child: Text(
+              formatDuration(controller.videoPlayerController?.value.position ?? Duration.zero),
+              style: TextStyle(color: onSurfaceVariant.withOpacity(widget.opacity)),
+            ),
           ),
           Flexible(
             child: Padding(
@@ -63,16 +70,20 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
                 controller,
                 onDragUpdate: () => setState(() {}),
                 colors: BetterPlayerProgressColors(
-                  handleColor: Colors.white,
-                  playedColor: Colors.white,
-                  bufferedColor: Colors.white.withAlpha(75),
-                  backgroundColor: Colors.white.withAlpha(40),
+                  handleColor: onSurfaceVariant.withOpacity(widget.opacity),
+                  playedColor: onSurfaceVariant.withOpacity(widget.opacity),
+                  bufferedColor: onSurfaceVariant.withAlpha(75).withOpacity(widget.opacity),
+                  backgroundColor: onSurfaceVariant.withAlpha(40).withOpacity(widget.opacity),
                 ),
               ),
             ),
           ),
-          Text(
-            formatDuration(controller.videoPlayerController?.value.duration ?? Duration.zero),
+          Padding(
+            padding: const EdgeInsets.only(top: 2.0),
+            child: Text(
+              formatDuration(controller.videoPlayerController?.value.duration ?? Duration.zero),
+              style: TextStyle(color: onSurfaceVariant.withOpacity(widget.opacity)),
+            ),
           ),
         ],
       ),

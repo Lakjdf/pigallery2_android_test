@@ -6,7 +6,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=2.19.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -25,6 +25,7 @@ dependencies:
   path_provider: ^2.0.12
   share_plus: ^6.3.1
   collection: ^1.16.0
+  dynamic_color: ^1.6.3
   
   # file selector dialog to download media:
   # flutter_plugin_android_lifecycle: ^2.0.1

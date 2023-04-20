@@ -21,7 +21,7 @@ class ThumbnailImage extends StatelessWidget {
       httpHeaders: model.getHeaders(),
       imageBuilder: imageBuilder,
       placeholder: (context, url) => SpinKitRipple(
-        color: Theme.of(context).colorScheme.secondary,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
       fadeOutDuration: const Duration(milliseconds: 500), // see https://github.com/Baseflow/flutter_cached_network_image/issues/716
       errorWidget: (context, url, error) {

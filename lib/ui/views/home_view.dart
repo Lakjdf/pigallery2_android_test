@@ -29,9 +29,7 @@ class HomeView extends StatelessWidget {
             children: const [
               BottomSheetHandle(),
               BadCertificateSelection(),
-              Divider(
-                thickness: 3,
-              ),
+              Divider(thickness: 3),
               ServerSelection(),
             ],
           ),
@@ -81,9 +79,12 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  PopupMenuButton buildSortOptions(HomeModel model) {
+  PopupMenuButton buildSortOptions(BuildContext context, HomeModel model) {
     return PopupMenuButton<dynamic>(
-      icon: const Icon(Icons.sort),
+      icon: Icon(
+        Icons.sort,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
       onSelected: (dynamic option) {
         if (option.runtimeType == SortOption) {
           model.sortOption = option;
@@ -103,6 +104,7 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    ThemeData theme = Theme.of(context);
     return WillPopScope(
       onWillPop: () async {
         model.popStack();
@@ -111,6 +113,8 @@ class HomeView extends StatelessWidget {
       child: Scaffold(
         key: ValueKey(baseDirectory),
         appBar: AppBar(
+          iconTheme: theme.iconTheme,
+          titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           title: Text(baseDirectory),
           actions: [
             model.isHomeView
@@ -118,9 +122,7 @@ class HomeView extends StatelessWidget {
                     onPressed: () {
                       showServerSettings(context);
                     },
-                    icon: const Icon(
-                      Icons.settings,
-                    ),
+                    icon: const Icon(Icons.settings),
                   )
                 : Container(),
             Consumer<HomeModel>(
@@ -129,13 +131,11 @@ class HomeView extends StatelessWidget {
                       onPressed: () {
                         showAdminPanel(context, model.serverUrl!);
                       },
-                      icon: const Icon(
-                        Icons.manage_accounts,
-                      ),
+                      icon: const Icon(Icons.manage_accounts),
                     )
                   : Container(),
             ),
-            buildSortOptions(model),
+            buildSortOptions(context, model),
           ],
         ),
         body: GalleryView(baseDirectory),

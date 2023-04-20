@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 class FullscreenOverlay extends StatefulWidget {
   final Widget child;
+
   const FullscreenOverlay({required this.child, Key? key}) : super(key: key);
 
   @override
@@ -74,7 +75,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
       selector: (context, model) => model.awaitingNewController,
       builder: (context, awaiting, child) => IconButton(
         padding: const EdgeInsets.all(0),
-        color: Colors.white.withOpacity(controlsOpacity),
+        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
         constraints: const BoxConstraints(),
         icon: const Icon(Icons.aspect_ratio),
         onPressed: awaiting
@@ -114,25 +115,25 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
               },
               icon: Icon(
                 Icons.close,
-                color: Colors.white.withOpacity(controlsOpacity),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
               ),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 0, 0, 2),
-                child: Text(
-                  overflow: TextOverflow.fade,
-                  maxLines: 1,
-                  softWrap: false,
-                  item.name,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(controlsOpacity),
-                  ),
-                ),
+              child: Text(
+                overflow: TextOverflow.fade,
+                maxLines: 1,
+                softWrap: false,
+                item.name,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
+                        ) ??
+                    TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
+                    ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+              padding: const EdgeInsets.only(right: 8),
               child: DownloadWidget(
                 item: item,
                 opacity: controlsOpacity,
@@ -146,7 +147,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     );
   }
 
-  Widget buildVideoSeekBar(BuildContext context) {
+  Widget buildVideoSeekBar(BuildContext context, double opacity) {
     return Selector<FullscreenModel, BetterPlayerController?>(
       selector: (context, model) => model.betterPlayerController,
       builder: (context, controller, child) => controller == null
@@ -157,7 +158,8 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                 height: 50,
                 child: VideoSeekBar(
                   key: ObjectKey(controller),
-                  controller,
+                  controller: controller,
+                  opacity: opacity,
                 ),
               ),
             ),
@@ -180,9 +182,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
         Selector<FullscreenModel, BetterPlayerController?>(
           selector: (context, model) => model.betterPlayerController,
           builder: (context, controller, child) => controller == null
-              ? GestureDetector(
-                  onTap: handleTap,
-                )
+              ? GestureDetector(onTap: handleTap)
               : VideoControls(key: ObjectKey(controller), controller, handleTap),
         ),
         IgnorePointer(
@@ -201,9 +201,9 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                     );
                   },
                 ),
-                Selector<FullscreenModel, Media>(
-                  selector: (context, model) => model.currentItem,
-                  builder: (context, item, child) => !isVideo(item) ? Container() : buildVideoSeekBar(context),
+                Selector<FullscreenModel, ({Media item, double opacity})>(
+                  selector: (context, model) => (item: model.currentItem, opacity: model.opacity),
+                  builder: (context, ({Media item, double opacity}) data, child) => !isVideo(data.item) ? Container() : buildVideoSeekBar(context, data.opacity),
                 ),
               ],
             ),

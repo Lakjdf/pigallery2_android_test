@@ -28,7 +28,7 @@ class _WebsiteViewState extends State<WebsiteView> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurfaceVariant),
             onPressed: () => Navigator.of(context).pop(false),
           ),
         ),
@@ -37,6 +37,7 @@ class _WebsiteViewState extends State<WebsiteView> {
           initialUrlRequest: URLRequest(url: WebUri("${widget.serverUrl}/admin")),
           initialSettings: InAppWebViewSettings(
             forceDark: ForceDark.ON,
+            algorithmicDarkeningAllowed: true,
             mediaPlaybackRequiresUserGesture: false,
             allowsInlineMediaPlayback: true,
             transparentBackground: true,

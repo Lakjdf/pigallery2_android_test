@@ -28,6 +28,7 @@ class _BadCertificateSelectionState extends State<BadCertificateSelection> {
 
   @override
   Widget build(BuildContext context) {
+    Color iconColor = Theme.of(context).colorScheme.onSecondaryContainer;
     return InkWell(
       onTap: () {
         setState(() {
@@ -43,13 +44,11 @@ class _BadCertificateSelectionState extends State<BadCertificateSelection> {
               padding: const EdgeInsets.fromLTRB(6, 0, 15, 0),
               child: Stack(
                 children: [
-                  allowBadCertificate ? const Icon(Icons.check_circle_rounded) : const Icon(Icons.check_circle_outline_rounded),
+                  allowBadCertificate ? Icon(Icons.check_circle_rounded, color: iconColor) : Icon(Icons.check_circle_outline_rounded, color: iconColor),
                 ],
               ),
             ),
-            const Text(
-              "Allow Bad Certificates (Requires Restart)",
-            ),
+            const Text("Allow Bad Certificates (Requires Restart)"),
           ],
         ),
       ),

@@ -17,6 +17,7 @@ class VideoControls extends StatefulWidget {
 
 class _VideoControlsState extends State<VideoControls> {
   Widget imageFadeAnim = Container();
+
   BetterPlayerController get controller => widget.controller;
 
   /// The position of an input that has not been handled yet.
@@ -64,6 +65,7 @@ class _VideoControlsState extends State<VideoControls> {
   }
 
   void handleSeekBackwards() {
+    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     imageFadeAnim = FadeAnimation(
       duration: fadeAnimationDuration,
       curve: Curves.easeOutQuart,
@@ -72,11 +74,11 @@ class _VideoControlsState extends State<VideoControls> {
         children: [
           Text(
             "- ${(tapCount - 1) * seekDuration.inSeconds}s",
-            style: const TextStyle(fontSize: 20),
+            style: TextStyle(fontSize: 20, color: onSurfaceVariant),
           ),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 10),
-            child: Icon(Icons.fast_rewind, size: 75),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Icon(Icons.fast_rewind, size: 75, color: onSurfaceVariant),
           ),
         ],
       ),
@@ -90,6 +92,7 @@ class _VideoControlsState extends State<VideoControls> {
   }
 
   void handleSeekForwards() {
+    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     imageFadeAnim = FadeAnimation(
       duration: fadeAnimationDuration,
       curve: Curves.easeOutQuart,
@@ -98,11 +101,11 @@ class _VideoControlsState extends State<VideoControls> {
         children: [
           Text(
             "+ ${(tapCount - 1) * seekDuration.inSeconds}s",
-            style: const TextStyle(fontSize: 20),
+            style: TextStyle(fontSize: 20, color: onSurfaceVariant),
           ),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 10),
-            child: Icon(Icons.fast_forward, size: 75),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Icon(Icons.fast_forward, size: 75, color: onSurfaceVariant),
           ),
         ],
       ),
@@ -116,14 +119,21 @@ class _VideoControlsState extends State<VideoControls> {
   }
 
   void handlePlayPause() {
+    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     if (controller.isPlaying()!) {
       imageFadeAnim = FadeAnimation(
         duration: fadeAnimationDuration,
-        child: const Icon(Icons.pause, size: 100),
+        child: Icon(Icons.pause, size: 100, color: onSurfaceVariant),
       );
       controller.pause();
     } else {
-      imageFadeAnim = FadeAnimation(duration: fadeAnimationDuration, child: const Icon(Icons.play_arrow, size: 100));
+      imageFadeAnim = FadeAnimation(
+          duration: fadeAnimationDuration,
+          child: Icon(
+            Icons.play_arrow,
+            size: 100,
+            color: onSurfaceVariant,
+          ));
       controller.play();
     }
   }
@@ -193,7 +203,7 @@ class _VideoControlsState extends State<VideoControls> {
             Center(
               child: controller.isBuffering()!
                   ? SpinKitRipple(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       size: 0.5 * (MediaQuery.of(context).orientation == Orientation.landscape ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width),
                     )
                   : null,

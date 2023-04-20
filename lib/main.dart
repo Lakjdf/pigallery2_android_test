@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/core/services/api.dart';
@@ -73,12 +74,24 @@ class MyApp extends StatelessWidget {
                 }),
               ),
             ],
-            child: MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'PiGallery2',
-              themeMode: ThemeMode.dark,
-              darkTheme: CustomThemeData.oledThemeData,
-              home: HomeView(""),
+            child: DynamicColorBuilder(
+              builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+                ThemeData themeData = CustomThemeData.oledThemeData;
+                if (darkDynamic != null) {
+                  themeData = ThemeData(
+                    useMaterial3: true,
+                    colorScheme: darkDynamic.harmonized(),
+                  );
+                }
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  title: 'PiGallery2',
+                  themeMode: ThemeMode.dark,
+                  theme: themeData,
+                  darkTheme: themeData,
+                  home: HomeView(""),
+                );
+              },
             ),
           );
         });

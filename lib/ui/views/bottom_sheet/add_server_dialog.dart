@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/server_model.dart';
 import 'package:provider/provider.dart';
@@ -33,23 +34,26 @@ class _AddServerDialogState extends State<AddServerDialog> {
     );
   }
 
+  InputDecoration buildSuccessInputDecoration(BuildContext context, String successText) {
+    Color successColor = Colors.green.harmonizeWith(Theme.of(context).colorScheme.primary);
+    return InputDecoration(
+      errorBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: successColor),
+      ),
+      focusedErrorBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: successColor),
+      ),
+      errorStyle: TextStyle(color: successColor),
+      errorText: successText,
+    );
+  }
+
   InputDecoration buildInputDecorationUrl(BuildContext context) {
     ServerModel model = Provider.of<ServerModel>(context, listen: true);
     return model.testFailedUrl
-        ? const InputDecoration(
-            errorText: "Can't connect to server",
-          )
+        ? const InputDecoration(errorText: "Can't connect to server")
         : (model.testSuccessUrl
-            ? const InputDecoration(
-                errorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green),
-                ),
-                focusedErrorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green),
-                ),
-                errorStyle: TextStyle(color: Colors.green),
-                errorText: "Valid server",
-              )
+            ? buildSuccessInputDecoration(context, "Valid server")
             : InputDecoration(
                 hintText: hintText,
                 hintStyle: const TextStyle(fontSize: 14),
@@ -59,21 +63,8 @@ class _AddServerDialogState extends State<AddServerDialog> {
   InputDecoration buildInputDecorationAuth(BuildContext context, InputDecoration defaultDecoration) {
     ServerModel model = Provider.of<ServerModel>(context, listen: true);
     return model.testFailedAuth
-        ? const InputDecoration(
-            errorText: "Authentication failed",
-          )
-        : (model.testSuccessAuth
-            ? const InputDecoration(
-                errorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green),
-                ),
-                focusedErrorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green),
-                ),
-                errorStyle: TextStyle(color: Colors.green),
-                errorText: "Authentication successful",
-              )
-            : defaultDecoration);
+        ? const InputDecoration(errorText: "Authentication failed")
+        : (model.testSuccessAuth ? buildSuccessInputDecoration(context, "Authentication successful") : defaultDecoration);
   }
 
   Widget buildServerUrlWidget(BuildContext context) {
@@ -98,7 +89,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
         width: 10,
       ),
       MaterialButton(
-        color: Colors.white.withAlpha((0.15 * 255).toInt()),
+        color: Theme.of(context).colorScheme.secondaryContainer,
         onPressed: () {
           if (Provider.of<ServerModel>(context, listen: false).testSuccessUrl && Provider.of<ServerModel>(context, listen: false).testSuccessAuth) {
             Navigator.pop(context, [addServerController.text.isEmpty ? null : addServerController.text, usernameController.text.isEmpty ? null : usernameController.text, passwordController.text.isEmpty ? null : passwordController.text]);

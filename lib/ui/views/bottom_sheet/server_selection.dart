@@ -55,10 +55,10 @@ class ServerSelection extends StatelessWidget {
     Widget? trailing,
   }) {
     return Card(
-      color: Colors.white.withAlpha((0.15 * 255).toInt()),
+      color: Theme.of(context).colorScheme.secondaryContainer.withAlpha((0.5 * 255).toInt()),
       shape: url == Provider.of<ServerModel>(context, listen: false).serverUrl
           ? RoundedRectangleBorder(
-              side: const BorderSide(color: Colors.white, width: 1.6),
+              side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1.6),
               borderRadius: BorderRadius.circular(10),
             )
           : RoundedRectangleBorder(
@@ -74,9 +74,7 @@ class ServerSelection extends StatelessWidget {
               if (leading != null) leading,
               if (title != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: title,
                 ),
               const Spacer(),
@@ -117,7 +115,14 @@ class ServerSelection extends StatelessWidget {
               height: 35,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                child: MaterialButton(color: Colors.white.withAlpha((0.15 * 255).toInt()), onPressed: () => addServerDialog(context), child: const Text('Add Server')),
+                child: MaterialButton(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  onPressed: () => addServerDialog(context),
+                  child: Text(
+                    'Add Server',
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 24),

@@ -33,7 +33,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
       fit: StackFit.passthrough,
       children: [
         ThumbnailImage(key: ObjectKey(widget.item), widget.item),
-        SpinKitRipple(color: Colors.white, size: 0.5 * MediaQuery.of(context).size.width),
+        SpinKitRipple(color: Theme.of(context).colorScheme.onSurfaceVariant, size: 0.5 * MediaQuery.of(context).size.width),
       ],
     );
   }
