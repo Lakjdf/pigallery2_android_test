@@ -8,9 +8,9 @@ import 'package:pigallery2_android/ui/views/website_view.dart';
 import 'package:provider/provider.dart';
 
 class HomeView extends StatelessWidget {
-  final String baseDirectory;
+  final int stackPosition;
 
-  HomeView(this.baseDirectory) : super(key: ValueKey(baseDirectory));
+  HomeView(this.stackPosition) : super(key: ValueKey(stackPosition));
 
   void showServerSettings(BuildContext context) {
     showModalBottomSheet<int>(
@@ -35,7 +35,7 @@ class HomeView extends StatelessWidget {
           ),
         );
       },
-    ).whenComplete(() => Provider.of<HomeModel>(context, listen: false).reset());
+    ).whenComplete(() => Provider.of<HomeModel>(context, listen: false).fetchItems());
   }
 
   void showAdminPanel(BuildContext context, String serverUrl) {
@@ -107,17 +107,18 @@ class HomeView extends StatelessWidget {
     ThemeData theme = Theme.of(context);
     return WillPopScope(
       onWillPop: () async {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
         model.popStack();
         return true;
       },
       child: Scaffold(
-        key: ValueKey(baseDirectory),
+        key: ValueKey(stackPosition),
         appBar: AppBar(
           iconTheme: theme.iconTheme,
           titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-          title: Text(baseDirectory),
+          title: Text(model.stateOf(stackPosition).baseDirectoryName),
           actions: [
-            model.isHomeView
+            stackPosition == 0
                 ? IconButton(
                     onPressed: () {
                       showServerSettings(context);
@@ -126,7 +127,7 @@ class HomeView extends StatelessWidget {
                   )
                 : Container(),
             Consumer<HomeModel>(
-              builder: (context, model, child) => model.isHomeView && model.serverUrl != null
+              builder: (context, model, child) => stackPosition == 0 && model.serverUrl != null
                   ? IconButton(
                       onPressed: () {
                         showAdminPanel(context, model.serverUrl!);
@@ -138,7 +139,7 @@ class HomeView extends StatelessWidget {
             buildSortOptions(context, model),
           ],
         ),
-        body: GalleryView(baseDirectory),
+        body: GalleryView(stackPosition),
       ),
     );
   }

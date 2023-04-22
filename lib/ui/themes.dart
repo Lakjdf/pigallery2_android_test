@@ -42,7 +42,7 @@ class CustomThemeData {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          primary: colorScheme.onPrimary,
+          foregroundColor: colorScheme.onPrimary,
         ),
       ),
     );

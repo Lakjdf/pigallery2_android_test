@@ -15,11 +15,14 @@ class PhotoViewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return PhotoView(
-      loadingBuilder: (context, event) => ThumbnailImage(key: ObjectKey(item), item),
+      loadingBuilder: (context, event) => ThumbnailImage(
+        key: ObjectKey(item),
+        model.getThumbnailApiPath(model.currentState, item),
+      ),
       backgroundDecoration: const BoxDecoration(color: Colors.transparent),
       minScale: PhotoViewComputedScale.contained * 1.0,
       imageProvider: NetworkImage(
-        model.getItemPath(item),
+        model.getMediaApiPath(model.currentState, item),
         headers: model.getHeaders(),
       ),
       errorBuilder: (context, url, error) => const ErrorImage(),

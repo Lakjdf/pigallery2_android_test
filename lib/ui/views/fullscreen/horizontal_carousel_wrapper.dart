@@ -39,7 +39,7 @@ class _HorizontalCarouselWrapperState extends State<HorizontalCarouselWrapper> {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return PageView.builder(
       controller: _pageController,
-      itemCount: model.media.length,
+      itemCount: model.currentState.media.length,
       itemBuilder: widget.builder,
       onPageChanged: widget.onPageChanged,
     );

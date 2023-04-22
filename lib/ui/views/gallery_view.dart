@@ -16,10 +16,10 @@ const double borderRadius = 0; //15
 const double gridSpacing = 0; //9
 
 class GalleryViewGridView extends StatefulWidget {
-  final String baseDirectory;
+  final int stackPosition;
   final List<File> files;
 
-  GalleryViewGridView(this.baseDirectory, this.files) : super(key: ValueKey(baseDirectory));
+  GalleryViewGridView(this.stackPosition, this.files) : super(key: ValueKey(stackPosition));
 
   @override
   State<GalleryViewGridView> createState() => _GalleryViewGridViewState();
@@ -56,14 +56,14 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   }
 
   Widget directoryItem(context, Directory dir) {
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return GestureDetector(
       onTap: () {
-        String target = "${widget.baseDirectory.isEmpty ? '' : '${widget.baseDirectory}/'}${dir.name}";
-        Provider.of<HomeModel>(context, listen: false).addStack();
+        model.addStack(dir.name);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: ((context) => HomeView(target)),
+            builder: ((context) => HomeView(widget.stackPosition + 1)),
           ),
         );
       },
@@ -85,7 +85,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                   ? const ErrorImage()
                   : ThumbnailImage(
                       key: ObjectKey(dir),
-                      dir,
+                      model.getThumbnailApiPath(model.stateOf(widget.stackPosition), dir),
                       fit: BoxFit.cover,
                     ),
             ),
@@ -115,6 +115,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   }
 
   Widget mediaItem(context, Media item) {
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return GestureDetector(
       onTap: () async {
         Media lastItem = await Navigator.push(
@@ -131,7 +132,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
         );
         _scrollToShowedItem(
           context,
-          Provider.of<HomeModel>(context, listen: false).files.indexOf(lastItem),
+          model.stateOf(widget.stackPosition).files.indexOf(lastItem),
         );
       },
       child: Hero(
@@ -140,7 +141,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           borderRadius: BorderRadius.circular(borderRadius),
           child: ThumbnailImage(
             key: ObjectKey(item),
-            item,
+            model.getThumbnailApiPath(model.stateOf(widget.stackPosition), item),
             imageBuilder: (context, imageProvider) {
               return Stack(
                 fit: StackFit.expand,
@@ -174,7 +175,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      key: PageStorageKey(widget.baseDirectory),
+      key: PageStorageKey(widget.stackPosition),
       controller: _scrollController,
       itemCount: widget.files.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -198,9 +199,9 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
 }
 
 class GalleryView extends StatefulWidget {
-  final String baseDirectory;
+  final int stackPosition;
 
-  GalleryView(this.baseDirectory) : super(key: ValueKey(baseDirectory));
+  GalleryView(this.stackPosition) : super(key: ValueKey(stackPosition));
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
@@ -211,20 +212,19 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   @override
   void initState() {
-    fetchRequestTrigger = Provider.of<HomeModel>(context, listen: false).fetchItems(baseDirectory: widget.baseDirectory);
     super.initState();
   }
 
-  void checkForError(BuildContext context, HomeModel model) {
+  void checkForError(BuildContext context, String? error) {
     ScaffoldMessenger.of(context).clearSnackBars();
-    if (model.error != null) {
+    if (error != null) {
       SnackBar snackBar = SnackBar(
         action: SnackBarAction(
           label: "Reload",
-          onPressed: () => model.reset(),
+          onPressed: () => Provider.of<HomeModel>(context, listen: false).fetchItems(),
         ),
         content: Text(
-          model.error!,
+          error,
         ),
         padding: const EdgeInsets.symmetric(
           horizontal: 8,
@@ -242,24 +242,37 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: fetchRequestTrigger,
-      builder: (context, snapshot) {
-        HomeModel model = Provider.of<HomeModel>(context, listen: true);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          checkForError(context, model);
-        });
-        if (snapshot.connectionState != ConnectionState.done) {
+    return Selector<HomeModel, bool>(
+      selector: (context, model) => model.stateOf(widget.stackPosition).isLoading,
+      builder: (context, isLoading, child) {
+        if (isLoading) {
           return Center(
             child: SpinKitSpinningLines(
               color: Theme.of(context).colorScheme.secondary,
             ),
           );
+        } else {
+          return Selector<HomeModel, String?>(
+            selector: (context, model) => model.stateOf(widget.stackPosition).error,
+            builder: (BuildContext context, error, Widget? child) {
+              if (ModalRoute.of(context)?.isCurrent == true) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  checkForError(context, error);
+                });
+              }
+              return child!;
+            },
+            child: Selector<HomeModel, List<File>>(
+              selector: (context, model) => model.stateOf(widget.stackPosition).files,
+              builder: (context, files, child) {
+                return GalleryViewGridView(
+                  widget.stackPosition,
+                  files,
+                );
+              },
+            ),
+          );
         }
-        return GalleryViewGridView(
-          widget.baseDirectory,
-          model.files,
-        );
       },
     );
   }

@@ -29,10 +29,11 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
   }
 
   Widget buildPlaceholder() {
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        ThumbnailImage(key: ObjectKey(widget.item), widget.item),
+        ThumbnailImage(key: ObjectKey(widget.item), model.getThumbnailApiPath(model.currentState, widget.item)),
         SpinKitRipple(color: Theme.of(context).colorScheme.onSurfaceVariant, size: 0.5 * MediaQuery.of(context).size.width),
       ],
     );
@@ -72,7 +73,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      model.getItemPath(widget.item),
+      model.getMediaApiPath(model.currentState, widget.item),
       headers: model.getHeaders(),
     );
 

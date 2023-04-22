@@ -3,13 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
 
-extension LastEmptyCheckExtension<T> on List<T> {
-  T? get lastOrNull => isEmpty ? null : last;
-  T? tryGet(int index) => index >= 0 && index < length ? this[index] : null;
-}
-
-enum SortOption { name, date, size, random }
-
 extension StringExtension on String {
   String toCapitalized() => length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
 }
@@ -20,18 +13,46 @@ extension ParseToString on SortOption {
   }
 }
 
+enum SortOption { name, date, size, random }
+
+/// Represents the data to be displayed for the current [HomeView].
 class HomeModelState {
-  List<File> _files = List.unmodifiable([]);
-  Directory? currentDir;
+  /// [Directory] received from the [ApiService].
+  Directory? baseDirectory;
+
+  /// Whether to show a loading indicator.
+  bool isLoading = false;
+
+  /// Error received when requesting the [ApiService].
+  String? error;
+
+  /// Selected [SortOption] to be applied to [files].
   SortOption sortOption;
+
+  /// Whether to sort with [sortOption] in ascending order.
   bool sortAscending;
 
-  HomeModelState({this.sortOption = SortOption.name, this.sortAscending = true});
+  /// Name of the base directory.
+  String baseDirectoryName;
+
+  List<File> _files = List.unmodifiable([]);
+
+  /// [File]s received from the [ApiService].
+  List<File> get files => _files;
+
+  set files(List<File> val) {
+    _files = List.unmodifiable(_sort(val));
+  }
+
+  /// All [files] of type [Media].
+  List<Media> get media => files.whereType<Media>().toList();
+
+  HomeModelState(this.baseDirectoryName, {this.sortOption = SortOption.name, this.sortAscending = true});
 
   bool updateSortOption(SortOption option) {
     if (option != sortOption || option == SortOption.random) {
       sortOption = option;
-      _files = List.unmodifiable(sort(_files.toList()));
+      _files = List.unmodifiable(_sort(_files.toList()));
       return true;
     }
     return false;
@@ -46,13 +67,7 @@ class HomeModelState {
     return false;
   }
 
-  set files(List<File> val) {
-    _files = List.unmodifiable(sort(val));
-  }
-
-  List<File> get files => _files;
-
-  List<File> sort(List<File> toSort) {
+  List<File> _sort(List<File> toSort) {
     if (sortOption == SortOption.random) toSort.shuffle();
     toSort.sort(_compare(sortOption));
     return sortAscending ? toSort : toSort.reversed.toList();
@@ -117,94 +132,119 @@ class HomeModelState {
       return result;
     };
   }
-}
 
-class HomeModel extends ChangeNotifier {
-  final List<HomeModelState> state = [HomeModelState()];
+  String _relativeApiPath(DirectoryPath directoryPath) => "${directoryPath.path}${directoryPath.name}";
 
-  List<File> get files => state.lastOrNull?.files ?? [];
-  List<Directory> get directories => files.whereType<Directory>().toList();
-  List<Media> get media => files.whereType<Media>().toList();
-  Directory? get currentDir => state.lastOrNull?.currentDir;
-
-  bool get isHomeView => state.length == 1;
-
-  String? get serverUrl => api.serverUrl;
-  SortOption get sortOption => state.lastOrNull?.sortOption ?? SortOption.name;
-  bool get sortAscending => state.lastOrNull?.sortAscending ?? true;
-
-  set sortOption(SortOption option) {
-    if (state.lastOrNull?.updateSortOption(option) == true) {
-      notifyListeners();
-    }
+  /// Relative API path to [item].
+  String getRelativeMediaApiPath(Media item) {
+    return "${_relativeApiPath(baseDirectory!)}/${item.name}";
   }
 
-  set sortOrder(bool sortAscending) {
-    if (state.lastOrNull?.updateSortOrder(sortAscending) == true) {
-      notifyListeners();
-    }
-  }
-
-  String? error;
-
-  final ApiService api;
-
-  HomeModel(this.api);
-
-  void addStack() {
-    error = null;
-    state.add(HomeModelState(sortOption: sortOption, sortAscending: sortAscending));
-    notifyListeners();
-  }
-
-  void popStack() {
-    error = null;
-    state.removeLast();
-    notifyListeners();
-  }
-
-  Map<String, String> getHeaders() => api.getHeaders();
-
-  String getItemPath(File item) {
-    DirectoryPath parentDirectory = currentDir!;
+  /// Relative API path to the thumbnail of [item].
+  String getRelativeThumbnailApiPath(File item) {
+    DirectoryPath parentDirectory = baseDirectory!;
     if (item.runtimeType == Directory) {
       item = (item as Directory).preview!;
       parentDirectory = (item as DirectoryPreview).directory;
     }
-    return "$serverUrl/pgapi/gallery/content/${parentDirectory.path}${parentDirectory.name}/${item.name}";
+    return "${_relativeApiPath(parentDirectory)}/${item.name}/thumbnail";
+  }
+}
+
+class HomeModel extends ChangeNotifier {
+  final List<HomeModelState> _state = [HomeModelState("")];
+
+  /// [HomeModelState] of the given position in the [Navigator] stack.
+  HomeModelState stateOf(int stackPosition) => _state[stackPosition];
+
+  /// [HomeModelState] of the top-most [HomeView] in the [Navigator] stack.
+  HomeModelState get currentState => _state.last;
+
+  /// Chosen [SortOption] applied to all [HomeView] instances.
+  SortOption get sortOption => currentState.sortOption;
+
+  set sortOption(SortOption option) {
+    for (HomeModelState state in _state) { state.updateSortOption(option); }
+    notifyListeners();
   }
 
-  String getThumbnailPath(File item) {
-    return "${getItemPath(item)}/thumbnail";
+  /// Whether to sort using [sortOption] in ascending order.
+  bool get sortAscending => currentState.sortAscending;
+
+  set sortOrder(bool sortAscending) {
+    for (HomeModelState state in _state) { state.updateSortOrder(sortAscending); }
+    notifyListeners();
   }
 
-  Future<void> fetchItems({String baseDirectory = ""}) async {
+  final ApiService _apiDelegate;
+
+  /// Retrieve headers from [ApiService].
+  Map<String, String> getHeaders() => _apiDelegate.getHeaders();
+
+  /// Retrieve serverUrl from [ApiService].
+  String? get serverUrl => _apiDelegate.serverUrl;
+
+  HomeModel(this._apiDelegate) {
+    fetchItems();
+  }
+
+  /// API path to [item] of the [state].
+  String getMediaApiPath(HomeModelState state, Media item) {
+    return "$serverUrl/pgapi/gallery/content/${state.getRelativeMediaApiPath(item)}";
+  }
+
+  /// API path to the thumbnail of [item] of the [state].
+  String getThumbnailApiPath(HomeModelState state, File item) {
+    return "$serverUrl/pgapi/gallery/content/${state.getRelativeThumbnailApiPath(item)}";
+  }
+
+  /// Path to the current directory based on concatenating directory names.
+  String get _currentBaseDirectoryPath {
+    return _state.where((e) => e.baseDirectoryName.isNotEmpty).map((e) => e.baseDirectoryName).join("/");
+  }
+
+  /// Register a new [HomeView] instance.
+  void addStack(String baseDirectory) {
+    _state.add(HomeModelState(baseDirectory, sortOption: sortOption, sortAscending: sortAscending));
+    fetchItems();
+  }
+
+  /// Unregister a closed [HomeView] instance.
+  void popStack() {
+    if (_state.length == 1) {
+      // never remove last screen; should be unreachable
+      return;
+    }
+    _state.removeLast();
+  }
+
+  Future<void> fetchItems() async {
     if (serverUrl == null) {
-      error = 'Please add a Server';
-      state.last.files = [];
-      state.last.currentDir = null;
+      currentState.error = 'Please add a Server';
+      currentState.files = [];
+      currentState.baseDirectory = null;
+      notifyListeners();
       return Future.value();
     }
 
-    Directory? currentDirBefore = currentDir;
-    error = null;
+    currentState.isLoading = true;
+    currentState.error = null;
+    Directory? currentDirBefore = currentState.baseDirectory;
+    notifyListeners();
 
-    Directory? result = await api.getDirectories(path: baseDirectory).catchError((e) {
-      error = e.toString();
+    Directory? result = await _apiDelegate.getDirectories(path: _currentBaseDirectoryPath).catchError((e) {
+      currentState.error = e.toString();
       return Future<Directory?>.value(null);
     });
     // Ensure that state has not been updated before this call completed.
-    if (currentDirBefore == currentDir) {
-      state.last.currentDir = result;
-      state.last.files = [];
+    if (currentDirBefore == currentState.baseDirectory) {
+      currentState.baseDirectory = result;
+      currentState.files = [];
       if (result != null) {
-        state.last.files = [...result.directories, ...result.media];
+        currentState.files = [...result.directories, ...result.media];
       }
     }
-  }
-
-  Future<void> reset() async {
-    await fetchItems();
+    currentState.isLoading = false;
     notifyListeners();
   }
 }

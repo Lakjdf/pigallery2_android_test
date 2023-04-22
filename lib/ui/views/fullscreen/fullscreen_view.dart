@@ -66,7 +66,7 @@ class _FullscreenViewState extends State<FullscreenView> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    HomeModel homeModel = Provider.of<HomeModel>(context, listen: false);
+    List<Media> media = Provider.of<HomeModel>(context, listen: false).currentState.media;
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
     return WillPopScope(
       onWillPop: (() {
@@ -78,13 +78,13 @@ class _FullscreenViewState extends State<FullscreenView> {
         backgroundColor: Colors.transparent,
         body: FullscreenOverlay(
           child: HorizontalCarouselWrapper(
-            onPageChanged: (idx) => fullscreenModel.currentItem = homeModel.media[idx],
-            initialIndex: homeModel.media.indexOf(fullscreenModel.currentItem),
+            onPageChanged: (idx) => fullscreenModel.currentItem = media[idx],
+            initialIndex: media.indexOf(fullscreenModel.currentItem),
             builder: ((context, index) => PhotoViewGestureDetectorScope(
                   axis: Axis.horizontal,
                   child: VerticalDismissWrapper(
                     onOpacityChanged: (val) => fullscreenModel.opacity = val,
-                    child: buildItemWithHero(context, homeModel.media[index]),
+                    child: buildItemWithHero(context, media[index]),
                   ),
                 )),
           ),

@@ -42,7 +42,7 @@ class _DownloadWidgetState extends State<DownloadWidget> {
 
   Future<void> _downloadImage(Function(File) action) async {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
-    String path = model.getItemPath(widget.item);
+    String path = model.getMediaApiPath(model.currentState, widget.item);
     String filename = path.split('/').last;
     final file = File('${(await getTemporaryDirectory()).path}/${filename.split('.').first}-${widget.item.id}.${filename.split('.').last}');
     if (file.existsSync()) {

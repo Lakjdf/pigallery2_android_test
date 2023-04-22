@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
                   themeMode: ThemeMode.dark,
                   theme: themeData,
                   darkTheme: themeData,
-                  home: HomeView(""),
+                  home: HomeView(0),
                 );
               },
             ),
