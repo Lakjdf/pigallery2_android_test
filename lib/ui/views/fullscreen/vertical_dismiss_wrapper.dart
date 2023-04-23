@@ -21,7 +21,8 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
   double? currentPositionY = 0;
   double positionYDelta = 0;
   double opacity = 1;
-  double disposeLimit = 100;
+  double disposeThreshold = 100;
+  double transparentThreshold = 300;
 
   late Duration animationDuration;
 
@@ -47,7 +48,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
   }
 
   setOpacity() {
-    double tmp = positionYDelta < 0 ? 1 - ((positionYDelta / 300) * -1) : 1 - (positionYDelta / 300);
+    double tmp = positionYDelta < 0 ? 1 - ((positionYDelta / transparentThreshold) * -1) : 1 - (positionYDelta / transparentThreshold);
 
     if (tmp > 1) {
       opacity = 1;
@@ -59,7 +60,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
   }
 
   _endVerticalDrag(DragEndDetails details) {
-    if (positionYDelta > disposeLimit || positionYDelta < -disposeLimit) {
+    if (positionYDelta > disposeThreshold || positionYDelta < -disposeThreshold) {
       Navigator.of(context).maybePop(Provider.of<FullscreenModel>(context, listen: false).currentItem);
     } else {
       setState(() {
@@ -79,27 +80,30 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onVerticalDragStart: (details) => _startVerticalDrag(details),
-      onVerticalDragUpdate: (details) => _whileVerticalDrag(details),
-      onVerticalDragEnd: (details) => _endVerticalDrag(details),
-      child: Container(
-        color: Colors.black.withOpacity(opacity),
-        constraints: BoxConstraints.expand(
-          height: MediaQuery.of(context).size.height,
-        ),
-        child: Stack(
-          children: <Widget>[
-            AnimatedPositioned(
-              duration: animationDuration,
-              curve: Curves.fastOutSlowIn,
-              top: 0 + positionYDelta,
-              bottom: 0 - positionYDelta,
-              left: 0,
-              right: 0,
-              child: widget.child,
-            )
-          ],
+    return Selector<FullscreenModel, double>(
+      selector: (context, model) => model.heroAnimationProgress,
+      builder: (context, animationProgress, child) => GestureDetector(
+        onVerticalDragStart: (details) => _startVerticalDrag(details),
+        onVerticalDragUpdate: (details) => _whileVerticalDrag(details),
+        onVerticalDragEnd: (details) => _endVerticalDrag(details),
+        child: Container(
+          color: Colors.black.withOpacity(opacity * animationProgress),
+          constraints: BoxConstraints.expand(
+            height: MediaQuery.of(context).size.height,
+          ),
+          child: Stack(
+            children: <Widget>[
+              AnimatedPositioned(
+                duration: animationDuration,
+                curve: Curves.fastOutSlowIn,
+                top: 0 + positionYDelta,
+                bottom: 0 - positionYDelta,
+                left: 0,
+                right: 0,
+                child: widget.child,
+              )
+            ],
+          ),
         ),
       ),
     );

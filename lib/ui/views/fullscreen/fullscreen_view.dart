@@ -21,7 +21,9 @@ class FullscreenView extends StatefulWidget {
 
 class _FullscreenViewState extends State<FullscreenView> {
   Widget buildItemWithHero(BuildContext context, Media item) {
-    double heightDiff = MediaQuery.of(context).size.width * (item.metadata.size.height / item.metadata.size.width) - MediaQuery.of(context).size.width;
+    FullscreenModel model = Provider.of<FullscreenModel>(context, listen: false);
+    double screenWidth = MediaQuery.of(context).size.width;
+    double heightDiff = screenWidth * (item.metadata.size.height / item.metadata.size.width) - screenWidth;
     return Hero(
       // always use thumbnail for hero animation
       flightShuttleBuilder: (
@@ -31,6 +33,9 @@ class _FullscreenViewState extends State<FullscreenView> {
         BuildContext fromHeroContext,
         BuildContext toHeroContext,
       ) {
+        animation.addListener(() {
+          model.heroAnimationProgress = animation.value;
+        });
         final Hero hero = toHeroContext.widget as Hero;
         if (flightDirection == HeroFlightDirection.pop) {
           return AnimatedBuilder(
@@ -40,8 +45,8 @@ class _FullscreenViewState extends State<FullscreenView> {
               return FittedBox(
                 fit: BoxFit.fitWidth,
                 child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.width + ((animation.value) * heightDiff),
+                  width: screenWidth,
+                  height: screenWidth + ((animation.value) * heightDiff),
                   child: hero.child,
                 ),
               );

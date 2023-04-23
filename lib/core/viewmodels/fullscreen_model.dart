@@ -20,6 +20,16 @@ class FullscreenModel extends ChangeNotifier {
     }
   }
 
+  double _heroAnimationProgress = 0;
+
+  /// Progress of the hero animation when dismissing a [FullScreenView].
+  double get heroAnimationProgress => _heroAnimationProgress;
+
+  set heroAnimationProgress(double value) {
+    _heroAnimationProgress = value;
+    notifyListeners();
+  }
+
   FullscreenModel(this._currentItem);
 
   set currentItem(Media item) {
