@@ -4,10 +4,10 @@ import 'package:pigallery2_android/core/services/pigallery2_api.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
 
 class ApiService {
-  late PiGallery2API api;
-  SessionData? sessionData;
+  late PiGallery2API _api;
+  SessionData? _sessionData;
   String? serverUrl;
-  StorageHelper storageHelper;
+  final StorageHelper _storageHelper;
 
   String get _serverUrl {
     if (serverUrl == null) {
@@ -16,35 +16,36 @@ class ApiService {
     return serverUrl!;
   }
 
-  Map<String, String> getHeaders() => api.getHeaders(sessionData);
+  Map<String, String> get headers => _api.getHeaders(_sessionData);
+  String get directoriesEndpoint => _api.getDirectoriesEndpoint(serverUrl);
 
   ApiService({
     required InitialServerData initialServerData,
-    required this.storageHelper,
-  }) {
+    required StorageHelper storageHelper,
+  }) : _storageHelper = storageHelper {
     serverUrl = initialServerData.serverUrl;
-    sessionData = initialServerData.sessionData;
+    _sessionData = initialServerData.sessionData;
 
-    api = PiGallery2API();
+    _api = PiGallery2API();
   }
 
   void updateServer(InitialServerData initialServerData) {
     serverUrl = initialServerData.serverUrl;
-    sessionData = initialServerData.sessionData;
+    _sessionData = initialServerData.sessionData;
   }
 
   Future<Directory?> getDirectories({String path = ""}) async {
-    ApiResponse<Directory> response = await api.getDirectories(serverUrl: _serverUrl, path: path, sessionData: sessionData);
+    ApiResponse<Directory> response = await _api.getDirectories(serverUrl: _serverUrl, path: path, sessionData: _sessionData);
 
     if (response.code == 401) {
       /// retry with stored credentials
-      LoginCredentials? credentials = await storageHelper.getServerCredentials(_serverUrl);
+      LoginCredentials? credentials = await _storageHelper.getServerCredentials(_serverUrl);
       if (credentials != null) {
-        sessionData ??= (await api.login(_serverUrl, credentials)).result;
-        if (sessionData != null) {
-          response = await api.getDirectories(serverUrl: _serverUrl, path: path, sessionData: sessionData);
+        _sessionData ??= (await _api.login(_serverUrl, credentials)).result;
+        if (_sessionData != null) {
+          response = await _api.getDirectories(serverUrl: _serverUrl, path: path, sessionData: _sessionData);
           if (response.code == 200 && response.error == null) {
-            await storageHelper.storeSessionData(_serverUrl, sessionData!);
+            await _storageHelper.storeSessionData(_serverUrl, _sessionData!);
           }
         }
       }
@@ -57,7 +58,7 @@ class ApiService {
 
   Future<TestConnectionResult> testConnection(String url, String? username, String? password) async {
     if (username != null && password != null) {
-      ApiResponse<SessionData> loginResponse = await api.login(url, LoginCredentials(username, password));
+      ApiResponse<SessionData> loginResponse = await _api.login(url, LoginCredentials(username, password));
       if (loginResponse.result == null) {
         if (loginResponse.code == 200) {
           return TestConnectionResult(authFailed: true);
@@ -67,7 +68,7 @@ class ApiService {
       }
       return TestConnectionResult(sessionData: loginResponse.result);
     }
-    ApiResponse<Directory> response = await api.getDirectories(serverUrl: url, path: "", sessionData: null);
+    ApiResponse<Directory> response = await _api.getDirectories(serverUrl: url, path: "", sessionData: null);
     if (response.code == 200 && response.error == null) {
       return TestConnectionResult();
     } else if (response.code == 401) {

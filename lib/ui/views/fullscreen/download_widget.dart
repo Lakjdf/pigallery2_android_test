@@ -49,7 +49,7 @@ class _DownloadWidgetState extends State<DownloadWidget> {
       action(file);
       return;
     }
-    _response = await http.Client().send(http.Request('GET', Uri.parse(path))..headers.addAll(model.getHeaders()));
+    _response = await http.Client().send(http.Request('GET', Uri.parse(path))..headers.addAll(model.headers));
     setState(() {
       _total = _response.contentLength ?? 0;
       _downloading = true;

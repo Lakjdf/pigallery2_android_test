@@ -17,7 +17,7 @@ class ThumbnailImage extends StatelessWidget {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return CachedNetworkImage(
       imageUrl: apiPath,
-      httpHeaders: model.getHeaders(),
+      httpHeaders: model.headers,
       imageBuilder: imageBuilder,
       placeholder: (context, url) => SpinKitRipple(
         color: Theme.of(context).colorScheme.onSurfaceVariant,

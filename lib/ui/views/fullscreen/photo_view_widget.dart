@@ -23,7 +23,7 @@ class PhotoViewWidget extends StatelessWidget {
       minScale: PhotoViewComputedScale.contained * 1.0,
       imageProvider: NetworkImage(
         model.getMediaApiPath(model.currentState, item),
-        headers: model.getHeaders(),
+        headers: model.headers,
       ),
       errorBuilder: (context, url, error) => const ErrorImage(),
     );

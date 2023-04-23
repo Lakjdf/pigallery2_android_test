@@ -179,7 +179,7 @@ class HomeModel extends ChangeNotifier {
   final ApiService _apiDelegate;
 
   /// Retrieve headers from [ApiService].
-  Map<String, String> getHeaders() => _apiDelegate.getHeaders();
+  Map<String, String> get headers => _apiDelegate.headers;
 
   /// Retrieve serverUrl from [ApiService].
   String? get serverUrl => _apiDelegate.serverUrl;
@@ -193,12 +193,12 @@ class HomeModel extends ChangeNotifier {
 
   /// API path to [item] of the [state].
   String getMediaApiPath(HomeModelState state, Media item) {
-    return "$serverUrl/pgapi/gallery/content/${state.getRelativeMediaApiPath(item)}";
+    return "${_apiDelegate.directoriesEndpoint}${state.getRelativeMediaApiPath(item)}";
   }
 
   /// API path to the thumbnail of [item] of the [state].
   String getThumbnailApiPath(HomeModelState state, File item) {
-    return "$serverUrl/pgapi/gallery/content/${state.getRelativeThumbnailApiPath(item)}";
+    return "${_apiDelegate.directoriesEndpoint}${state.getRelativeThumbnailApiPath(item)}";
   }
 
   /// Path to the current directory based on concatenating directory names.

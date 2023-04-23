@@ -74,7 +74,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       model.getMediaApiPath(model.currentState, widget.item),
-      headers: model.getHeaders(),
+      headers: model.headers,
     );
 
     _betterPlayerController = BetterPlayerController(
