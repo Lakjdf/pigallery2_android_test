@@ -184,6 +184,9 @@ class HomeModel extends ChangeNotifier {
   /// Retrieve serverUrl from [ApiService].
   String? get serverUrl => _apiDelegate.serverUrl;
 
+  /// Whether an api request is ongoing.
+  bool _requestAwaitingResponse = false;
+
   HomeModel(this._apiDelegate) {
     fetchItems();
   }
@@ -218,7 +221,16 @@ class HomeModel extends ChangeNotifier {
     _state.removeLast();
   }
 
+  /// Request [File]s from the [ApiService] for the current [HomeView] screen.
+  /// Ensures that only one request is executed at a time.
   Future<void> fetchItems() async {
+    if (!_requestAwaitingResponse) {
+      _requestAwaitingResponse = true;
+      return _fetchItems().then((value) => _requestAwaitingResponse = false);
+    }
+  }
+
+  Future<void> _fetchItems() async {
     if (serverUrl == null) {
       currentState.error = 'Please add a Server';
       currentState.files = [];
