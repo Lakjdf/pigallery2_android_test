@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mime/mime.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/core/models/models.dart';
@@ -70,12 +69,15 @@ class _FullscreenViewState extends State<FullscreenView> {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    List<Media> media = Provider.of<HomeModel>(context, listen: false).currentState.media;
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    model.enableFullScreen();
+    List<Media> media = model.currentState.media;
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
     return WillPopScope(
       onWillPop: (() {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+        if (!model.appInFullScreen) {
+          model.disableFullScreen();
+        }
         Navigator.pop(context, fullscreenModel.currentItem);
         return Future.value(false);
       }),

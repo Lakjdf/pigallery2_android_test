@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
 
@@ -183,6 +184,33 @@ class HomeModel extends ChangeNotifier {
 
   /// Retrieve serverUrl from [ApiService].
   String? get serverUrl => _apiDelegate.serverUrl;
+
+  /// Enter full screen. Disregards [appInFullScreen].
+  void enableFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  /// Leave full screen. Disregards [appInFullScreen].
+  void disableFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+  }
+
+  bool _appInFullScreen = false;
+
+  /// Whether the application is in full screen mode.
+  /// Fullscreen mode will always be entered when entering [FullScreenView] disregarding this setting.
+  bool get appInFullScreen => _appInFullScreen;
+
+  /// Toggle value of [appInFullScreen].
+  void toggleAppInFullScreen() {
+    _appInFullScreen = !_appInFullScreen;
+    if (_appInFullScreen) {
+      enableFullScreen();
+    } else {
+      disableFullScreen();
+    }
+    notifyListeners();
+  }
 
   /// Whether an api request is ongoing.
   bool _requestAwaitingResponse = false;

@@ -9,7 +9,7 @@ class ThemingModel extends ChangeNotifier {
   bool get useMaterial3 => _useMaterial3;
 
   /// Toggles the value of [useMaterial3].
-  void switchTheme() {
+  void toggleTheme() {
     _useMaterial3 = !_useMaterial3;
     _storageHelper.storeUseMaterial3(_useMaterial3);
     notifyListeners();

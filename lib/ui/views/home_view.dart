@@ -121,7 +121,7 @@ class HomeView extends StatelessWidget {
           actions: [
             stackPosition == 0
                 ? IconButton(
-                    onPressed: Provider.of<ThemingModel>(context).switchTheme,
+                    onPressed: Provider.of<ThemingModel>(context).toggleTheme,
                     icon: const Icon(Icons.palette),
                   )
                 : Container(),
@@ -142,6 +142,13 @@ class HomeView extends StatelessWidget {
                       icon: const Icon(Icons.manage_accounts),
                     )
                   : Container(),
+            ),
+            Selector<HomeModel, bool>(
+              selector: (context, model) => model.appInFullScreen,
+              builder: (context, inFullScreen, child) => IconButton(
+                onPressed: model.toggleAppInFullScreen,
+                icon: Icon(inFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
+              ),
             ),
             buildSortOptions(context, model),
           ],
