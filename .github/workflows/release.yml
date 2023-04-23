@@ -26,7 +26,7 @@ jobs:
         run: flutter pub get
         
       - name: Build APK
-        run: flutter build apk --split-per-abi --release
+        run: flutter build apk --split-per-abi --release --enable-experiment=records
         
       - name: Create Release
         uses: ncipollo/release-action@v1
