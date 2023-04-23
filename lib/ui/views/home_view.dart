@@ -121,12 +121,6 @@ class HomeView extends StatelessWidget {
           actions: [
             stackPosition == 0
                 ? IconButton(
-                    onPressed: Provider.of<ThemingModel>(context).toggleTheme,
-                    icon: const Icon(Icons.palette),
-                  )
-                : Container(),
-            stackPosition == 0
-                ? IconButton(
                     onPressed: () {
                       showServerSettings(context);
                     },
@@ -136,13 +130,19 @@ class HomeView extends StatelessWidget {
             Consumer<HomeModel>(
               builder: (context, model, child) => stackPosition == 0 && model.serverUrl != null
                   ? IconButton(
-                      onPressed: () {
-                        showAdminPanel(context, model.serverUrl!);
-                      },
-                      icon: const Icon(Icons.manage_accounts),
-                    )
+                onPressed: () {
+                  showAdminPanel(context, model.serverUrl!);
+                },
+                icon: const Icon(Icons.manage_accounts),
+              )
                   : Container(),
             ),
+            stackPosition == 0
+                ? IconButton(
+              onPressed: Provider.of<ThemingModel>(context).toggleTheme,
+              icon: const Icon(Icons.palette),
+            )
+                : Container(),
             Selector<HomeModel, bool>(
               selector: (context, model) => model.appInFullScreen,
               builder: (context, inFullScreen, child) => IconButton(
