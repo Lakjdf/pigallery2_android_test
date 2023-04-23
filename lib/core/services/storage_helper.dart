@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageHelper {
   final _storage = const FlutterSecureStorage();
+
   AndroidOptions _getAndroidOptions() => const AndroidOptions(
         encryptedSharedPreferences: true,
       );
@@ -16,6 +17,7 @@ class StorageHelper {
   Future<void> _deleteSecureString(String key) => _storage.delete(key: key, aOptions: _getAndroidOptions());
 
   String _getUsernameKey(String url) => "$url-username";
+
   String _getPasswordKey(String url) => "$url-password";
 
   Future<InitialServerData> init() async {
@@ -122,6 +124,18 @@ class StorageHelper {
         return SessionData(sessionCookies: cookies, csrfToken: token);
       }
       return null;
+    });
+  }
+
+  Future<void> storeUseMaterial3(bool useMaterial3) {
+    return SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool("useMaterial3", useMaterial3);
+    });
+  }
+
+  Future<bool> getUseMaterial3() {
+    return SharedPreferences.getInstance().then((prefs) {
+      return prefs.getBool("useMaterial3") ?? true;
     });
   }
 }

@@ -7,6 +7,7 @@ import 'package:pigallery2_android/core/services/models/initial_server_data.dart
 import 'package:pigallery2_android/core/services/storage_helper.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/core/viewmodels/server_model.dart';
+import 'package:pigallery2_android/core/viewmodels/theming_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
 import 'package:provider/provider.dart';
@@ -73,25 +74,33 @@ class MyApp extends StatelessWidget {
                   );
                 }),
               ),
+              ChangeNotifierProvider<ThemingModel>(
+                create: ((context) {
+                  return ThemingModel(storageHelper);
+                }),
+              ),
             ],
-            child: DynamicColorBuilder(
-              builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-                ThemeData themeData = CustomThemeData.oledThemeData;
-                if (darkDynamic != null) {
-                  themeData = ThemeData(
-                    useMaterial3: true,
-                    colorScheme: darkDynamic.harmonized(),
+            child: Selector<ThemingModel, bool>(
+              selector: (context, model)=> model.useMaterial3,
+              builder: (context, useMaterial3, child) => DynamicColorBuilder(
+                builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+                  ThemeData themeData = CustomThemeData.oledThemeData;
+                  if (useMaterial3 && darkDynamic != null) {
+                    themeData = ThemeData(
+                      useMaterial3: true,
+                      colorScheme: darkDynamic.harmonized(),
+                    );
+                  }
+                  return MaterialApp(
+                    debugShowCheckedModeBanner: false,
+                    title: 'PiGallery2',
+                    themeMode: ThemeMode.dark,
+                    theme: themeData,
+                    darkTheme: themeData,
+                    home: HomeView(0),
                   );
-                }
-                return MaterialApp(
-                  debugShowCheckedModeBanner: false,
-                  title: 'PiGallery2',
-                  themeMode: ThemeMode.dark,
-                  theme: themeData,
-                  darkTheme: themeData,
-                  home: HomeView(0),
-                );
-              },
+                },
+              ),
             ),
           );
         });

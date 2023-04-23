@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
+import 'package:pigallery2_android/core/viewmodels/theming_model.dart';
 import 'package:pigallery2_android/ui/views/bottom_sheet/bad_certificate_selection.dart';
 import 'package:pigallery2_android/ui/views/bottom_sheet/bottom_sheet_handle.dart';
 import 'package:pigallery2_android/ui/views/bottom_sheet/server_selection.dart';
@@ -118,6 +119,12 @@ class HomeView extends StatelessWidget {
           titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           title: Text(model.stateOf(stackPosition).baseDirectoryName),
           actions: [
+            stackPosition == 0
+                ? IconButton(
+                    onPressed: Provider.of<ThemingModel>(context).switchTheme,
+                    icon: const Icon(Icons.palette),
+                  )
+                : Container(),
             stackPosition == 0
                 ? IconButton(
                     onPressed: () {
