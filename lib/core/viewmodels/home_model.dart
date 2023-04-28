@@ -280,11 +280,11 @@ class HomeModel extends ChangeNotifier {
     if (currentDirBefore == currentState.baseDirectory) {
       currentState.baseDirectory = result;
       currentState.files = [];
+      currentState.isLoading = false;
       if (result != null) {
         currentState.files = [...result.directories, ...result.media];
       }
+      notifyListeners();
     }
-    currentState.isLoading = false;
-    notifyListeners();
   }
 }
