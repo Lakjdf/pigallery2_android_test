@@ -72,8 +72,8 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
                 colors: BetterPlayerProgressColors(
                   handleColor: onSurfaceVariant.withOpacity(widget.opacity),
                   playedColor: onSurfaceVariant.withOpacity(widget.opacity),
-                  bufferedColor: onSurfaceVariant.withAlpha(75).withOpacity(widget.opacity),
-                  backgroundColor: onSurfaceVariant.withAlpha(40).withOpacity(widget.opacity),
+                  bufferedColor: onSurfaceVariant.withOpacity(.5 * widget.opacity),
+                  backgroundColor: onSurfaceVariant.withOpacity(.2 * widget.opacity),
                 ),
               ),
             ),
