@@ -3,6 +3,7 @@ import 'package:mime/mime.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/fullscreen_overlay.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/horizontal_carousel_wrapper.dart';
@@ -69,9 +70,9 @@ class _FullscreenViewState extends State<FullscreenView> {
 
   @override
   Widget build(BuildContext context) {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    GlobalSettingsModel model = Provider.of<GlobalSettingsModel>(context, listen: false);
     model.enableFullScreen();
-    List<Media> media = model.currentState.media;
+    List<Media> media = Provider.of<HomeModel>(context, listen: false).currentState.media;
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
     return WillPopScope(
       onWillPop: (() {

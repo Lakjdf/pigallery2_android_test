@@ -1,14 +1,16 @@
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web_view;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pigallery2_android/core/services/models/models.dart';
+import 'package:pigallery2_android/core/util/extensions.dart';
+import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageHelper {
   final _storage = const FlutterSecureStorage();
 
-  AndroidOptions _getAndroidOptions() => const AndroidOptions(
-        encryptedSharedPreferences: true,
-      );
+  late SharedPreferences _prefs;
+
+  AndroidOptions _getAndroidOptions() => const AndroidOptions(encryptedSharedPreferences: true);
 
   Future<void> _storeSecureString(String key, String value) => _storage.write(key: key, value: value, aOptions: _getAndroidOptions());
 
@@ -20,60 +22,55 @@ class StorageHelper {
 
   String _getPasswordKey(String url) => "$url-password";
 
+  String _getSessionCookiesKey(String url) => "$url-cookies";
+
+  String _getCsrfTokenKey(String url) => "$url-token";
+
+  /// Loads [SharedPreferences] and returns stored server configuration.
   Future<InitialServerData> init() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _prefs = await SharedPreferences.getInstance();
     // set initial values on first startup
-    if (!prefs.containsKey("selectedServer")) {
-      prefs.setInt("selectedServer", 0);
+    if (!_prefs.containsKey(StorageConstants.selectedServerKey)) {
+      await _prefs.setInt(StorageConstants.selectedServerKey, 0);
     }
-    if (!prefs.containsKey("serverUrls")) {
-      prefs.setStringList("serverUrls", []);
+    if (!_prefs.containsKey(StorageConstants.serverUrlsKey)) {
+      await _prefs.setStringList(StorageConstants.serverUrlsKey, []);
     }
-    // Return currently selected server
-    String? url = await getSelectedServer();
-    if (url != null) {
-      return InitialServerData(
-        serverUrl: url,
-        sessionData: await getSessionData(url),
-      );
-    }
-    return InitialServerData();
+    return getSelectedServerData();
   }
 
-  Future<List<String>> getServerUrls() {
-    return SharedPreferences.getInstance().then(
-      (prefs) {
-        return prefs.getStringList('serverUrls') ?? [];
-      },
+  InitialServerData getSelectedServerData() {
+    return _getSelectedServer()?.let((it) => getServerData(it)) ?? InitialServerData();
+  }
+
+  InitialServerData getServerData(String url) {
+    return InitialServerData(
+      serverUrl: url,
+      sessionData: _getSessionData(url),
     );
   }
 
-  Future<String?> getSelectedServer() {
-    return SharedPreferences.getInstance().then((prefs) {
-      List<String> serverUrls = prefs.getStringList('serverUrls') ?? [];
-      if (serverUrls.isEmpty) return null;
-      return serverUrls[prefs.getInt('selectedServer') ?? 0];
-    });
+  String? _getSelectedServer() {
+    List<String> serverUrls = getServerUrls();
+    if (serverUrls.isEmpty) return null;
+    int selectedServerIndex = _getSelectedServerIndex();
+    return serverUrls[selectedServerIndex];
   }
 
-  Future<void> selectServer(String url) {
-    return SharedPreferences.getInstance().then(
-      (prefs) => prefs.setInt('selectedServer', prefs.getStringList('serverUrls')?.indexOf(url) ?? 0),
-    );
+  List<String> getServerUrls() {
+    return _prefs.getStringList(StorageConstants.serverUrlsKey) ?? [];
   }
 
-  Future<void> storeServer(String url, String? username, String? password) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> serverUrls = prefs.getStringList('serverUrls') ?? [];
-    if (!serverUrls.contains(url)) {
-      serverUrls.add(url);
-    }
-    prefs.setStringList('serverUrls', serverUrls);
+  Future<void> storeServerUrls(List<String> serverUrls) async {
+    await _prefs.setStringList(StorageConstants.serverUrlsKey, serverUrls);
+  }
 
-    if (username != null && password != null) {
-      await _storeSecureString(_getUsernameKey(url), username);
-      await _storeSecureString(_getPasswordKey(url), password);
-    }
+  int _getSelectedServerIndex() {
+    return _prefs.getInt(StorageConstants.selectedServerKey) ?? 0;
+  }
+
+  Future<void> storeSelectedServerIndex(int value) async {
+    await _prefs.setInt(StorageConstants.selectedServerKey, value);
   }
 
   Future<LoginCredentials?> getServerCredentials(String url) async {
@@ -85,57 +82,66 @@ class StorageHelper {
     return null;
   }
 
-  Future<void> deleteServer(String url) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> serverUrls = prefs.getStringList('serverUrls') ?? [];
-    if (serverUrls.contains(url)) {
-      serverUrls.remove(url);
-    }
-    prefs.setStringList('serverUrls', serverUrls);
+  Future<void> storeCredentials(String url, String username, String password) async {
+    await _storeSecureString(_getUsernameKey(url), username);
+    await _storeSecureString(_getPasswordKey(url), password);
+  }
 
-    int selectedServer = prefs.getInt('selectedServer')!;
-    prefs.setInt('selectedServer', selectedServer < 2 ? 0 : selectedServer - 1);
-
+  Future<void> deleteCredentials(String url) async {
     await _deleteSecureString(_getUsernameKey(url));
     await _deleteSecureString(_getPasswordKey(url));
   }
 
-  void _setCookies(String url, String cookieString) {
+  /// Set cookies to be used with the in app web view.
+  Future<void> _storeCookies(String url, String cookieString) async {
     var cookieManager = web_view.CookieManager.instance();
     for (var cookie in cookieString.split(';')) {
       var splitIndex = cookie.indexOf('=');
-      cookieManager.setCookie(url: web_view.WebUri(url), name: cookie.substring(0, splitIndex), value: cookie.substring(splitIndex + 1));
+      await cookieManager.setCookie(
+        url: web_view.WebUri(url),
+        name: cookie.substring(0, splitIndex),
+        value: cookie.substring(splitIndex + 1),
+      );
     }
   }
 
-  Future<void> storeSessionData(String url, SessionData data) {
-    return SharedPreferences.getInstance().then((prefs) {
-      prefs.setString("$url-cookies", data.sessionCookies);
-      prefs.setString("$url-token", data.csrfToken);
-      _setCookies(url, data.sessionCookies);
-    });
+  Future<void> storeSessionData(String url, SessionData data) async {
+    await _prefs.setString(_getSessionCookiesKey(url), data.sessionCookies);
+    await _prefs.setString(_getCsrfTokenKey(url), data.csrfToken);
+    await _storeCookies(url, data.sessionCookies);
   }
 
-  Future<SessionData?> getSessionData(String url) {
-    return SharedPreferences.getInstance().then((prefs) {
-      String? cookies = prefs.getString("$url-cookies");
-      String? token = prefs.getString("$url-token");
-      if (cookies != null && token != null) {
-        return SessionData(sessionCookies: cookies, csrfToken: token);
-      }
-      return null;
-    });
+  SessionData? _getSessionData(String url) {
+    String? cookies = _prefs.getString(_getSessionCookiesKey(url));
+    String? token = _prefs.getString(_getCsrfTokenKey(url));
+    if (cookies != null && token != null) {
+      return SessionData(sessionCookies: cookies, csrfToken: token);
+    }
+    return null;
   }
 
-  Future<void> storeUseMaterial3(bool useMaterial3) {
-    return SharedPreferences.getInstance().then((prefs) {
-      prefs.setBool("useMaterial3", useMaterial3);
-    });
+  bool getBool(String key, bool defaultValue) {
+    return _prefs.getBool(key) ?? defaultValue;
   }
 
-  Future<bool> getUseMaterial3() {
-    return SharedPreferences.getInstance().then((prefs) {
-      return prefs.getBool("useMaterial3") ?? true;
-    });
+  Future<void> storeBool(String key, bool value) async {
+    await _prefs.setBool(key, value);
   }
+
+  SortOption getSortOption(String key, SortOption defaultValue) {
+    return _prefs.getInt(StorageConstants.sortOptionKey)?.let((it) => SortOption.values[it]) ?? defaultValue;
+  }
+
+  Future<void> storeSortOption(String key, SortOption value) async {
+    await _prefs.setInt(StorageConstants.sortOptionKey, value.index);
+  }
+}
+
+class StorageConstants {
+  static const serverUrlsKey = "serverUrls";
+  static const selectedServerKey = "selectedServer";
+  static const useMaterial3Key = "useMaterial3";
+  static const appInFullScreenKey = "appInFullScreen";
+  static const sortOptionKey = "sortOption";
+  static const sortAscendingKey = "sortAscending";
 }

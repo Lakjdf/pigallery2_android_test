@@ -253,6 +253,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           );
         } else {
           return Selector<HomeModel, String?>(
+            shouldRebuild: (String? previous, String? next) => true,
             selector: (context, model) => model.stateOf(widget.stackPosition).error,
             builder: (BuildContext context, error, Widget? child) {
               if (ModalRoute.of(context)?.isCurrent == true) {

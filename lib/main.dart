@@ -7,7 +7,7 @@ import 'package:pigallery2_android/core/services/models/initial_server_data.dart
 import 'package:pigallery2_android/core/services/storage_helper.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/core/viewmodels/server_model.dart';
-import 'package:pigallery2_android/core/viewmodels/theming_model.dart';
+import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
 import 'package:provider/provider.dart';
@@ -71,17 +71,18 @@ class MyApp extends StatelessWidget {
                 create: ((context) {
                   return HomeModel(
                     Provider.of<ApiService>(context, listen: false),
+                    storageHelper,
                   );
                 }),
               ),
-              ChangeNotifierProvider<ThemingModel>(
+              ChangeNotifierProvider<GlobalSettingsModel>(
                 create: ((context) {
-                  return ThemingModel(storageHelper);
+                  return GlobalSettingsModel(storageHelper);
                 }),
               ),
             ],
-            child: Selector<ThemingModel, bool>(
-              selector: (context, model)=> model.useMaterial3,
+            child: Selector<GlobalSettingsModel, bool>(
+              selector: (context, model) => model.useMaterial3,
               builder: (context, useMaterial3, child) => DynamicColorBuilder(
                 builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
                   ThemeData themeData = CustomThemeData.oledThemeData;

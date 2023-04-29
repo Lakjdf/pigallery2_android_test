@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
-import 'package:pigallery2_android/core/viewmodels/theming_model.dart';
+import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/views/bottom_sheet/bad_certificate_selection.dart';
 import 'package:pigallery2_android/ui/views/bottom_sheet/bottom_sheet_handle.dart';
 import 'package:pigallery2_android/ui/views/bottom_sheet/server_selection.dart';
@@ -139,14 +139,14 @@ class HomeView extends StatelessWidget {
             ),
             stackPosition == 0
                 ? IconButton(
-              onPressed: Provider.of<ThemingModel>(context).toggleTheme,
+              onPressed: Provider.of<GlobalSettingsModel>(context, listen: false).toggleTheme,
               icon: const Icon(Icons.palette),
             )
                 : Container(),
-            Selector<HomeModel, bool>(
+            Selector<GlobalSettingsModel, bool>(
               selector: (context, model) => model.appInFullScreen,
               builder: (context, inFullScreen, child) => IconButton(
-                onPressed: model.toggleAppInFullScreen,
+                onPressed: Provider.of<GlobalSettingsModel>(context, listen: false).toggleAppInFullScreen,
                 icon: Icon(inFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
               ),
             ),

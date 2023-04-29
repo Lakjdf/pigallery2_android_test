@@ -1,12 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
-
-extension StringExtension on String {
-  String toCapitalized() => length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
-}
+import 'package:pigallery2_android/core/services/storage_helper.dart';
+import 'package:pigallery2_android/core/util/extensions.dart';
 
 extension ParseToString on SortOption {
   String getName() {
@@ -48,7 +45,7 @@ class HomeModelState {
   /// All [files] of type [Media].
   List<Media> get media => files.whereType<Media>().toList();
 
-  HomeModelState(this.baseDirectoryName, {this.sortOption = SortOption.name, this.sortAscending = true});
+  HomeModelState(this.baseDirectoryName, this.sortOption, this.sortAscending);
 
   bool updateSortOption(SortOption option) {
     if (option != sortOption || option == SortOption.random) {
@@ -153,7 +150,7 @@ class HomeModelState {
 }
 
 class HomeModel extends ChangeNotifier {
-  final List<HomeModelState> _state = [HomeModelState("")];
+  final List<HomeModelState> _state;
 
   /// [HomeModelState] of the given position in the [Navigator] stack.
   HomeModelState stateOf(int stackPosition) => _state[stackPosition];
@@ -161,11 +158,16 @@ class HomeModel extends ChangeNotifier {
   /// [HomeModelState] of the top-most [HomeView] in the [Navigator] stack.
   HomeModelState get currentState => _state.last;
 
+  final StorageHelper _storageHelper;
+
   /// Chosen [SortOption] applied to all [HomeView] instances.
   SortOption get sortOption => currentState.sortOption;
 
   set sortOption(SortOption option) {
-    for (HomeModelState state in _state) { state.updateSortOption(option); }
+    for (HomeModelState state in _state) {
+      state.updateSortOption(option);
+    }
+    _storageHelper.storeSortOption(StorageConstants.sortOptionKey, option);
     notifyListeners();
   }
 
@@ -173,7 +175,10 @@ class HomeModel extends ChangeNotifier {
   bool get sortAscending => currentState.sortAscending;
 
   set sortOrder(bool sortAscending) {
-    for (HomeModelState state in _state) { state.updateSortOrder(sortAscending); }
+    for (HomeModelState state in _state) {
+      state.updateSortOrder(sortAscending);
+    }
+    _storageHelper.storeBool(StorageConstants.sortAscendingKey, sortAscending);
     notifyListeners();
   }
 
@@ -185,37 +190,17 @@ class HomeModel extends ChangeNotifier {
   /// Retrieve serverUrl from [ApiService].
   String? get serverUrl => _apiDelegate.serverUrl;
 
-  /// Enter full screen. Disregards [appInFullScreen].
-  void enableFullScreen() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  }
-
-  /// Leave full screen. Disregards [appInFullScreen].
-  void disableFullScreen() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
-  }
-
-  bool _appInFullScreen = false;
-
-  /// Whether the application is in full screen mode.
-  /// Fullscreen mode will always be entered when entering [FullScreenView] disregarding this setting.
-  bool get appInFullScreen => _appInFullScreen;
-
-  /// Toggle value of [appInFullScreen].
-  void toggleAppInFullScreen() {
-    _appInFullScreen = !_appInFullScreen;
-    if (_appInFullScreen) {
-      enableFullScreen();
-    } else {
-      disableFullScreen();
-    }
-    notifyListeners();
-  }
-
   /// Whether an api request is ongoing.
   bool _requestAwaitingResponse = false;
 
-  HomeModel(this._apiDelegate) {
+  HomeModel(this._apiDelegate, this._storageHelper)
+      : _state = [
+          HomeModelState(
+            "",
+            _storageHelper.getSortOption(StorageConstants.sortOptionKey, SortOption.name),
+            _storageHelper.getBool(StorageConstants.sortAscendingKey, true),
+          )
+        ] {
     fetchItems();
   }
 
@@ -236,7 +221,7 @@ class HomeModel extends ChangeNotifier {
 
   /// Register a new [HomeView] instance.
   void addStack(String baseDirectory) {
-    _state.add(HomeModelState(baseDirectory, sortOption: sortOption, sortAscending: sortAscending));
+    _state.add(HomeModelState(baseDirectory, sortOption, sortAscending));
     fetchItems();
   }
 
@@ -254,7 +239,7 @@ class HomeModel extends ChangeNotifier {
   Future<void> fetchItems() async {
     if (!_requestAwaitingResponse) {
       _requestAwaitingResponse = true;
-      return _fetchItems().then((value) => _requestAwaitingResponse = false);
+      return _fetchItems().whenComplete(() => _requestAwaitingResponse = false);
     }
   }
 
@@ -264,7 +249,7 @@ class HomeModel extends ChangeNotifier {
       currentState.files = [];
       currentState.baseDirectory = null;
       notifyListeners();
-      return Future.value();
+      return;
     }
 
     currentState.isLoading = true;
