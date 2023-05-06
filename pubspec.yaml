@@ -26,6 +26,9 @@ dependencies:
   share_plus: ^6.3.1
   collection: ^1.16.0
   dynamic_color: ^1.6.3
+  backdrop:
+    git:
+      url: https://github.com/Lakjdf/backdrop.git
   
   # file selector dialog to download media:
   # flutter_plugin_android_lifecycle: ^2.0.1

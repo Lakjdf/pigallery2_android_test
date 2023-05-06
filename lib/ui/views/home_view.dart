@@ -1,3 +1,4 @@
+import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
@@ -6,6 +7,7 @@ import 'package:pigallery2_android/ui/views/bottom_sheet/bottom_sheet_handle.dar
 import 'package:pigallery2_android/ui/views/bottom_sheet/server_selection.dart';
 import 'package:pigallery2_android/ui/views/gallery_view.dart';
 import 'package:pigallery2_android/ui/views/website_view.dart';
+import 'package:pigallery2_android/ui/widgets/animated_backdrop_toggle_button.dart';
 import 'package:provider/provider.dart';
 
 class HomeView extends StatelessWidget {
@@ -102,6 +104,59 @@ class HomeView extends StatelessWidget {
     );
   }
 
+  Widget buildBackLayer(ThemeData theme) {
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        ListTile(
+          title: const Text("Directory Item Count"),
+          leading: Icon(Icons.onetwothree, color: theme.colorScheme.onSurfaceVariant),
+          trailing: Selector<GlobalSettingsModel, bool>(
+            selector: (context, model) => model.showDirectoryItemCount,
+            builder: (BuildContext context, showDirectoryItemCount, Widget? child) {
+              return Switch(
+                value: showDirectoryItemCount,
+                onChanged: (value) {
+                  Provider.of<GlobalSettingsModel>(context, listen: false).showDirectoryItemCount = value;
+                },
+              );
+            },
+          ),
+        ),
+        ListTile(
+          title: const Text("Rounded Corners"),
+          leading: Icon(Icons.rounded_corner, color: theme.colorScheme.onSurfaceVariant),
+          trailing: Selector<GlobalSettingsModel, bool>(
+            selector: (context, model) => model.galleryRoundedCorners,
+            builder: (BuildContext context, showDirectoryItemCount, Widget? child) {
+              return Switch(
+                value: showDirectoryItemCount,
+                onChanged: (value) {
+                  Provider.of<GlobalSettingsModel>(context, listen: false).galleryRoundedCorners = value;
+                },
+              );
+            },
+          ),
+        ),
+        ListTile(
+          title: const Text("Dynamic Theme"),
+          leading: Icon(Icons.palette, color: theme.colorScheme.onSurfaceVariant),
+          trailing: Selector<GlobalSettingsModel, bool>(
+            selector: (context, model) => model.useMaterial3,
+            builder: (BuildContext context, useMaterial3, Widget? child) {
+              return Switch(
+                value: useMaterial3,
+                onChanged: (value) {
+                  Provider.of<GlobalSettingsModel>(context, listen: false).useMaterial3 = value;
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
@@ -112,8 +167,13 @@ class HomeView extends StatelessWidget {
         model.popStack();
         return true;
       },
-      child: Scaffold(
+      child: BackdropScaffold(
         key: ValueKey(stackPosition),
+        frontLayerBorderRadius: BorderRadius.zero,
+        keepFrontLayerActive: true,
+        stickyFrontLayer: true,
+        frontLayer: GalleryView(stackPosition),
+        backLayer: buildBackLayer(theme),
         appBar: AppBar(
           iconTheme: theme.iconTheme,
           titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -130,19 +190,13 @@ class HomeView extends StatelessWidget {
             Consumer<HomeModel>(
               builder: (context, model, child) => stackPosition == 0 && model.serverUrl != null
                   ? IconButton(
-                onPressed: () {
-                  showAdminPanel(context, model.serverUrl!);
-                },
-                icon: const Icon(Icons.manage_accounts),
-              )
+                      onPressed: () {
+                        showAdminPanel(context, model.serverUrl!);
+                      },
+                      icon: const Icon(Icons.manage_accounts),
+                    )
                   : Container(),
             ),
-            stackPosition == 0
-                ? IconButton(
-              onPressed: Provider.of<GlobalSettingsModel>(context, listen: false).toggleTheme,
-              icon: const Icon(Icons.palette),
-            )
-                : Container(),
             Selector<GlobalSettingsModel, bool>(
               selector: (context, model) => model.appInFullScreen,
               builder: (context, inFullScreen, child) => IconButton(
@@ -151,9 +205,9 @@ class HomeView extends StatelessWidget {
               ),
             ),
             buildSortOptions(context, model),
+            if (stackPosition == 0) const AnimatedBackdropToggleButton(),
           ],
         ),
-        body: GalleryView(stackPosition),
       ),
     );
   }

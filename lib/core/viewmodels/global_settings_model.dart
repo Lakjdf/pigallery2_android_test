@@ -14,6 +14,14 @@ class GlobalSettingsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  set useMaterial3(bool value) {
+    if (value != _useMaterial3) {
+      _useMaterial3 = value;
+      _storageHelper.storeBool(StorageConstants.useMaterial3Key, value);
+      notifyListeners();
+    }
+  }
+
   /// Enter full screen. Disregards [appInFullScreen].
   void enableFullScreen() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -40,13 +48,37 @@ class GlobalSettingsModel extends ChangeNotifier {
     }
   }
 
+  bool get showDirectoryItemCount => _showDirectoryItemCount;
+
+  set showDirectoryItemCount(bool value) {
+    if (value != _showDirectoryItemCount) {
+      _showDirectoryItemCount = value;
+      _storageHelper.storeBool(StorageConstants.showDirectoryItemCount, value);
+      notifyListeners();
+    }
+  }
+
+  bool get galleryRoundedCorners => _galleryRoundedCorners;
+
+  set galleryRoundedCorners(bool value) {
+    if (value != _galleryRoundedCorners) {
+      _galleryRoundedCorners = value;
+      _storageHelper.storeBool(StorageConstants.galleryRoundedCorners, value);
+      notifyListeners();
+    }
+  }
+
   bool _useMaterial3;
   bool _appInFullScreen;
+  bool _showDirectoryItemCount;
+  bool _galleryRoundedCorners;
   final StorageHelper _storageHelper;
 
   GlobalSettingsModel(this._storageHelper)
       : _appInFullScreen = _storageHelper.getBool(StorageConstants.appInFullScreenKey, false),
-        _useMaterial3 = _storageHelper.getBool(StorageConstants.useMaterial3Key, true) {
+        _useMaterial3 = _storageHelper.getBool(StorageConstants.useMaterial3Key, true),
+        _showDirectoryItemCount = _storageHelper.getBool(StorageConstants.showDirectoryItemCount, true),
+        _galleryRoundedCorners = _storageHelper.getBool(StorageConstants.galleryRoundedCorners, false) {
     if (_appInFullScreen) {
       enableFullScreen();
     }

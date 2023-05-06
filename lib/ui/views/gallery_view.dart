@@ -5,6 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:mime/mime.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/fullscreen_view.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
@@ -12,8 +13,8 @@ import 'package:pigallery2_android/ui/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
 
-const double borderRadius = 0; //15
-const double gridSpacing = 0; //9
+const double defaultBorderRadius = 15;
+const double defaultGridSpacing = 9;
 
 class GalleryViewGridView extends StatefulWidget {
   final int stackPosition;
@@ -55,7 +56,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     }
   }
 
-  Widget directoryItem(context, Directory dir) {
+  Widget directoryItem(context, Directory dir, double borderRadius) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return GestureDetector(
       onTap: () {
@@ -95,17 +96,24 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 0.0),
+                  padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 3.0),
                   child: Text(
                     dir.name,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(6.0, 3.0, 6.0, 6.0),
-                  child: Text(
-                    dir.mediaCount.toString(),
-                  ),
-                ),
+                Selector<GlobalSettingsModel, bool>(
+                    selector: (context, model) => model.showDirectoryItemCount,
+                    builder: (BuildContext context, showDirectoryItemCount, Widget? child) {
+                      if (showDirectoryItemCount) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 6.0),
+                          child: Text(
+                            dir.mediaCount.toString(),
+                          ),
+                        );
+                      }
+                      return Container();
+                    }),
               ],
             ),
           ],
@@ -114,7 +122,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     );
   }
 
-  Widget mediaItem(context, Media item) {
+  Widget mediaItem(context, Media item, double borderRadius) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return GestureDetector(
       onTap: () async {
@@ -174,26 +182,31 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      key: PageStorageKey(widget.stackPosition),
-      controller: _scrollController,
-      itemCount: widget.files.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: getCrossAxisCount(context),
-        crossAxisSpacing: gridSpacing,
-        mainAxisSpacing: gridSpacing,
+    return Selector<GlobalSettingsModel, bool>(
+      selector: (context, model) => model.galleryRoundedCorners,
+      builder: (context, roundedCorners, child) => GridView.builder(
+        key: PageStorageKey(widget.stackPosition),
+        controller: _scrollController,
+        itemCount: widget.files.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: getCrossAxisCount(context),
+          crossAxisSpacing: roundedCorners ? defaultGridSpacing : 0,
+          mainAxisSpacing: roundedCorners ? defaultGridSpacing : 0,
+        ),
+        itemBuilder: (BuildContext context, int index) {
+          return widget.files[index].runtimeType == Directory
+              ? directoryItem(
+                  context,
+                  widget.files[index] as Directory,
+                  roundedCorners ? defaultBorderRadius : 0,
+                )
+              : mediaItem(
+                  context,
+                  widget.files[index] as Media,
+                  roundedCorners ? defaultBorderRadius : 0,
+                );
+        },
       ),
-      itemBuilder: (BuildContext context, int index) {
-        return widget.files[index].runtimeType == Directory
-            ? directoryItem(
-                context,
-                widget.files[index] as Directory,
-              )
-            : mediaItem(
-                context,
-                widget.files[index] as Media,
-              );
-      },
     );
   }
 }

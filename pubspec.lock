@@ -25,6 +25,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.10.0"
+  backdrop:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "306c18eef54b5c6b46741933bbe1d9b23651e180"
+      url: "https://github.com/Lakjdf/backdrop.git"
+    source: git
+    version: "0.8.1"
   better_player:
     dependency: "direct main"
     description:

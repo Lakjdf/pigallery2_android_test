@@ -144,4 +144,6 @@ class StorageConstants {
   static const appInFullScreenKey = "appInFullScreen";
   static const sortOptionKey = "sortOption";
   static const sortAscendingKey = "sortAscending";
+  static const showDirectoryItemCount = "showDirectoryItemCount";
+  static const galleryRoundedCorners = "galleryRoundedCorners";
 }
