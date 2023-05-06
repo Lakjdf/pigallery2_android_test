@@ -476,10 +476,11 @@ packages:
   photo_view:
     dependency: "direct main"
     description:
-      name: photo_view
-      sha256: "8036802a00bae2a78fc197af8a158e3e2f7b500561ed23b4c458107685e645bb"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "3ba29ccdf5a6880b03417d83b094f3525904e8b8"
+      url: "https://github.com/Lakjdf/photo_view.git"
+    source: git
     version: "0.14.0"
   platform:
     dependency: transitive
