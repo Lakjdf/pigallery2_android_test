@@ -8,6 +8,7 @@ class CustomThemeData {
   static ThemeData themeData(ColorScheme colorScheme, Color focusColor) {
     Color customTextColor = Color.alphaBlend(Colors.white.withAlpha((0.48 * 255).toInt()), colorScheme.primary);
     return ThemeData(
+      useMaterial3: true,
       colorScheme: colorScheme,
       primaryColor: colorScheme.primary,
       appBarTheme: AppBarTheme(
@@ -45,6 +46,18 @@ class CustomThemeData {
           foregroundColor: colorScheme.onPrimary,
         ),
       ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: customTextColor,
+        inactiveTrackColor: customTextColor.withAlpha(50),
+        thumbColor: customTextColor,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        modalBackgroundColor: colorScheme.primary
+      ),
+      dividerColor: const Color(0x1FFFFFFF),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.secondaryContainer
+      )
     );
   }
 

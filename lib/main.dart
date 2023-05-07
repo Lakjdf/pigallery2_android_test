@@ -87,9 +87,13 @@ class MyApp extends StatelessWidget {
                 builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
                   ThemeData themeData = CustomThemeData.oledThemeData;
                   if (useMaterial3 && darkDynamic != null) {
+                    ColorScheme colorScheme = darkDynamic.harmonized();
                     themeData = ThemeData(
                       useMaterial3: true,
-                      colorScheme: darkDynamic.harmonized(),
+                      colorScheme: colorScheme,
+                      dividerTheme: DividerThemeData(
+                        color: colorScheme.secondaryContainer
+                      )
                     );
                   }
                   return MaterialApp(
