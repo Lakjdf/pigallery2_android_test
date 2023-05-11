@@ -7,7 +7,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:label="pigallery2_android"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/splash_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
