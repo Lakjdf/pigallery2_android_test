@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-    - '*'
+    - 'v*'
 
 jobs:
   build:
@@ -26,7 +26,11 @@ jobs:
         run: flutter pub get
         
       - name: Build APK
-        run: flutter build apk --split-per-abi --release --enable-experiment=records
+        run: |
+          VERSION_NAME=${GITHUB_REF_NAME#v}
+          VERSION_CODE=${VERSION//.}
+          echo Version: VERSION_NAME ($VERSION_CODE)
+          flutter build apk --split-per-abi --release --enable-experiment=records --build-name=$VERSION_NAME --build-number=$VERSION_CODE
         
       - name: Create Release
         uses: ncipollo/release-action@v1
