@@ -29,7 +29,7 @@ jobs:
         run: |
           VERSION_NAME=${GITHUB_REF_NAME#v}
           VERSION_CODE=${VERSION//.}
-          echo Version: VERSION_NAME ($VERSION_CODE)
+          echo "Version: $VERSION_NAME ($VERSION_CODE)"
           flutter build apk --split-per-abi --release --enable-experiment=records --build-name=$VERSION_NAME --build-number=$VERSION_CODE
         
       - name: Create Release
