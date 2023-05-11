@@ -13,9 +13,6 @@ import 'package:pigallery2_android/ui/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
 
-const double defaultBorderRadius = 15;
-const double defaultGridSpacing = 9;
-
 class GalleryViewGridView extends StatefulWidget {
   final int stackPosition;
   final List<File> files;
@@ -33,13 +30,9 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     return lookupMimeType(item.name)!.contains("video");
   }
 
-  int getCrossAxisCount(BuildContext context) {
-    return MediaQuery.of(context).orientation == Orientation.landscape ? 5 : 3;
-  }
-
   void _scrollToShowedItem(BuildContext context, int currentIndex) {
     if (_scrollController.hasClients) {
-      int crossAxisCount = getCrossAxisCount(context);
+      int crossAxisCount = Provider.of<GlobalSettingsModel>(context, listen: false).getGridCrossAxisCount(MediaQuery.of(context).orientation);
       int imageHeight = MediaQuery.of(context).size.width ~/ crossAxisCount;
       int imageTop = (currentIndex ~/ crossAxisCount) * imageHeight;
       double error = imageHeight * 0.3;
@@ -56,7 +49,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     }
   }
 
-  Widget directoryItem(context, Directory dir, double borderRadius) {
+  Widget directoryItem(context, Directory dir, int borderRadius) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return GestureDetector(
       onTap: () {
@@ -69,7 +62,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
         );
       },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(borderRadius.toDouble()),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -122,7 +115,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     );
   }
 
-  Widget mediaItem(context, Media item, double borderRadius) {
+  Widget mediaItem(context, Media item, int borderRadius) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return GestureDetector(
       onTap: () async {
@@ -146,7 +139,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       child: Hero(
         tag: item.id.toString(),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(borderRadius.toDouble()),
           child: ThumbnailImage(
             key: ObjectKey(item),
             model.getThumbnailApiPath(model.stateOf(widget.stackPosition), item),
@@ -182,30 +175,33 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
 
   @override
   Widget build(BuildContext context) {
-    return Selector<GlobalSettingsModel, bool>(
-      selector: (context, model) => model.galleryRoundedCorners,
-      builder: (context, roundedCorners, child) => GridView.builder(
-        key: PageStorageKey(widget.stackPosition),
-        controller: _scrollController,
-        itemCount: widget.files.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: getCrossAxisCount(context),
-          crossAxisSpacing: roundedCorners ? defaultGridSpacing : 0,
-          mainAxisSpacing: roundedCorners ? defaultGridSpacing : 0,
+    return OrientationBuilder(
+      builder: (context, orientation) => Selector<GlobalSettingsModel, ({int cornerRadius, double gridAspectRatio, int gridSpacing, int gridCrossAxisCount})>(
+        selector: (context, model) => (cornerRadius: model.gridRoundedCorners, gridAspectRatio: model.gridAspectRatio, gridSpacing: model.gridSpacing, gridCrossAxisCount: model.getGridCrossAxisCount(orientation)),
+        builder: (context, ({int cornerRadius, double gridAspectRatio, int gridSpacing, int gridCrossAxisCount}) data, child) => GridView.builder(
+          key: PageStorageKey(widget.stackPosition),
+          controller: _scrollController,
+          itemCount: widget.files.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: data.gridCrossAxisCount,
+            crossAxisSpacing: data.gridSpacing.toDouble(),
+            mainAxisSpacing: data.gridSpacing.toDouble(),
+            childAspectRatio: data.gridAspectRatio,
+          ),
+          itemBuilder: (BuildContext context, int index) {
+            return widget.files[index].runtimeType == Directory
+                ? directoryItem(
+                    context,
+                    widget.files[index] as Directory,
+                    data.cornerRadius,
+                  )
+                : mediaItem(
+                    context,
+                    widget.files[index] as Media,
+                    data.cornerRadius,
+                  );
+          },
         ),
-        itemBuilder: (BuildContext context, int index) {
-          return widget.files[index].runtimeType == Directory
-              ? directoryItem(
-                  context,
-                  widget.files[index] as Directory,
-                  roundedCorners ? defaultBorderRadius : 0,
-                )
-              : mediaItem(
-                  context,
-                  widget.files[index] as Media,
-                  roundedCorners ? defaultBorderRadius : 0,
-                );
-        },
       ),
     );
   }

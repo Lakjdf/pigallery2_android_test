@@ -128,6 +128,22 @@ class StorageHelper {
     await _prefs.setBool(key, value);
   }
 
+  int getInt(String key, int defaultValue) {
+    return _prefs.getInt(key) ?? defaultValue;
+  }
+
+  Future<void> storeInt(String key, int value) async {
+    await _prefs.setInt(key, value);
+  }
+
+  double getDouble(String key, double defaultValue) {
+    return _prefs.getDouble(key) ?? defaultValue;
+  }
+
+  Future<void> storeDouble(String key, double value) async {
+    await _prefs.setDouble(key, value);
+  }
+
   SortOption getSortOption(String key, SortOption defaultValue) {
     return _prefs.getInt(StorageConstants.sortOptionKey)?.let((it) => SortOption.values[it]) ?? defaultValue;
   }
@@ -145,5 +161,9 @@ class StorageConstants {
   static const sortOptionKey = "sortOption";
   static const sortAscendingKey = "sortAscending";
   static const showDirectoryItemCount = "showDirectoryItemCount";
-  static const galleryRoundedCorners = "galleryRoundedCorners";
+  static const gridRoundedCorners = "gridRoundedCorners";
+  static const gridAspectRatio = "gridAspectRatio";
+  static const gridSpacing = "gridSpacing";
+  static const gridCrossAxisCountLandscape = "gridCrossAxisCountLandscape";
+  static const gridCrossAxisCountPortrait = "gridCrossAxisCountPortrait";
 }

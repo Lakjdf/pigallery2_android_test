@@ -51,13 +51,18 @@ class CustomThemeData {
         inactiveTrackColor: customTextColor.withAlpha(50),
         thumbColor: customTextColor,
       ),
-      bottomSheetTheme: BottomSheetThemeData(
-        modalBackgroundColor: colorScheme.primary
-      ),
+      bottomSheetTheme: BottomSheetThemeData(modalBackgroundColor: colorScheme.primary),
       dividerColor: const Color(0x1FFFFFFF),
-      dividerTheme: DividerThemeData(
-        color: colorScheme.secondaryContainer
-      )
+      dividerTheme: DividerThemeData(color: colorScheme.secondaryContainer),
+      switchTheme: SwitchThemeData(
+        trackColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+          if (states.contains(MaterialState.selected)) {
+            return customTextColor.withAlpha(50);
+          } else {
+            return colorScheme.background;
+          }
+        }),
+      ),
     );
   }
 
