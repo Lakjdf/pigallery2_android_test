@@ -26,4 +26,5 @@ extension ListExtension<T> on List<T> {
 
 extension StringExtension on String {
   String toCapitalized() => length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
+  String? ifEmpty(String? defaultValue) => isNotEmpty ? this : defaultValue;
 }

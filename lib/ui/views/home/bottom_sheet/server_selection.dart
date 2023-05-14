@@ -36,15 +36,12 @@ class ServerSelection extends StatelessWidget {
 
   addServerDialog(BuildContext context) {
     showDialog(
-        context: context,
-        builder: (BuildContext context2) {
-          Provider.of<ServerModel>(context, listen: false).reset();
-          return const AddServerDialog();
-        }).then((returnValues) {
-      if (returnValues != null) {
-        Provider.of<ServerModel>(context, listen: false).addServer(returnValues[0], returnValues[1], returnValues[2]);
-      }
-    });
+      context: context,
+      builder: (_) {
+        Provider.of<ServerModel>(context, listen: false).reset();
+        return const AddServerDialog();
+      },
+    );
   }
 
   Widget _buildListItem(

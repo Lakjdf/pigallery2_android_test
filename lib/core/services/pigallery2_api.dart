@@ -8,7 +8,9 @@ import 'package:http/http.dart' as http;
 
 class PiGallery2API {
   String getBaseEndpoint(String? serverUrl) => '$serverUrl/pgapi';
+
   String getDirectoriesEndpoint(String? serverUrl) => "${getBaseEndpoint(serverUrl)}/gallery/content/";
+
   String getLoginEndpoint(String? serverUrl) => "${getBaseEndpoint(serverUrl)}/user/login";
 
   final client = http.Client();
@@ -29,7 +31,15 @@ class PiGallery2API {
     return headers;
   }
 
-  Future<ApiResponse<SessionData>> login(String serverUrl, LoginCredentials credentials) async {
+  Future<ApiResponse<T>> _runCatching<T>(Future<ApiResponse<T>> Function() request) async {
+    try {
+      return await request();
+    } on Exception catch (e) {
+      return ApiResponse(error: e.toString(), result: null, code: null);
+    }
+  }
+
+  Future<ApiResponse<SessionData>> _login(String serverUrl, LoginCredentials credentials) async {
     final response = await client.post(Uri.parse(getLoginEndpoint(serverUrl)),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -49,11 +59,9 @@ class PiGallery2API {
     }
   }
 
-  Future<ApiResponse<Directory>> getDirectories({
-    required String serverUrl,
-    String path = "",
-    SessionData? sessionData,
-  }) async {
+  Future<ApiResponse<SessionData>> login(String serverUrl, LoginCredentials credentials) => _runCatching(() => _login(serverUrl, credentials));
+
+  Future<ApiResponse<Directory>> _getDirectories(String serverUrl, String path, SessionData? sessionData) async {
     Uri uri = Uri.parse(getDirectoriesEndpoint(serverUrl) + path);
 
     try {
@@ -67,5 +75,13 @@ class PiGallery2API {
     } catch (e) {
       return ApiResponse(error: e.toString());
     }
+  }
+
+  Future<ApiResponse<Directory>> getDirectories({
+    required String serverUrl,
+    String path = "",
+    SessionData? sessionData,
+  }) async {
+    return await _runCatching(() => _getDirectories(serverUrl, path, sessionData));
   }
 }

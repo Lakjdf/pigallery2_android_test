@@ -19,9 +19,9 @@ class ServerModel extends ChangeNotifier {
 
   String? get serverUrl => api.serverUrl;
 
-  void addServer(String url, String? username, String? password) async {
+  Future<void> addServer(String url, String? username, String? password) async {
     if (_serverUrls.addDistinct(url)) {
-      storageHelper.storeServerUrls(_serverUrls);
+      await storageHelper.storeServerUrls(_serverUrls);
       if (username != null && password != null) {
         await storageHelper.storeCredentials(url, username, password);
       }

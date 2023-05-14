@@ -1,5 +1,6 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/core/util/extensions.dart';
 import 'package:pigallery2_android/core/viewmodels/server_model.dart';
 import 'package:provider/provider.dart';
 
@@ -49,7 +50,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
   }
 
   InputDecoration buildInputDecorationUrl(BuildContext context) {
-    ServerModel model = Provider.of<ServerModel>(context, listen: true);
+    ServerModel model = Provider.of<ServerModel>(context, listen: false);
     return model.testFailedUrl
         ? const InputDecoration(errorText: "Can't connect to server")
         : (model.testSuccessUrl
@@ -61,13 +62,12 @@ class _AddServerDialogState extends State<AddServerDialog> {
   }
 
   InputDecoration buildInputDecorationAuth(BuildContext context, InputDecoration defaultDecoration) {
-    ServerModel model = Provider.of<ServerModel>(context, listen: true);
-    return model.testFailedAuth
-        ? const InputDecoration(errorText: "Authentication failed")
-        : (model.testSuccessAuth ? buildSuccessInputDecoration(context, "Authentication successful") : defaultDecoration);
+    ServerModel model = Provider.of<ServerModel>(context, listen: false);
+    return model.testFailedAuth ? const InputDecoration(errorText: "Authentication failed") : (model.testSuccessAuth ? buildSuccessInputDecoration(context, "Authentication successful") : defaultDecoration);
   }
 
   Widget buildServerUrlWidget(BuildContext context) {
+    ServerModel serverModel = Provider.of<ServerModel>(context, listen: false);
     return Row(children: [
       Flexible(
         child: TextField(
@@ -78,27 +78,24 @@ class _AddServerDialogState extends State<AddServerDialog> {
             }
           },
           controller: addServerController,
-          decoration: buildInputDecorationUrl(
-            context,
-          ),
+          decoration: buildInputDecorationUrl(context),
           onSubmitted: (url) => testConnection(context),
-          onChanged: (_) => Provider.of<ServerModel>(context, listen: false).urlChanged(),
+          onChanged: (_) => serverModel.urlChanged(),
         ),
       ),
-      const SizedBox(
-        width: 10,
-      ),
+      const SizedBox(width: 10),
       MaterialButton(
         color: Theme.of(context).colorScheme.secondaryContainer,
-        onPressed: () {
-          if (Provider.of<ServerModel>(context, listen: false).testSuccessUrl && Provider.of<ServerModel>(context, listen: false).testSuccessAuth) {
-            Navigator.pop(context, [addServerController.text.isEmpty ? null : addServerController.text, usernameController.text.isEmpty ? null : usernameController.text, passwordController.text.isEmpty ? null : passwordController.text]);
+        onPressed: () async {
+          if (serverModel.testSuccessUrl && serverModel.testSuccessAuth) {
+            await serverModel.addServer(addServerController.text, usernameController.text.ifEmpty(null), passwordController.text.ifEmpty(null));
+            if (mounted) Navigator.pop(context);
           } else {
             testConnection(context);
           }
         },
         height: 40,
-        child: Text(Provider.of<ServerModel>(context).testSuccessAuth && Provider.of<ServerModel>(context).testSuccessUrl ? 'Add' : 'Test'),
+        child: Text(serverModel.testSuccessAuth && serverModel.testSuccessUrl ? 'Add' : 'Test'),
       ),
     ]);
   }
@@ -106,7 +103,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
   @override
   Widget build(BuildContext context) {
     return Consumer<ServerModel>(
-      builder: ((context, value, child) => AlertDialog(
+      builder: (context, ServerModel serverModel, child) => AlertDialog(
             insetPadding: const EdgeInsets.all(10),
             title: const Text('Add a Server'),
             scrollable: true,
@@ -115,12 +112,10 @@ class _AddServerDialogState extends State<AddServerDialog> {
               child: Column(
                 children: [
                   buildServerUrlWidget(context),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   TextField(
                     controller: usernameController,
-                    onChanged: (_) => Provider.of<ServerModel>(context, listen: false).credentialsChanged(),
+                    onChanged: (_) => serverModel.credentialsChanged(),
                     decoration: buildInputDecorationAuth(
                       context,
                       const InputDecoration(
@@ -133,13 +128,13 @@ class _AddServerDialogState extends State<AddServerDialog> {
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
-                    onChanged: (_) => Provider.of<ServerModel>(context, listen: false).credentialsChanged(),
+                    onChanged: (_) => serverModel.credentialsChanged(),
                     decoration: buildInputDecorationAuth(context, const InputDecoration(labelText: "Password (optional)")),
                   ),
                 ],
               ),
             ),
-          )),
+          ),
     );
   }
 }

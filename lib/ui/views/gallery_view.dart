@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/models/models.dart';
-import 'package:pigallery2_android/core/strings.dart';
+import 'package:pigallery2_android/core/util/strings.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/gallery/gallery_grid_view.dart';
 import 'package:pigallery2_android/ui/widgets/loading_indicator.dart';

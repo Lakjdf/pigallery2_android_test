@@ -2,7 +2,7 @@ import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/models/models.dart';
 import 'package:pigallery2_android/core/services/pigallery2_api.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
-import 'package:pigallery2_android/core/strings.dart';
+import 'package:pigallery2_android/core/util/strings.dart';
 
 class ApiService {
   late PiGallery2API _api;

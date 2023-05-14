@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
-import 'package:pigallery2_android/core/strings.dart';
+import 'package:pigallery2_android/core/util/strings.dart';
 import 'package:pigallery2_android/core/util/extensions.dart';
 
 extension ParseToString on SortOption {
