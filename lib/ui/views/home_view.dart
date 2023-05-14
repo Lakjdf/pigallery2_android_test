@@ -25,11 +25,11 @@ class HomeView extends StatelessWidget {
       isScrollControlled: true,
       context: context,
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 6, 24, 0),
+        return const Padding(
+          padding: EdgeInsets.fromLTRB(24, 6, 24, 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               BottomSheetHandle(),
               BadCertificateSelection(),
               Divider(thickness: 3),
@@ -69,10 +69,12 @@ class HomeView extends StatelessWidget {
       padding: const EdgeInsets.all(0),
       child: ListTile(
         visualDensity: const VisualDensity(vertical: -3),
+        horizontalTitleGap: 0,
         title: Text(name),
         trailing: IgnorePointer(
           child: Radio(
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: const VisualDensity(horizontal: -4),
             value: thisValue,
             groupValue: selectedValue,
             onChanged: null,

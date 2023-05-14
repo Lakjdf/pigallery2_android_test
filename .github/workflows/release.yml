@@ -30,7 +30,7 @@ jobs:
           VERSION_NAME=${GITHUB_REF_NAME#v}
           VERSION_CODE=${VERSION_NAME//.}
           echo "Version: $VERSION_NAME ($VERSION_CODE)"
-          flutter build apk --split-per-abi --release --enable-experiment=records --build-name=$VERSION_NAME --build-number=$VERSION_CODE
+          flutter build apk --split-per-abi --release --build-name=$VERSION_NAME --build-number=$VERSION_CODE
         
       - name: Create Release
         uses: ncipollo/release-action@v1
