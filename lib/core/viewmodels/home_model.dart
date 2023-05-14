@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
+import 'package:pigallery2_android/core/strings.dart';
 import 'package:pigallery2_android/core/util/extensions.dart';
 
 extension ParseToString on SortOption {
@@ -96,7 +97,7 @@ class HomeModelState {
         break;
       case SortOption.name:
         compareFunction = _comparePreferDictionaries(
-          (Directory a, Directory b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          (Directory a, Directory b) => compareNatural(a.name.toLowerCase(), b.name.toLowerCase()),
           (Media a, Media b) => compareNatural(a.name.toLowerCase(), b.name.toLowerCase()),
         );
         break;
@@ -245,7 +246,7 @@ class HomeModel extends ChangeNotifier {
 
   Future<void> _fetchItems() async {
     if (serverUrl == null) {
-      currentState.error = 'Please add a Server';
+      currentState.error = Strings.errorNoServerConfigured;
       currentState.files = [];
       currentState.baseDirectory = null;
       notifyListeners();

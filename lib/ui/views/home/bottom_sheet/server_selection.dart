@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/server_model.dart';
-import 'package:pigallery2_android/ui/views/bottom_sheet/add_server_dialog.dart';
+import 'package:pigallery2_android/ui/views/home/bottom_sheet/add_server_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ServerSelection extends StatelessWidget {

@@ -2,6 +2,7 @@ import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/models/models.dart';
 import 'package:pigallery2_android/core/services/pigallery2_api.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
+import 'package:pigallery2_android/core/strings.dart';
 
 class ApiService {
   late PiGallery2API _api;
@@ -11,7 +12,7 @@ class ApiService {
 
   String get _serverUrl {
     if (serverUrl == null) {
-      throw Exception("Please add a server");
+      throw Exception(Strings.errorNoServerConfigured);
     }
     return serverUrl!;
   }

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/core/services/models/initial_server_data.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
@@ -10,6 +9,7 @@ import 'package:pigallery2_android/core/viewmodels/server_model.dart';
 import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
+import 'package:pigallery2_android/ui/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -46,11 +46,7 @@ class MyApp extends StatelessWidget {
         future: storageHelper.init(),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return Center(
-              child: SpinKitSpinningLines(
-                color: CustomThemeData.oledColorScheme.secondary,
-              ),
-            );
+            return const LoadingIndicator();
           }
 
           return MultiProvider(
