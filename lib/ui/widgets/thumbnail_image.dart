@@ -6,7 +6,7 @@ import 'package:pigallery2_android/ui/widgets/error_image.dart';
 import 'package:provider/provider.dart';
 
 class ThumbnailImage extends StatelessWidget {
-  final String apiPath;
+  final String? apiPath;
   final BoxFit fit;
   final ImageWidgetBuilder? imageBuilder;
 
@@ -14,9 +14,10 @@ class ThumbnailImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (apiPath == null) return const ErrorImage();
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     return CachedNetworkImage(
-      imageUrl: apiPath,
+      imageUrl: apiPath!,
       httpHeaders: model.headers,
       imageBuilder: imageBuilder,
       placeholder: (context, url) => SpinKitRipple(

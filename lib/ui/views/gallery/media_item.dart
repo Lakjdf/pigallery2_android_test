@@ -5,7 +5,7 @@ import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 
 class MediaItem extends StatelessWidget {
   final Media item;
-  final String thumbnailUrl;
+  final String? thumbnailUrl;
   final int borderRadius;
   final VoidCallback onTap;
 

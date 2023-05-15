@@ -140,13 +140,15 @@ class HomeModelState {
   }
 
   /// Relative API path to the thumbnail of [item].
-  String getRelativeThumbnailApiPath(File item) {
-    DirectoryPath parentDirectory = baseDirectory!;
-    if (item.runtimeType == Directory) {
-      item = (item as Directory).preview!;
-      parentDirectory = (item as DirectoryPreview).directory;
+  String? getRelativeThumbnailApiPath(File item) {
+    String? name = item.name;
+    DirectoryPath? parentDirectory = baseDirectory;
+    if (item is Directory) {
+      name = item.preview?.name;
+      parentDirectory = item.preview?.directory;
     }
-    return "${_relativeApiPath(parentDirectory)}/${item.name}/thumbnail";
+    if (name == null || parentDirectory == null) return null;
+    return "${_relativeApiPath(parentDirectory)}/$name/thumbnail";
   }
 }
 
@@ -211,8 +213,8 @@ class HomeModel extends ChangeNotifier {
   }
 
   /// API path to the thumbnail of [item] of the [state].
-  String getThumbnailApiPath(HomeModelState state, File item) {
-    return "${_apiDelegate.directoriesEndpoint}${state.getRelativeThumbnailApiPath(item)}";
+  String? getThumbnailApiPath(HomeModelState state, File item) {
+    return state.getRelativeThumbnailApiPath(item)?.let((it) => "${_apiDelegate.directoriesEndpoint}$it");
   }
 
   /// Path to the current directory based on concatenating directory names.
