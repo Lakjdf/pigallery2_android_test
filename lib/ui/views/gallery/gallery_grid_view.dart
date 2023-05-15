@@ -98,7 +98,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
         itemBuilder: (BuildContext context, int index) {
           HomeModel homeModel = Provider.of<HomeModel>(context, listen: false);
           String? thumbnailUrl = homeModel.getThumbnailApiPath(homeModel.stateOf(widget.stackPosition), widget.files[index]);
-          return widget.files[index].runtimeType == Directory
+          return widget.files[index] is Directory
               ? DirectoryItem(
                   dir: widget.files[index] as Directory,
                   thumbnailUrl: thumbnailUrl,

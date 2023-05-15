@@ -61,7 +61,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
       onSelected: (dynamic option) {
-        if (option.runtimeType == SortOption) {
+        if (option is SortOption) {
           model.sortOption = option;
         } else {
           model.sortOrder = option;

@@ -75,11 +75,11 @@ class HomeModelState {
   int Function(File, File) _comparePreferDictionaries(int Function(Directory, Directory) directorySortFunction, int Function(Media, Media) mediaSortFunction) {
     /// Always list directories first.
     return (a, b) {
-      if (a.runtimeType == Directory && b.runtimeType == Directory) {
-        return directorySortFunction(a as Directory, b as Directory);
-      } else if (a.runtimeType == Directory) {
+      if (a is Directory && b is Directory) {
+        return directorySortFunction(a, b);
+      } else if (a is Directory) {
         return -1;
-      } else if (b.runtimeType == Directory) {
+      } else if (b is Directory) {
         return 1;
       }
       return mediaSortFunction(a as Media, b as Media);
