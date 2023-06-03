@@ -22,7 +22,7 @@ class MediaDimension {
 class MediaMetadata {
   MediaDimension size;
   int fileSize;
-  int creationDate;
+  double creationDate; // in milliseconds (with sub-milliseconds precision)
   MediaMetadata({required this.size, required this.fileSize, required this.creationDate});
   factory MediaMetadata.fromJson(Map<String, dynamic> json) {
     return MediaMetadata(
@@ -30,7 +30,19 @@ class MediaMetadata {
           ? MediaDimension.fromJson(json['size'])
           : MediaDimension.fromList(json['d']),
       fileSize: json['fileSize'] ?? json['s'],
-      creationDate: json['creationDate'] ?? json['t'],
+      creationDate: numberToDouble(json['creationDate'] ?? json['t']),
     );
+  }
+}
+
+/// Convert int to double - if [value] is of type [int].
+/// Required since there's no implicit conversion from int to double.
+double numberToDouble(dynamic value) {
+  if (value is int) {
+    return value.toDouble();
+  } else if (value is double) {
+    return value;
+  } else {
+    throw FormatException("type ${value.runtimeType} is not a subtype of type 'double'");
   }
 }
