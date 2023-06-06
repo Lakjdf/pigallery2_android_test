@@ -133,10 +133,10 @@ class GlobalSettingsModel extends ChangeNotifier {
   GlobalSettingsModel(this._storageHelper)
       : _appInFullScreen = _storageHelper.getBool(StorageConstants.appInFullScreenKey, false),
         _useMaterial3 = _storageHelper.getBool(StorageConstants.useMaterial3Key, true),
-        _showDirectoryItemCount = _storageHelper.getBool(StorageConstants.showDirectoryItemCount, true),
-        _gridRoundedCorners = _storageHelper.getInt(StorageConstants.gridRoundedCorners, 0),
+        _showDirectoryItemCount = _storageHelper.getBool(StorageConstants.showDirectoryItemCount, false),
+        _gridRoundedCorners = _storageHelper.getInt(StorageConstants.gridRoundedCorners, 6),
         _gridAspectRatio = _storageHelper.getDouble(StorageConstants.gridAspectRatio, 1),
-        _gridSpacing = _storageHelper.getInt(StorageConstants.gridSpacing, 0),
+        _gridSpacing = _storageHelper.getInt(StorageConstants.gridSpacing, 6),
         _gridCrossAxisCountPortrait = _storageHelper.getInt(StorageConstants.gridCrossAxisCountPortrait, 3),
         _gridCrossAxisCountLandscape = _storageHelper.getInt(StorageConstants.gridCrossAxisCountLandscape, 5) {
     if (_appInFullScreen) {
