@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/core/models/models.dart';
-import 'package:pigallery2_android/core/viewmodels/home_model.dart';
+import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/ui/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
@@ -13,17 +13,17 @@ class PhotoViewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    ApiService api = Provider.of<ApiService>(context, listen: false);
     return PhotoView(
       loadingBuilder: (context, event) => ThumbnailImage(
         key: ObjectKey(item),
-        model.getThumbnailApiPath(model.currentState, item),
+        api.getThumbnailApiPath(item),
       ),
       backgroundDecoration: const BoxDecoration(color: Colors.transparent),
       minScale: PhotoViewComputedScale.contained * 1.0,
       imageProvider: NetworkImage(
-        model.getMediaApiPath(model.currentState, item),
-        headers: model.headers,
+        api.getMediaApiPath(item),
+        headers: api.headers,
       ),
       errorBuilder: (context, url, error) => const ErrorImage(),
     );

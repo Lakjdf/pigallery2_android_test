@@ -1,53 +1,32 @@
 import 'package:pigallery2_android/core/models/file.dart';
 import 'package:pigallery2_android/core/models/media.dart';
+import 'package:pigallery2_android/core/util/extensions.dart';
 
-List<Directory> allDirectoriesFromJson(List<Map<String, dynamic>> jsonData) {
-  dynamic res = List<Directory>.from(jsonData.map((x) => Directory.fromJson(x)));
-  return res;
+List<Directory> allDirectoriesFromJson(List<Map<String, dynamic>> jsonData, String parentPath) {
+  return List<Directory>.from(jsonData.map((x) => Directory.fromJson(x, parentPath)));
 }
 
 class DirectoryPath extends File {
-  String path;
+  DirectoryPath({required id, required name, required String path}) : super(id: id, name: name, parentPath: path);
 
-  DirectoryPath({
-    required id,
-    required name,
-    required this.path,
-  }) : super(id: id, name: name);
-
-  factory DirectoryPath.fromJson(Map<String, dynamic> json) {
-    return DirectoryPath(
-      id: json['id'],
-      name: json['name'],
-      path: json['path'],
-    );
+  static String _parsePath(Map<String, dynamic> json) {
+    String path = json['path'];
+    return path.let((it) => it == "./" ? "" : it);
   }
+
+  DirectoryPath.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, _parsePath(json));
 }
 
 class DirectoryPreview extends File {
-  DirectoryPath directory;
-
-  DirectoryPreview({
-    required id,
-    required name,
-    required this.directory,
-  }) : super(id: id, name: name);
-
-  factory DirectoryPreview.fromJson(Map<String, dynamic> json) {
-    return DirectoryPreview(
-      id: json['id'],
-      name: json['name'],
-      directory: DirectoryPath.fromJson(json['directory']),
-    );
-  }
+  DirectoryPreview.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, DirectoryPath.fromJson(json['directory'], parentPath).apiPath);
 }
 
 class Directory extends DirectoryPath {
-  int mediaCount;
-  int lastModified;
-  List<Directory> directories;
-  DirectoryPreview? preview;
-  List<Media> media;
+  final int mediaCount;
+  final int lastModified;
+  final List<Directory> directories;
+  final DirectoryPreview? preview;
+  final List<Media> media;
 
   Directory({
     required id,
@@ -58,18 +37,21 @@ class Directory extends DirectoryPath {
     required this.directories,
     required this.preview,
     required this.media,
+    required String parentPath,
   }) : super(id: id, name: name, path: path);
 
-  factory Directory.fromJson(Map<String, dynamic> json) {
-    return Directory(
-      id: json['id'],
-      name: json['name'],
-      path: json['path'],
-      mediaCount: json['mediaCount'],
-      lastModified: json['lastModified'],
-      directories: json['directories'] != null ? allDirectoriesFromJson(List.from(json['directories'])) : [],
-      preview: json['preview'] != null ? DirectoryPreview.fromJson(json['preview']) : null,
-      media: json['media'] != null ? allMediaFromJson(List.from(json['media'])) : [],
-    );
+  /// Parse [Media] items using the same [parentPath].
+  static List<Media> _parseMedia(Map<String, dynamic> json, String parentPath) {
+    if (json['media'] == null) return [];
+    List<Map<String, dynamic>> mediaJson = List.from(json['media']);
+    return allMediaFromJson(mediaJson, List.filled(mediaJson.length, parentPath));
   }
+
+  Directory.fromJson(Map<String, dynamic> json, String parentPath)
+      : mediaCount = json['mediaCount'],
+        lastModified = json['lastModified'],
+        directories = json['directories'] != null ? allDirectoriesFromJson(List.from(json['directories']), parentPath) : [],
+        preview = json['preview'] != null ? DirectoryPreview.fromJson(json['preview'], parentPath) : null,
+        media = _parseMedia(json, parentPath),
+        super.fromJson(json, parentPath);
 }

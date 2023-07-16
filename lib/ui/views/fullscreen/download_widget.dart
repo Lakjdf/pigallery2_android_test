@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pigallery2_android/core/models/media.dart';
-import 'package:pigallery2_android/core/viewmodels/home_model.dart';
+import 'package:pigallery2_android/core/services/api.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
@@ -41,15 +41,15 @@ class _DownloadWidgetState extends State<DownloadWidget> {
   }
 
   Future<void> _downloadImage(Function(File) action) async {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
-    String path = model.getMediaApiPath(model.currentState, widget.item);
+    ApiService api = Provider.of<ApiService>(context, listen: false);
+    String path = api.getMediaApiPath(widget.item);
     String filename = path.split('/').last;
     final file = File('${(await getTemporaryDirectory()).path}/${filename.split('.').first}-${widget.item.id}.${filename.split('.').last}');
     if (file.existsSync()) {
       action(file);
       return;
     }
-    _response = await http.Client().send(http.Request('GET', Uri.parse(path))..headers.addAll(model.headers));
+    _response = await http.Client().send(http.Request('GET', Uri.parse(path))..headers.addAll(api.headers));
     setState(() {
       _total = _response.contentLength ?? 0;
       _downloading = true;

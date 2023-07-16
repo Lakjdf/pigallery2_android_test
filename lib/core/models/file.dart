@@ -1,14 +1,19 @@
 import 'dart:math' as math;
+import 'package:path/path.dart' as p;
 
 class File {
-  String name;
-  int id;
-  File({
-    required this.name,
-    required int? id,
-  }) : id = id ?? math.Random().nextInt(4294967296); // create own id if not existing
+  final String name;
+  final int id;
 
-  factory File.fromJson(Map<String, dynamic> json) {
-    return File(name: json['name'], id: json['id']);
-  }
+  final String _parentPath;
+
+  /// Relative API path. Does not include server url.
+  String get apiPath => p.join(_parentPath, name);
+
+  File({required this.name, required this.id, required String parentPath}) : _parentPath = parentPath;
+
+  /// Creates a local [id] if none is given.
+  File.fromJson(Map<String, dynamic> json, this._parentPath)
+      : name = json['name'] ?? json['n'],
+        id = json['id'] ?? math.Random().nextInt(4294967296);
 }

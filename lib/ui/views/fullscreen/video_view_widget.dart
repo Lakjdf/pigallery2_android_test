@@ -2,8 +2,8 @@ import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/core/models/models.dart';
+import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/core/viewmodels/fullscreen_model.dart';
-import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
@@ -29,11 +29,11 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
   }
 
   Widget buildPlaceholder() {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    ApiService api = Provider.of<ApiService>(context, listen: false);
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        ThumbnailImage(key: ObjectKey(widget.item), model.getThumbnailApiPath(model.currentState, widget.item)),
+        ThumbnailImage(key: ObjectKey(widget.item), api.getThumbnailApiPath(widget.item)),
         SpinKitRipple(color: Theme.of(context).colorScheme.onSurfaceVariant, size: 0.5 * MediaQuery.of(context).size.width),
       ],
     );
@@ -70,11 +70,11 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
       playerVisibilityChangedBehavior: onVisibilityChanged,
     );
 
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    ApiService api = Provider.of<ApiService>(context, listen: false);
     BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      model.getMediaApiPath(model.currentState, widget.item),
-      headers: model.headers,
+      api.getMediaApiPath(widget.item),
+      headers: api.headers,
     );
 
     _betterPlayerController = BetterPlayerController(

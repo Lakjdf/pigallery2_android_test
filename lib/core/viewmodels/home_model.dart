@@ -31,9 +31,6 @@ class HomeModelState {
   /// Whether to sort with [sortOption] in ascending order.
   bool sortAscending;
 
-  /// Name of the base directory.
-  String baseDirectoryName;
-
   List<File> _files = List.unmodifiable([]);
 
   /// [File]s received from the [ApiService].
@@ -46,8 +43,9 @@ class HomeModelState {
   /// All [files] of type [Media].
   List<Media> get media => files.whereType<Media>().toList();
 
-  HomeModelState(this.baseDirectoryName, this.sortOption, this.sortAscending);
+  HomeModelState(this.baseDirectory, this.sortOption, this.sortAscending);
 
+  //region sorting
   bool updateSortOption(SortOption option) {
     if (option != sortOption || option == SortOption.random) {
       sortOption = option;
@@ -131,25 +129,7 @@ class HomeModelState {
       return result;
     };
   }
-
-  String _relativeApiPath(DirectoryPath directoryPath) => "${directoryPath.path}${directoryPath.name}";
-
-  /// Relative API path to [item].
-  String getRelativeMediaApiPath(Media item) {
-    return "${_relativeApiPath(baseDirectory!)}/${item.name}";
-  }
-
-  /// Relative API path to the thumbnail of [item].
-  String? getRelativeThumbnailApiPath(File item) {
-    String? name = item.name;
-    DirectoryPath? parentDirectory = baseDirectory;
-    if (item is Directory) {
-      name = item.preview?.name;
-      parentDirectory = item.preview?.directory;
-    }
-    if (name == null || parentDirectory == null) return null;
-    return "${_relativeApiPath(parentDirectory)}/$name/thumbnail";
-  }
+  //endregion
 }
 
 class HomeModel extends ChangeNotifier {
@@ -199,7 +179,7 @@ class HomeModel extends ChangeNotifier {
   HomeModel(this._apiDelegate, this._storageHelper)
       : _state = [
           HomeModelState(
-            "",
+            null,
             _storageHelper.getSortOption(StorageConstants.sortOptionKey, SortOption.name),
             _storageHelper.getBool(StorageConstants.sortAscendingKey, true),
           )
@@ -207,23 +187,8 @@ class HomeModel extends ChangeNotifier {
     fetchItems();
   }
 
-  /// API path to [item] of the [state].
-  String getMediaApiPath(HomeModelState state, Media item) {
-    return "${_apiDelegate.directoriesEndpoint}${state.getRelativeMediaApiPath(item)}";
-  }
-
-  /// API path to the thumbnail of [item] of the [state].
-  String? getThumbnailApiPath(HomeModelState state, File item) {
-    return state.getRelativeThumbnailApiPath(item)?.let((it) => "${_apiDelegate.directoriesEndpoint}$it");
-  }
-
-  /// Path to the current directory based on concatenating directory names.
-  String get _currentBaseDirectoryPath {
-    return _state.where((e) => e.baseDirectoryName.isNotEmpty).map((e) => e.baseDirectoryName).join("/");
-  }
-
   /// Register a new [HomeView] instance.
-  void addStack(String baseDirectory) {
+  void addStack(Directory baseDirectory) {
     _state.add(HomeModelState(baseDirectory, sortOption, sortAscending));
     fetchItems();
   }
@@ -260,7 +225,7 @@ class HomeModel extends ChangeNotifier {
     Directory? currentDirBefore = currentState.baseDirectory;
     notifyListeners();
 
-    Directory? result = await _apiDelegate.getDirectories(path: _currentBaseDirectoryPath).catchError((e) {
+    Directory? result = await _apiDelegate.getDirectories(path: currentState.baseDirectory?.apiPath).catchError((e) {
       currentState.error = e.toString();
       return Future<Directory?>.value(null);
     });

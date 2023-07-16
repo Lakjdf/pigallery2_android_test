@@ -51,8 +51,8 @@ class MyApp extends StatelessWidget {
 
           return MultiProvider(
             providers: [
-              Provider(create: (_) {
-                return ApiService(
+              Provider<ApiService>(create: (_) {
+                return PiGallery2ApiAuthWrapper(
                   initialServerData: snapshot.data as InitialServerData,
                   storageHelper: storageHelper,
                 );

@@ -83,7 +83,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       iconTheme: theme.iconTheme,
       titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-      title: Text(model.stateOf(stackPosition).baseDirectoryName),
+      title: Text(model.stateOf(stackPosition).baseDirectory?.name ?? ""),
       actions: [
         stackPosition == 0
             ? IconButton(

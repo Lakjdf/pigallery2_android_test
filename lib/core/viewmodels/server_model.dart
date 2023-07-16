@@ -42,7 +42,7 @@ class ServerModel extends ChangeNotifier {
     await storageHelper.storeServerUrls(_serverUrls);
     await storageHelper.deleteCredentials(url);
     await storageHelper.storeSelectedServerIndex(selectedServerIndex < 2 ? 0 : selectedServerIndex - 1);
-    api.updateServer(storageHelper.getSelectedServerData());
+    api.updateServerConfig(storageHelper.getSelectedServerData());
     notifyListeners();
   }
 
@@ -50,7 +50,7 @@ class ServerModel extends ChangeNotifier {
 
   Future<void> selectServer(String url) async {
     await storageHelper.storeSelectedServerIndex(_serverUrls.indexOfOrNull(url) ?? 0);
-    api.updateServer(storageHelper.getServerData(url));
+    api.updateServerConfig(storageHelper.getServerData(url));
     notifyListeners();
   }
 

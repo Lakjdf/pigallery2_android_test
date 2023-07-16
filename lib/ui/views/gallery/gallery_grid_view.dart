@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/models/models.dart';
+import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/core/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
@@ -49,8 +50,8 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     }
   }
 
-  void openDirectory(BuildContext context, String directoryName) {
-    Provider.of<HomeModel>(context, listen: false).addStack(directoryName);
+  void openDirectory(BuildContext context, Directory directory) {
+    Provider.of<HomeModel>(context, listen: false).addStack(directory);
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -96,15 +97,15 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           childAspectRatio: model.gridAspectRatio,
         ),
         itemBuilder: (BuildContext context, int index) {
-          HomeModel homeModel = Provider.of<HomeModel>(context, listen: false);
-          String? thumbnailUrl = homeModel.getThumbnailApiPath(homeModel.stateOf(widget.stackPosition), widget.files[index]);
+          ApiService api = Provider.of<ApiService>(context, listen: false);
+          String? thumbnailUrl = api.getThumbnailApiPath(widget.files[index]);
           return widget.files[index] is Directory
               ? DirectoryItem(
                   dir: widget.files[index] as Directory,
                   thumbnailUrl: thumbnailUrl,
                   borderRadius: model.gridRoundedCorners,
                   showDirectoryItemCount: model.showDirectoryItemCount,
-                  onTap: () => openDirectory(context, widget.files[index].name),
+                  onTap: () => openDirectory(context, widget.files[index] as Directory),
                 )
               : MediaItem(
                   item: widget.files[index] as Media,

@@ -31,6 +31,7 @@ dependencies:
   backdrop:
     git:
       url: https://github.com/Lakjdf/backdrop.git
+  path: ^1.8.3
   
   # file selector dialog to download media:
   # flutter_plugin_android_lifecycle: ^2.0.1
