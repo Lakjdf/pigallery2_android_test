@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/views/home/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/views/website_view.dart';
 import 'package:pigallery2_android/ui/widgets/animated_backdrop_toggle_button.dart';
 import 'package:provider/provider.dart';
@@ -85,6 +86,17 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       title: Text(model.stateOf(stackPosition).baseDirectory?.name ?? ""),
       actions: [
+        stackPosition == 0
+            ? IconButton(
+                onPressed: () async {
+                  HomeModel model = Provider.of<HomeModel>(context, listen: false);
+                  model.startSearch();
+                  await showSearch(context: context, delegate: GallerySearchDelegate());
+                  model.stopSearch();
+                },
+                icon: const Icon(Icons.search),
+              )
+            : Container(),
         stackPosition == 0
             ? IconButton(
                 onPressed: showServerSettings,

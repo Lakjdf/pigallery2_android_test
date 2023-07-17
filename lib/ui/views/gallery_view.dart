@@ -19,11 +19,6 @@ class GalleryView extends StatefulWidget {
 class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin {
   late Future<void>? fetchRequestTrigger;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   void checkForError(BuildContext context, String? error) {
     ScaffoldMessenger.of(context).clearSnackBars();
     if (error != null) {

@@ -1,10 +1,10 @@
 # PiGallery2 Android Test
 
-This is a basic android app capable of displaying images and videos of a PiGallery2 instance - no metadata, search, albums, etc.
+This is a basic Android app for [PiGallery2](https://github.com/bpatrik/pigallery2) implemented using Flutter.
 
-Most likely works only with version >= 1.9.5.
+It doesn't display any metadata and only supports a simple 'any_text' search.
 
-The mobile view of the PiGallery2 frontend is great. I only created this app to get more familiar with Flutter.
+Only tested with PiGallery2 v1.9.5.
 
 ## Packages used
 
@@ -23,6 +23,8 @@ The mobile view of the PiGallery2 frontend is great. I only created this app to 
 - [collection](https://pub.dev/packages/collection) - natural sorting
 - [dynamic_color](https://pub.dev/packages/dynamic_color) - Retrieve dynamic color scheme from device
 - [backdrop](https://pub.dev/packages/backdrop) - show a back layer for some settings
+- [path](https://pub.dev/packages/path) - concatenate api paths
+- [async](https://pub.dev/packages/async) - utility classes for async operations
 
 ## Credits
 

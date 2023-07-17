@@ -12,7 +12,7 @@ class MediaItem extends StatelessWidget {
   const MediaItem({required this.item, required this.thumbnailUrl, required this.borderRadius, required this.onTap, super.key});
 
   bool isVideo(Media item) {
-    return lookupMimeType(item.name)!.contains("video");
+    return lookupMimeType(item.name)?.contains("video") == true;
   }
 
   @override

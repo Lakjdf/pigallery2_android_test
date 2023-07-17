@@ -5,6 +5,7 @@ import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
 import 'package:pigallery2_android/core/util/strings.dart';
 import 'package:pigallery2_android/core/util/extensions.dart';
+import 'package:async/async.dart';
 
 extension ParseToString on SortOption {
   String getName() {
@@ -176,6 +177,12 @@ class HomeModel extends ChangeNotifier {
   /// Whether an api request is ongoing.
   bool _requestAwaitingResponse = false;
 
+  bool _isSearching = false;
+
+  bool get isSearching => _isSearching;
+
+  CancelableOperation? _currentSearch;
+
   HomeModel(this._apiDelegate, this._storageHelper)
       : _state = [
           HomeModelState(
@@ -239,5 +246,48 @@ class HomeModel extends ChangeNotifier {
       }
       notifyListeners();
     }
+  }
+
+  void startSearch() {
+    if (!_isSearching) {
+      _state.add(HomeModelState(null, sortOption, sortAscending));
+    }
+    _isSearching = true;
+  }
+
+  void search(String searchText) {
+    _currentSearch?.cancel();
+    _currentSearch = CancelableOperation.fromFuture(_search(searchText)).then((result) {
+      currentState.baseDirectory = result;
+      currentState.files = [];
+      currentState.isLoading = false;
+      if (result != null) {
+        currentState.files = [...result.directories, ...result.media];
+      }
+      notifyListeners();
+    });
+  }
+
+  void stopSearch() {
+    _currentSearch?.cancel();
+    _currentSearch = null;
+    _isSearching = false;
+    popStack();
+  }
+
+  Future<Directory?> _search(String searchText) {
+    if (serverUrl == null) {
+      currentState.error = Strings.errorNoServerConfigured;
+      currentState.files = [];
+      currentState.baseDirectory = null;
+      return Future<Directory?>.value(null);
+    }
+    currentState.isLoading = true;
+    currentState.error = null;
+
+    return _apiDelegate.search(searchText: searchText).catchError((e) {
+      currentState.error = e.toString();
+      return Future<Directory?>.value(null);
+    });
   }
 }
