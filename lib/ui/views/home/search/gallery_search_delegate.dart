@@ -8,6 +8,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   void close(BuildContext context, String result) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     model.stopSearch();
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
     super.close(context, result);
   }
 

@@ -21,6 +21,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   void checkForError(BuildContext context, String? error) {
     ScaffoldMessenger.of(context).clearSnackBars();
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     if (error != null) {
       SnackBar snackBar = SnackBar(
         action: error == Strings.errorNoServerConfigured
@@ -28,10 +29,12 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
                 label: "Add",
                 onPressed: widget.showServerSettings,
               )
-            : SnackBarAction(
-                label: "Reload",
-                onPressed: Provider.of<HomeModel>(context, listen: false).fetchItems,
-              ),
+            : model.isSearching
+                ? null
+                : SnackBarAction(
+                    label: "Reload",
+                    onPressed: model.fetchItems,
+                  ),
         content: Text(error),
         padding: const EdgeInsets.symmetric(
           horizontal: 8,

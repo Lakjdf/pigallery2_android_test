@@ -86,17 +86,19 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       title: Text(model.stateOf(stackPosition).baseDirectory?.name ?? ""),
       actions: [
-        stackPosition == 0
-            ? IconButton(
-                onPressed: () async {
-                  HomeModel model = Provider.of<HomeModel>(context, listen: false);
-                  model.startSearch();
-                  await showSearch(context: context, delegate: GallerySearchDelegate());
-                  model.stopSearch();
-                },
-                icon: const Icon(Icons.search),
-              )
-            : Container(),
+        Consumer<HomeModel>(
+          builder: (context, model, child) => stackPosition == 0 && model.serverUrl != null
+              ? IconButton(
+                  onPressed: () async {
+                    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+                    model.startSearch();
+                    await showSearch(context: context, delegate: GallerySearchDelegate());
+                    model.stopSearch();
+                  },
+                  icon: const Icon(Icons.search),
+                )
+              : Container(),
+        ),
         stackPosition == 0
             ? IconButton(
                 onPressed: showServerSettings,
