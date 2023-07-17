@@ -81,10 +81,11 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     ThemeData theme = Theme.of(context);
+    String? directoryName = model.stateOf(stackPosition).baseDirectory?.name;
     return AppBar(
       iconTheme: theme.iconTheme,
       titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-      title: Text(model.stateOf(stackPosition).baseDirectory?.name ?? ""),
+      title: Text(stackPosition == 0 && directoryName == "." ? "" : directoryName ?? ""), // don't show name of root dir '.'
       actions: [
         Consumer<HomeModel>(
           builder: (context, model, child) => stackPosition == 0 && model.serverUrl != null

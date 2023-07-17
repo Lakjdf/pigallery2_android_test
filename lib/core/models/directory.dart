@@ -1,6 +1,5 @@
 import 'package:pigallery2_android/core/models/file.dart';
 import 'package:pigallery2_android/core/models/media.dart';
-import 'package:pigallery2_android/core/util/extensions.dart';
 
 List<Directory> allDirectoriesFromJson(List<Map<String, dynamic>> jsonData, String parentPath) {
   return List<Directory>.from(jsonData.map((x) => Directory.fromJson(x, parentPath)));
@@ -11,7 +10,7 @@ class DirectoryPath extends File {
 
   static String _parsePath(Map<String, dynamic> json) {
     String path = json['path'];
-    return path.let((it) => it == "./" ? "" : it);
+    return path.replaceAll("./", "");
   }
 
   DirectoryPath.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, _parsePath(json));
