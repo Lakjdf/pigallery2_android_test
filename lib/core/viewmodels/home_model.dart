@@ -37,6 +37,8 @@ class HomeModelState {
   /// [File]s received from the [ApiService].
   List<File> get files => _files;
 
+  final bool _isSearch;
+
   set files(List<File> val) {
     _files = List.unmodifiable(_sort(val));
   }
@@ -44,7 +46,7 @@ class HomeModelState {
   /// All [files] of type [Media].
   List<Media> get media => files.whereType<Media>().toList();
 
-  HomeModelState(this.baseDirectory, this.sortOption, this.sortAscending);
+  HomeModelState(this.baseDirectory, this.sortOption, this.sortAscending, this._isSearch);
 
   //region sorting
   bool updateSortOption(SortOption option) {
@@ -66,6 +68,7 @@ class HomeModelState {
   }
 
   List<File> _sort(List<File> toSort) {
+    if (_isSearch) return toSort;
     if (sortOption == SortOption.random) toSort.shuffle();
     toSort.sort(_compare(sortOption));
     return sortAscending ? toSort : toSort.reversed.toList();
@@ -189,6 +192,7 @@ class HomeModel extends ChangeNotifier {
             null,
             _storageHelper.getSortOption(StorageConstants.sortOptionKey, SortOption.name),
             _storageHelper.getBool(StorageConstants.sortAscendingKey, true),
+            false,
           )
         ] {
     fetchItems();
@@ -196,7 +200,7 @@ class HomeModel extends ChangeNotifier {
 
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
-    _state.add(HomeModelState(baseDirectory, sortOption, sortAscending));
+    _state.add(HomeModelState(baseDirectory, sortOption, sortAscending, false));
     fetchItems();
   }
 
@@ -250,7 +254,7 @@ class HomeModel extends ChangeNotifier {
 
   void startSearch() {
     if (!_isSearching) {
-      _state.add(HomeModelState(null, sortOption, sortAscending));
+      _state.add(HomeModelState(null, sortOption, sortAscending, true));
     }
     _isSearching = true;
   }
