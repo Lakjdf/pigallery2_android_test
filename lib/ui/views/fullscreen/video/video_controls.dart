@@ -64,21 +64,46 @@ class _VideoControlsState extends State<VideoControls> {
     return 1;
   }
 
+  Widget buildScrim({double xTranslation = 0, double yTranslation = 0}) {
+    Color surfaceVariant = Theme.of(context).colorScheme.surfaceVariant;
+    return Container(
+      width: 300,
+      height: 300,
+      transform: Matrix4.translationValues(xTranslation, yTranslation, 0),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            surfaceVariant.withOpacity(0.15),
+            surfaceVariant.withOpacity(0.1),
+            surfaceVariant.withOpacity(0),
+          ],
+          stops: const [0, 0.44, 1],
+        ),
+      ),
+    );
+  }
+
   void handleSeekBackwards() {
-    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     imageFadeAnim = FadeAnimation(
       duration: fadeAnimationDuration,
       curve: Curves.easeOutQuart,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.centerLeft,
         children: [
-          Text(
-            "- ${(tapCount - 1) * seekDuration.inSeconds}s",
-            style: TextStyle(fontSize: 20, color: onSurfaceVariant),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Icon(Icons.fast_rewind, size: 75, color: onSurfaceVariant),
+          buildScrim(xTranslation: -110, yTranslation: -6),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "- ${(tapCount - 1) * seekDuration.inSeconds}s",
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Icon(Icons.fast_rewind, size: 75, color: Colors.white),
+              ),
+            ],
           ),
         ],
       ),
@@ -92,20 +117,25 @@ class _VideoControlsState extends State<VideoControls> {
   }
 
   void handleSeekForwards() {
-    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     imageFadeAnim = FadeAnimation(
       duration: fadeAnimationDuration,
       curve: Curves.easeOutQuart,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.centerRight,
         children: [
-          Text(
-            "+ ${(tapCount - 1) * seekDuration.inSeconds}s",
-            style: TextStyle(fontSize: 20, color: onSurfaceVariant),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Icon(Icons.fast_forward, size: 75, color: onSurfaceVariant),
+          buildScrim(xTranslation: 110, yTranslation: 6),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "+ ${(tapCount - 1) * seekDuration.inSeconds}s",
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Icon(Icons.fast_forward, size: 75, color: Colors.white),
+              ),
+            ],
           ),
         ],
       ),
@@ -119,21 +149,20 @@ class _VideoControlsState extends State<VideoControls> {
   }
 
   void handlePlayPause() {
-    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
-    if (controller.isPlaying()!) {
-      imageFadeAnim = FadeAnimation(
-        duration: fadeAnimationDuration,
-        child: Icon(Icons.pause, size: 100, color: onSurfaceVariant),
-      );
+    bool isPlaying = controller.isPlaying()!;
+    IconData iconData = isPlaying ? Icons.pause : Icons.play_arrow;
+
+    imageFadeAnim = FadeAnimation(
+      duration: fadeAnimationDuration,
+      child: Icon(
+        iconData,
+        size: 100,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
+    if (isPlaying) {
       controller.pause();
     } else {
-      imageFadeAnim = FadeAnimation(
-          duration: fadeAnimationDuration,
-          child: Icon(
-            Icons.play_arrow,
-            size: 100,
-            color: onSurfaceVariant,
-          ));
       controller.play();
     }
   }

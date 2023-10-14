@@ -52,7 +52,8 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
   @override
   Widget build(BuildContext context) {
     Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Padding(
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
       padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
       child: Row(
         children: [
