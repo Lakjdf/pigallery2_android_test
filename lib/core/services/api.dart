@@ -72,7 +72,7 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   /// Full API path to the thumbnail of [item].
   @override
   String? getThumbnailApiPath(File item) {
-    String? thumbnailPath = item is Directory ? item.preview?.apiPath : item.apiPath;
+    String? thumbnailPath = item is Directory ? item.cover?.apiPath : item.apiPath;
     return thumbnailPath?.let((it) => "${_api.getDirectoriesEndpoint(_serverUrl)}$it/thumbnail");
   }
 

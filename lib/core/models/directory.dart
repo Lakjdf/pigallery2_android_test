@@ -16,15 +16,15 @@ class DirectoryPath extends File {
   DirectoryPath.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, _parsePath(json));
 }
 
-class DirectoryPreview extends File {
-  DirectoryPreview.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, DirectoryPath.fromJson(json['directory'], parentPath).apiPath);
+class DirectoryCover extends File {
+  DirectoryCover.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, DirectoryPath.fromJson(json['directory'], parentPath).apiPath);
 }
 
 class Directory extends DirectoryPath {
   final int mediaCount;
   final int lastModified;
   final List<Directory> directories;
-  final DirectoryPreview? preview;
+  final DirectoryCover? cover;
   final List<Media> media;
 
   Directory({
@@ -34,23 +34,36 @@ class Directory extends DirectoryPath {
     required this.mediaCount,
     required this.lastModified,
     required this.directories,
-    required this.preview,
+    required this.cover,
     required this.media,
     required String parentPath,
   }) : super(id: id, name: name, path: path);
 
+  static List<Directory> _parseDirectories(Map<String, dynamic> json, String parentPath) {
+    dynamic directoriesJson = json['directories'];
+    if (directoriesJson == null) return [];
+    return allDirectoriesFromJson(List.from(directoriesJson), parentPath);
+  }
+
   /// Parse [Media] items using the same [parentPath].
   static List<Media> _parseMedia(Map<String, dynamic> json, String parentPath) {
-    if (json['media'] == null) return [];
-    List<Map<String, dynamic>> mediaJson = List.from(json['media']);
+    dynamic dynamicJson = json['media'];
+    if (dynamicJson == null) return [];
+    List<Map<String, dynamic>> mediaJson = List.from(dynamicJson);
     return allMediaFromJson(mediaJson, List.filled(mediaJson.length, parentPath));
+  }
+
+  static DirectoryCover? _parseCover(Map<String, dynamic> json, String parentPath) {
+    dynamic coverJson = json["cover"] ?? json["preview"];
+    if (coverJson == null) return null;
+    return DirectoryCover.fromJson(coverJson, parentPath);
   }
 
   Directory.fromJson(Map<String, dynamic> json, String parentPath)
       : mediaCount = json['mediaCount'],
         lastModified = json['lastModified'],
-        directories = json['directories'] != null ? allDirectoriesFromJson(List.from(json['directories']), parentPath) : [],
-        preview = json['preview'] != null ? DirectoryPreview.fromJson(json['preview'], parentPath) : null,
+        directories = _parseDirectories(json, parentPath),
+        cover = _parseCover(json, parentPath),
         media = _parseMedia(json, parentPath),
         super.fromJson(json, parentPath);
 }

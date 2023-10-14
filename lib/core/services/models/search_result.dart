@@ -15,7 +15,7 @@ class SearchResult {
       mediaCount: 0,
       lastModified: 0,
       directories: [],
-      preview: null,
+      cover: null,
       media: media,
       parentPath: "",
     );

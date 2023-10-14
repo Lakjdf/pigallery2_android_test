@@ -4,7 +4,7 @@ This is a basic Android app for [PiGallery2](https://github.com/bpatrik/pigaller
 
 It doesn't display any metadata and only supports a simple 'any_text' search.
 
-Only tested with PiGallery2 v1.9.5.
+Only tested with PiGallery2 v1.9.5 & v2.0.0.
 
 ## Packages used
 
