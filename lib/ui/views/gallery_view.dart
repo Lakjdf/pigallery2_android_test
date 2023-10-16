@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/util/strings.dart';
+import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/gallery/gallery_grid_view.dart';
 import 'package:pigallery2_android/ui/views/top_picks/top_picks_view.dart';
@@ -70,7 +71,16 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           },
           child: Column(
             children: [
-              widget.stackPosition == 0 ? const TopPicksView() : Container(),
+              Selector<GlobalSettingsModel, bool>(
+                selector: (context, model) => model.showTopPicks,
+                builder: (context, showTopPicks, child) {
+                  if (widget.stackPosition == 0 && showTopPicks) {
+                    return const TopPicksView();
+                  } else {
+                    return Container();
+                  }
+                },
+              ),
               Flexible(
                 child: Selector<HomeModel, List<File>>(
                   selector: (context, model) => model.stateOf(widget.stackPosition).files,

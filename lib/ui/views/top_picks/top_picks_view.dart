@@ -147,17 +147,19 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
   Widget build(BuildContext context) {
     ApiService api = Provider.of<ApiService>(context, listen: false);
     return FutureBuilder(
-        future: api.getTopPicks(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done || snapshot.data?.media.isEmpty == true) {
-            return Container();
-          }
-          Map<DateTime, List<Media>> mediaByDate = groupBy(snapshot.data!.media, (obj) => _dateFromUnixTimestamp(obj.metadata.creationDate));
-          mediaByDate.removeWhere((key, value) => key.year == DateTime.now().year);
-          List<DateTime> sortedDateTimes = mediaByDate.keys.sorted();
-          return SizedBox(
-            height: 132,
-            child: _buildListView(mediaByDate.length, (context, pos) {
+      future: api.getTopPicks(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done || snapshot.data?.media.isEmpty == true) {
+          return Container();
+        }
+        Map<DateTime, List<Media>> mediaByDate = groupBy(snapshot.data!.media, (obj) => _dateFromUnixTimestamp(obj.metadata.creationDate));
+        mediaByDate.removeWhere((key, value) => key.year == DateTime.now().year);
+        List<DateTime> sortedDateTimes = mediaByDate.keys.sorted();
+        return SizedBox(
+          height: 132,
+          child: _buildListView(
+            mediaByDate.length,
+            (context, pos) {
               DateTime dateTime = sortedDateTimes.elementAt(pos);
               List<Media> media = mediaByDate[dateTime]!;
               String? thumbnailUrl = api.getThumbnailApiPath(media.first);
@@ -184,8 +186,10 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
                   Text(format.format(dateTime)),
                 ],
               );
-            }),
-          );
-        });
+            },
+          ),
+        );
+      },
+    );
   }
 }

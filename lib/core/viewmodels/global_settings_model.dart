@@ -22,6 +22,16 @@ class GlobalSettingsModel extends ChangeNotifier {
     }
   }
 
+  bool get showTopPicks => _showTopPicks;
+
+  set showTopPicks(bool value) {
+    if (value != _showTopPicks) {
+      _showTopPicks = value;
+      _storageHelper.storeBool(StorageConstants.showTopPicksKey, value);
+      notifyListeners();
+    }
+  }
+
   /// Enter full screen. Disregards [appInFullScreen].
   void enableFullScreen() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -121,6 +131,7 @@ class GlobalSettingsModel extends ChangeNotifier {
   }
 
   bool _useMaterial3;
+  bool _showTopPicks;
   bool _appInFullScreen;
   bool _showDirectoryItemCount;
   int _gridRoundedCorners;
@@ -133,6 +144,7 @@ class GlobalSettingsModel extends ChangeNotifier {
   GlobalSettingsModel(this._storageHelper)
       : _appInFullScreen = _storageHelper.getBool(StorageConstants.appInFullScreenKey, false),
         _useMaterial3 = _storageHelper.getBool(StorageConstants.useMaterial3Key, true),
+        _showTopPicks = _storageHelper.getBool(StorageConstants.showTopPicksKey, true),
         _showDirectoryItemCount = _storageHelper.getBool(StorageConstants.showDirectoryItemCount, false),
         _gridRoundedCorners = _storageHelper.getInt(StorageConstants.gridRoundedCorners, 6),
         _gridAspectRatio = _storageHelper.getDouble(StorageConstants.gridAspectRatio, 1),

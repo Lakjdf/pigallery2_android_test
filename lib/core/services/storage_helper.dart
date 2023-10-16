@@ -157,6 +157,7 @@ class StorageConstants {
   static const serverUrlsKey = "serverUrls";
   static const selectedServerKey = "selectedServer";
   static const useMaterial3Key = "useMaterial3";
+  static const showTopPicksKey = "showTopPicks";
   static const appInFullScreenKey = "appInFullScreen";
   static const sortOptionKey = "sortOption";
   static const sortAscendingKey = "sortAscending";

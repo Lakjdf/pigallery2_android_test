@@ -27,6 +27,20 @@ class BackLayer extends StatelessWidget {
           ),
         ),
         ListTile(
+          title: const Text("Rediscover This Day"),
+          subtitle: const Text("Images from the same day, years go"),
+          leading: Icon(Icons.image_search, color: theme.colorScheme.onSurfaceVariant),
+          trailing: Selector<GlobalSettingsModel, bool>(
+            selector: (context, model) => model.showTopPicks,
+            builder: (BuildContext context, showTopPicks, Widget? child) => Switch(
+              value: showTopPicks,
+              onChanged: (value) {
+                model.showTopPicks = value;
+              },
+            ),
+          ),
+        ),
+        ListTile(
           title: const Text("Directory Item Count"),
           leading: Icon(Icons.onetwothree, color: theme.colorScheme.onSurfaceVariant),
           trailing: Selector<GlobalSettingsModel, bool>(
