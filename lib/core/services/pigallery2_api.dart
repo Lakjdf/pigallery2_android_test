@@ -106,4 +106,24 @@ class PiGallery2Api {
   }) async {
     return await _runCatching(() => _search(serverUrl, searchText, sessionData));
   }
+
+  Future<ApiResponse<Directory>> _getTopPicks(String serverUrl, SessionData? sessionData) async {
+    TopPicksQuery query = TopPicksQuery();
+    Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + jsonEncode(query));
+
+    http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
+    Map<String, dynamic> result = json.decode(response.body);
+    if (result["error"] == null) {
+      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result']).toDirectory());
+    } else {
+      return ApiResponse(error: result["error"].toString(), code: response.statusCode);
+    }
+  }
+
+  Future<ApiResponse<Directory>> getTopPicks({
+    required String serverUrl,
+    SessionData? sessionData,
+  }) async {
+    return await _runCatching(() => _getTopPicks(serverUrl, sessionData));
+  }
 }

@@ -1,16 +1,14 @@
 import 'package:pigallery2_android/core/models/directory.dart';
 import 'package:pigallery2_android/core/models/media.dart';
-import 'package:pigallery2_android/core/services/models/search_query.dart';
 import 'package:path/path.dart' as p;
 
 class SearchResult {
-  TextSearchQuery searchQuery;
   final List<Media> media;
 
   Directory toDirectory() {
     return Directory(
       id: -1,
-      name: searchQuery.text,
+      name: "",
       path: "",
       mediaCount: 0,
       lastModified: 0,
@@ -33,7 +31,5 @@ class SearchResult {
     return allMediaFromJson(media, parentPaths);
   }
 
-  SearchResult.fromJson(Map<String, dynamic> json)
-      : searchQuery = TextSearchQuery.fromJson(json['searchResult']['searchQuery']),
-        media = _parseMedia(json);
+  SearchResult.fromJson(Map<String, dynamic> json) : media = _parseMedia(json);
 }

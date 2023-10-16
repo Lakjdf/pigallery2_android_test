@@ -33,6 +33,7 @@ dependencies:
       url: https://github.com/Lakjdf/backdrop.git
   path: ^1.8.3
   async: ^2.11.0
+  intl: ^0.18.1
   
   # file selector dialog to download media:
   # flutter_plugin_android_lifecycle: ^2.0.1

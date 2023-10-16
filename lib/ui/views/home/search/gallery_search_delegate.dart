@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/gallery_view.dart';
+import 'package:pigallery2_android/ui/widgets/sort_options_widget.dart';
 import 'package:provider/provider.dart';
 
 class GallerySearchDelegate extends SearchDelegate<String> {
@@ -37,6 +38,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
         onPressed: () => query = "",
         icon: const Icon(Icons.clear),
       ),
+      const SortOptionsWidget()
     ];
   }
 
@@ -51,7 +53,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
-    model.search(query);
+    model.textSearch(query);
     return GalleryView(1, () {});
   }
 

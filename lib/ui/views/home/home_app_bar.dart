@@ -4,6 +4,7 @@ import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/home/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/views/website_view.dart';
 import 'package:pigallery2_android/ui/widgets/animated_backdrop_toggle_button.dart';
+import 'package:pigallery2_android/ui/widgets/sort_options_widget.dart';
 import 'package:provider/provider.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -31,49 +32,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           );
         },
       ),
-    );
-  }
-
-  PopupMenuItem<dynamic> buildPopupItem(dynamic thisValue, dynamic selectedValue, String name) {
-    return PopupMenuItem(
-      value: thisValue,
-      padding: const EdgeInsets.all(0),
-      child: ListTile(
-        visualDensity: const VisualDensity(vertical: -3),
-        horizontalTitleGap: 0,
-        title: Text(name),
-        trailing: IgnorePointer(
-          child: Radio(
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity: const VisualDensity(horizontal: -4),
-            value: thisValue,
-            groupValue: selectedValue,
-            onChanged: null,
-          ),
-        ),
-      ),
-    );
-  }
-
-  PopupMenuButton buildSortOptions(BuildContext context, HomeModel model) {
-    return PopupMenuButton<dynamic>(
-      icon: Icon(
-        Icons.sort,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-      onSelected: (dynamic option) {
-        if (option is SortOption) {
-          model.sortOption = option;
-        } else {
-          model.sortOrder = option;
-        }
-      },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<dynamic>>[
-        ...SortOption.values.map((e) => buildPopupItem(e, model.sortOption, e.getName())).toList(),
-        const PopupMenuDivider(),
-        buildPopupItem(true, model.sortAscending, "Ascending"),
-        buildPopupItem(false, model.sortAscending, "Descending"),
-      ],
     );
   }
 
@@ -124,7 +82,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             icon: Icon(inFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
           ),
         ),
-        buildSortOptions(context, model),
+        const SortOptionsWidget(),
       ],
     );
   }

@@ -3,6 +3,7 @@ import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/util/strings.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/gallery/gallery_grid_view.dart';
+import 'package:pigallery2_android/ui/views/top_picks/top_picks_view.dart';
 import 'package:pigallery2_android/ui/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
 
@@ -67,14 +68,21 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
             }
             return child!;
           },
-          child: Selector<HomeModel, List<File>>(
-            selector: (context, model) => model.stateOf(widget.stackPosition).files,
-            builder: (context, files, child) {
-              return GalleryViewGridView(
-                widget.stackPosition,
-                files,
-              );
-            },
+          child: Column(
+            children: [
+              widget.stackPosition == 0 ? const TopPicksView() : Container(),
+              Flexible(
+                child: Selector<HomeModel, List<File>>(
+                  selector: (context, model) => model.stateOf(widget.stackPosition).files,
+                  builder: (context, files, child) {
+                    return GalleryViewGridView(
+                      widget.stackPosition,
+                      files,
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         );
       },
