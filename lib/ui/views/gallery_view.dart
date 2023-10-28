@@ -52,6 +52,22 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     }
   }
 
+  Widget buildTopPicksView() {
+    return Selector<HomeModel, String?>(
+      selector: (context, model) => model.serverUrl,
+      builder: (context, serverUrl, child) => Selector<GlobalSettingsModel, bool>(
+        selector: (context, model) => model.showTopPicks,
+        builder: (context, showTopPicks, child) {
+          if (showTopPicks && serverUrl != null) {
+            return const TopPicksView();
+          } else {
+            return Container();
+          }
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Selector<HomeModel, bool>(
@@ -71,16 +87,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           },
           child: Column(
             children: [
-              Selector<GlobalSettingsModel, bool>(
-                selector: (context, model) => model.showTopPicks,
-                builder: (context, showTopPicks, child) {
-                  if (widget.stackPosition == 0 && showTopPicks) {
-                    return const TopPicksView();
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
+              if (widget.stackPosition == 0) ...[buildTopPicksView()],
               Flexible(
                 child: Selector<HomeModel, List<File>>(
                   selector: (context, model) => model.stateOf(widget.stackPosition).files,

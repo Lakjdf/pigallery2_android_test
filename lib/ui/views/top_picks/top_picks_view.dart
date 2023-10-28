@@ -149,11 +149,15 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
     return FutureBuilder(
       future: api.getTopPicks(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done || snapshot.data?.media.isEmpty == true) {
+        List<Media>? media = snapshot.data?.media;
+        if (snapshot.connectionState != ConnectionState.done || media == null || media.isEmpty == true) {
           return Container();
         }
-        Map<DateTime, List<Media>> mediaByDate = groupBy(snapshot.data!.media, (obj) => _dateFromUnixTimestamp(obj.metadata.creationDate));
+        Map<DateTime, List<Media>> mediaByDate = groupBy(media, (obj) => _dateFromUnixTimestamp(obj.metadata.creationDate));
         mediaByDate.removeWhere((key, value) => key.year == DateTime.now().year);
+        if (mediaByDate.isEmpty) {
+          return Container();
+        }
         List<DateTime> sortedDateTimes = mediaByDate.keys.sorted();
         return SizedBox(
           height: 132,
