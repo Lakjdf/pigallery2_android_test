@@ -21,12 +21,13 @@ class TextSearchQuery extends SearchQuery {
 class TopPicksQuery extends SearchQuery {
   @override
   int type = 60;
+  int daysLength;
 
-  TopPicksQuery();
+  TopPicksQuery({this.daysLength = 3});
 
   Map<String, dynamic> toJson() => {
         'type': type,
-        'daysLength': 3,
+        'daysLength': daysLength,
         'frequency': 3, // every_year
       };
 }

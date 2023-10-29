@@ -32,6 +32,17 @@ class GlobalSettingsModel extends ChangeNotifier {
     }
   }
 
+  int get topPicksDaysLength => _topPicksDaysLength;
+
+  set topPicksDaysLength(int value) {
+    if (value != _topPicksDaysLength) {
+      _topPicksDaysLength = value;
+      notifyListeners();
+    }
+  }
+
+  void storeTopPicksDaysLength() => _storageHelper.storeInt(StorageConstants.topPicksDaysLengthKey, _topPicksDaysLength);
+
   /// Enter full screen. Disregards [appInFullScreen].
   void enableFullScreen() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -132,6 +143,7 @@ class GlobalSettingsModel extends ChangeNotifier {
 
   bool _useMaterial3;
   bool _showTopPicks;
+  int _topPicksDaysLength;
   bool _appInFullScreen;
   bool _showDirectoryItemCount;
   int _gridRoundedCorners;
@@ -145,6 +157,7 @@ class GlobalSettingsModel extends ChangeNotifier {
       : _appInFullScreen = _storageHelper.getBool(StorageConstants.appInFullScreenKey, false),
         _useMaterial3 = _storageHelper.getBool(StorageConstants.useMaterial3Key, true),
         _showTopPicks = _storageHelper.getBool(StorageConstants.showTopPicksKey, true),
+        _topPicksDaysLength = _storageHelper.getInt(StorageConstants.topPicksDaysLengthKey, 1),
         _showDirectoryItemCount = _storageHelper.getBool(StorageConstants.showDirectoryItemCount, false),
         _gridRoundedCorners = _storageHelper.getInt(StorageConstants.gridRoundedCorners, 6),
         _gridAspectRatio = _storageHelper.getDouble(StorageConstants.gridAspectRatio, 1),

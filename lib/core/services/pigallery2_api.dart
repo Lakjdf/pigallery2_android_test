@@ -107,8 +107,8 @@ class PiGallery2Api {
     return await _runCatching(() => _search(serverUrl, searchText, sessionData));
   }
 
-  Future<ApiResponse<Directory>> _getTopPicks(String serverUrl, SessionData? sessionData) async {
-    TopPicksQuery query = TopPicksQuery();
+  Future<ApiResponse<Directory>> _getTopPicks(String serverUrl, int daysLength, SessionData? sessionData) async {
+    TopPicksQuery query = TopPicksQuery(daysLength: daysLength);
     Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + jsonEncode(query));
 
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
@@ -122,8 +122,9 @@ class PiGallery2Api {
 
   Future<ApiResponse<Directory>> getTopPicks({
     required String serverUrl,
+    required int daysLength,
     SessionData? sessionData,
   }) async {
-    return await _runCatching(() => _getTopPicks(serverUrl, sessionData));
+    return await _runCatching(() => _getTopPicks(serverUrl, daysLength, sessionData));
   }
 }

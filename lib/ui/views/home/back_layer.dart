@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/ui/widgets/expanded_section.dart';
 import 'package:provider/provider.dart';
 
 class BackLayer extends StatelessWidget {
@@ -37,6 +38,26 @@ class BackLayer extends StatelessWidget {
               onChanged: (value) {
                 model.showTopPicks = value;
               },
+            ),
+          ),
+        ),
+        Selector<GlobalSettingsModel, bool>(
+          selector: (context, model) => model.showTopPicks,
+          builder: (BuildContext context, showTopPicks, Widget? child) => ExpandedSection(
+            expand: showTopPicks,
+            child: Selector<GlobalSettingsModel, int>(
+              selector: (context, model) => model.topPicksDaysLength,
+              builder: (BuildContext context, daysLength, Widget? child) => ListTile(
+                title: Text((daysLength == 1) ? "Considering the same day" : "Considering the $daysLength most recent days"),
+                subtitle: Slider(
+                  divisions: 13,
+                  min: 1,
+                  max: 14,
+                  value: daysLength.toDouble(),
+                  onChanged: (double value) => model.topPicksDaysLength = value.round(),
+                  onChangeEnd: (value) => model.storeTopPicksDaysLength(),
+                ),
+              ),
             ),
           ),
         ),

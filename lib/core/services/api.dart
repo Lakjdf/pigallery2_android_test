@@ -14,7 +14,7 @@ abstract interface class ApiService {
 
   Future<TestConnectionResult> testConnection(String url, String? username, String? password);
 
-  Future<Directory?> getTopPicks();
+  Future<Directory?> getTopPicks(int daysLength);
 
   String? get serverUrl;
 
@@ -111,8 +111,8 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   }
 
   @override
-  Future<Directory?> getTopPicks() {
-    return _requestWithAuth((SessionData? sessionData) => _api.getTopPicks(serverUrl: _getServerUrlOrThrow(), sessionData: sessionData));
+  Future<Directory?> getTopPicks(int daysLength) {
+    return _requestWithAuth((SessionData? sessionData) => _api.getTopPicks(serverUrl: _getServerUrlOrThrow(), daysLength: daysLength, sessionData: sessionData));
   }
 
   @override
