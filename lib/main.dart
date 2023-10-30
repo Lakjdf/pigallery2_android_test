@@ -7,6 +7,7 @@ import 'package:pigallery2_android/core/services/storage_helper.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/core/viewmodels/server_model.dart';
 import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/core/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
 import 'package:pigallery2_android/ui/widgets/loading_indicator.dart';
@@ -58,10 +59,12 @@ class MyApp extends StatelessWidget {
                 );
               }),
               ChangeNotifierProvider<ServerModel>(
-                create: ((context) => ServerModel(
-                      Provider.of<ApiService>(context, listen: false),
-                      storageHelper,
-                    )),
+                create: ((context) {
+                  return ServerModel(
+                    Provider.of<ApiService>(context, listen: false),
+                    storageHelper,
+                  );
+                }),
               ),
               ChangeNotifierProvider<HomeModel>(
                 create: ((context) {
@@ -76,6 +79,17 @@ class MyApp extends StatelessWidget {
                   return GlobalSettingsModel(storageHelper);
                 }),
               ),
+              ChangeNotifierProxyProvider<GlobalSettingsModel, TopPicksModel>(
+                create: ((context) {
+                  return TopPicksModel(Provider.of<ApiService>(context, listen: false));
+                }),
+                update: (BuildContext context, GlobalSettingsModel model, TopPicksModel? previous) {
+                  if (previous == null) {
+                    return TopPicksModel(Provider.of<ApiService>(context, listen: false));
+                  }
+                  return previous..fetchTopPicks(model.topPicksDaysLength);
+                },
+              ),
             ],
             child: Selector<GlobalSettingsModel, bool>(
               selector: (context, model) => model.useMaterial3,
@@ -87,9 +101,11 @@ class MyApp extends StatelessWidget {
                     themeData = ThemeData(
                       useMaterial3: true,
                       colorScheme: colorScheme,
-                      dividerTheme: DividerThemeData(
-                        color: colorScheme.secondaryContainer
-                      )
+                      dividerTheme: DividerThemeData(color: colorScheme.secondaryContainer),
+                      scrollbarTheme: ScrollbarThemeData(
+                        thumbVisibility: MaterialStateProperty.all(true),
+                        thumbColor: MaterialStateProperty.all(colorScheme.onSurfaceVariant.withOpacity(0.4)),
+                      ),
                     );
                   }
                   return MaterialApp(

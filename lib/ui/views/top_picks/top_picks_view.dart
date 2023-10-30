@@ -1,10 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
+import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
+import 'package:pigallery2_android/core/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
+import 'package:pigallery2_android/ui/widgets/expanded_section.dart';
 import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
 
@@ -16,21 +20,25 @@ class TopPicksView extends StatefulWidget {
 }
 
 class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMixin {
-  // late final AnimationController _animationController;
+  late final AnimationController _animationController;
   DateFormat format = DateFormat("dd/MM/yyyy");
+  Key key = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    // _animationController = AnimationController(
-    //   vsync: this,
-    //   duration: const Duration(seconds: 15),
-    // )..repeat();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
+    final fetchTopPicks = Provider.of<TopPicksModel>(context, listen: false).fetchTopPicks;
+    int daysLength = Provider.of<GlobalSettingsModel>(context, listen: false).topPicksDaysLength;
+    SchedulerBinding.instance.addPostFrameCallback((_) => fetchTopPicks(daysLength));
   }
 
   @override
   void dispose() {
-    // _animationController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -94,106 +102,107 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
     );
   }
 
-  // Widget _buildCircularThumbnailWithAnimation(String? thumbnailUrl) {
-  //   double height = 90;
-  //   double borderWidth = 2;
-  //   return SizedBox(
-  //     height: height,
-  //     child: CircleAvatar(
-  //       radius: height / 2,
-  //       backgroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-  //       child: Stack(
-  //         children: [
-  //           RotationTransition(
-  //             // turns: CurveTween(curve: Curves.easeInToLinear).animate(_animationController),
-  //             turns: Tween(begin: 0.0, end: 4.0).animate(_animationController),
-  //             child: Container(
-  //               decoration: BoxDecoration(
-  //                 gradient: LinearGradient(
-  //                   colors: [
-  //                     Theme.of(context).colorScheme.onSurfaceVariant,
-  //                     Theme.of(context).colorScheme.surfaceVariant,
-  //                   ],
-  //                   stops: const [0, 1],
-  //                 ),
-  //                 borderRadius: BorderRadius.circular(45),
-  //               ),
-  //             ),
-  //           ),
-  //           Padding(
-  //             padding: EdgeInsets.all(borderWidth),
-  //             child: ClipOval(
-  //               child: SizedBox(
-  //                 height: height - 2 * borderWidth,
-  //                 width: height - 2 * borderWidth,
-  //                 child: Stack(
-  //                   alignment: Alignment.center,
-  //                   fit: StackFit.passthrough,
-  //                   children: [
-  //                     Container(color: Theme.of(context).colorScheme.surfaceVariant),
-  //                     ThumbnailImage(thumbnailUrl, fit: BoxFit.cover),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget _buildCircularThumbnailWithAnimation(String? thumbnailUrl) {
+    double height = 90;
+    double borderWidth = 2;
+    return SizedBox(
+      height: height,
+      child: CircleAvatar(
+        radius: height / 2,
+        backgroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        child: Stack(
+          children: [
+            RotationTransition(
+              // turns: CurveTween(curve: Curves.easeInToLinear).animate(_animationController),
+              turns: Tween(begin: 0.0, end: 4.0).animate(_animationController),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                      Theme.of(context).colorScheme.surfaceVariant,
+                    ],
+                    stops: const [0, 1],
+                  ),
+                  borderRadius: BorderRadius.circular(45),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(borderWidth),
+              child: ClipOval(
+                child: SizedBox(
+                  height: height - 2 * borderWidth,
+                  width: height - 2 * borderWidth,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    fit: StackFit.passthrough,
+                    children: [
+                      Container(color: Theme.of(context).colorScheme.surfaceVariant),
+                      ThumbnailImage(thumbnailUrl, fit: BoxFit.cover),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     ApiService api = Provider.of<ApiService>(context, listen: false);
-    return FutureBuilder(
-      future: api.getTopPicks(),
-      builder: (context, snapshot) {
-        List<Media>? media = snapshot.data?.media;
-        if (snapshot.connectionState != ConnectionState.done || media == null || media.isEmpty == true) {
-          return Container();
-        }
-        Map<DateTime, List<Media>> mediaByDate = groupBy(media, (obj) => _dateFromUnixTimestamp(obj.metadata.creationDate));
-        mediaByDate.removeWhere((key, value) => key.year == DateTime.now().year);
-        if (mediaByDate.isEmpty) {
-          return Container();
-        }
-        List<DateTime> sortedDateTimes = mediaByDate.keys.sorted();
-        return SizedBox(
-          height: 132,
-          child: _buildListView(
-            mediaByDate.length,
-            (context, pos) {
-              DateTime dateTime = sortedDateTimes.elementAt(pos);
-              List<Media> media = mediaByDate[dateTime]!;
-              String? thumbnailUrl = api.getThumbnailApiPath(media.first);
-              return Column(
-                children: [
-                  GestureDetector(
-                    onTap: () => _openDirectory(
-                      context,
-                      Directory(
-                        id: -1,
-                        name: format.format(dateTime),
-                        path: "",
-                        mediaCount: 0,
-                        lastModified: 0,
-                        directories: [],
-                        cover: null,
-                        media: media,
-                        parentPath: "",
-                      ),
+    TopPicksModel model = Provider.of<TopPicksModel>(context, listen: true);
+    Map<DateTime, List<Media>> mediaByDate = groupBy(model.content, (obj) => _dateFromUnixTimestamp(obj.metadata.creationDate));
+    mediaByDate.removeWhere((key, value) => key.year == DateTime.now().year);
+    if (mediaByDate.isEmpty) {
+      return ExpandedSection(
+        expand: false,
+        key: key,
+        child: const SizedBox(height: 132),
+      );
+    }
+    List<DateTime> sortedDateTimes = mediaByDate.keys.sorted();
+    return ExpandedSection(
+      key: key,
+      expand: true,
+      child: SizedBox(
+        height: 132,
+        child: _buildListView(
+          mediaByDate.length,
+          (context, pos) {
+            DateTime dateTime = sortedDateTimes.elementAt(pos);
+            List<Media> media = mediaByDate[dateTime]!;
+            String? thumbnailUrl = api.getThumbnailApiPath(media.first);
+            return Column(
+              key: ValueKey(thumbnailUrl),
+              children: [
+                GestureDetector(
+                  onTap: () => _openDirectory(
+                    context,
+                    Directory(
+                      id: -1,
+                      name: format.format(dateTime),
+                      path: "",
+                      mediaCount: 0,
+                      lastModified: 0,
+                      directories: [],
+                      cover: null,
+                      media: media,
+                      parentPath: "",
                     ),
-                    child: _buildCircularThumbnail(thumbnailUrl),
                   ),
-                  const SizedBox(height: 7),
-                  Text(format.format(dateTime)),
-                ],
-              );
-            },
-          ),
-        );
-      },
+                  child: model.isLoading ? _buildCircularThumbnailWithAnimation(thumbnailUrl) : _buildCircularThumbnail(thumbnailUrl),
+                ),
+                const SizedBox(height: 7),
+                Text(format.format(dateTime)),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }
