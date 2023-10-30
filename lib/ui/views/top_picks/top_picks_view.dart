@@ -8,7 +8,7 @@ import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/core/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/views/home_view.dart';
-import 'package:pigallery2_android/ui/widgets/expanded_section.dart';
+import 'package:pigallery2_android/ui/views/top_picks/top_picks_container.dart';
 import 'package:pigallery2_android/ui/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
 
@@ -158,50 +158,42 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
     Map<DateTime, List<Media>> mediaByDate = groupBy(model.content, (obj) => _dateFromUnixTimestamp(obj.metadata.creationDate));
     mediaByDate.removeWhere((key, value) => key.year == DateTime.now().year);
     if (mediaByDate.isEmpty) {
-      return ExpandedSection(
-        expand: false,
-        key: key,
-        child: const SizedBox(height: 132),
-      );
+      return const TopPicksContainer(expand: false);
     }
     List<DateTime> sortedDateTimes = mediaByDate.keys.sorted();
-    return ExpandedSection(
-      key: key,
+    return TopPicksContainer(
       expand: true,
-      child: SizedBox(
-        height: 132,
-        child: _buildListView(
-          mediaByDate.length,
-          (context, pos) {
-            DateTime dateTime = sortedDateTimes.elementAt(pos);
-            List<Media> media = mediaByDate[dateTime]!;
-            String? thumbnailUrl = api.getThumbnailApiPath(media.first);
-            return Column(
-              key: ValueKey(thumbnailUrl),
-              children: [
-                GestureDetector(
-                  onTap: () => _openDirectory(
-                    context,
-                    Directory(
-                      id: -1,
-                      name: format.format(dateTime),
-                      path: "",
-                      mediaCount: 0,
-                      lastModified: 0,
-                      directories: [],
-                      cover: null,
-                      media: media,
-                      parentPath: "",
-                    ),
+      child: _buildListView(
+        mediaByDate.length,
+        (context, pos) {
+          DateTime dateTime = sortedDateTimes.elementAt(pos);
+          List<Media> media = mediaByDate[dateTime]!;
+          String? thumbnailUrl = api.getThumbnailApiPath(media.first);
+          return Column(
+            key: ValueKey(thumbnailUrl),
+            children: [
+              GestureDetector(
+                onTap: () => _openDirectory(
+                  context,
+                  Directory(
+                    id: -1,
+                    name: format.format(dateTime),
+                    path: "",
+                    mediaCount: 0,
+                    lastModified: 0,
+                    directories: [],
+                    cover: null,
+                    media: media,
+                    parentPath: "",
                   ),
-                  child: model.isLoading ? _buildCircularThumbnailWithAnimation(thumbnailUrl) : _buildCircularThumbnail(thumbnailUrl),
                 ),
-                const SizedBox(height: 7),
-                Text(format.format(dateTime)),
-              ],
-            );
-          },
-        ),
+                child: model.isLoading ? _buildCircularThumbnailWithAnimation(thumbnailUrl) : _buildCircularThumbnail(thumbnailUrl),
+              ),
+              const SizedBox(height: 7),
+              Text(format.format(dateTime)),
+            ],
+          );
+        },
       ),
     );
   }
