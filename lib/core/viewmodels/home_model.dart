@@ -224,7 +224,6 @@ class HomeModel extends ChangeNotifier {
 
   void topPicksSearch(Directory directory) {
     _state.add(HomeModelState(directory, sortOption, sortAscending));
-    _isSearching = true;
     currentState.files = directory.media;
     notifyListeners();
   }
@@ -290,6 +289,7 @@ class HomeModel extends ChangeNotifier {
   /// Start a search for the given text [searchText].
   /// Result will be available via [currentState].
   void textSearch(String searchText) {
+    if (currentState.baseDirectory?.name == searchText) return;
     _cancelableApiRequest(() {
       return _apiDelegate.search(searchText: searchText);
     });

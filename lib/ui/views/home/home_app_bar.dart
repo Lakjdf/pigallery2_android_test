@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/home/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/views/website_view.dart';
 import 'package:pigallery2_android/ui/widgets/animated_backdrop_toggle_button.dart';
+import 'package:pigallery2_android/ui/widgets/fullscreen_toggle_action.dart';
 import 'package:pigallery2_android/ui/widgets/sort_options_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -75,13 +75,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               : Container(),
         ),
         if (stackPosition == 0) const AnimatedBackdropToggleButton(),
-        Selector<GlobalSettingsModel, bool>(
-          selector: (context, model) => model.appInFullScreen,
-          builder: (context, inFullScreen, child) => IconButton(
-            onPressed: Provider.of<GlobalSettingsModel>(context, listen: false).toggleAppInFullScreen,
-            icon: Icon(inFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
-          ),
-        ),
+        const FullscreenToggleAction(),
         const SortOptionsWidget(),
       ],
     );

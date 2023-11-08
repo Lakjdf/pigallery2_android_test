@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/views/gallery_view.dart';
+import 'package:pigallery2_android/ui/widgets/fullscreen_toggle_action.dart';
 import 'package:pigallery2_android/ui/widgets/sort_options_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -34,10 +35,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      IconButton(
-        onPressed: () => query = "",
-        icon: const Icon(Icons.clear),
-      ),
+      const FullscreenToggleAction(),
       const SortOptionsWidget()
     ];
   }

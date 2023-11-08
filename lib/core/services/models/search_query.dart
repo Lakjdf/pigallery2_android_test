@@ -16,6 +16,8 @@ class TextSearchQuery extends SearchQuery {
         'type': type,
         'text': text,
       };
+
+  TextSearchQuery.fromJson(Map<String, dynamic> json) : text = json["text"] ?? "";
 }
 
 class TopPicksQuery extends SearchQuery {
