@@ -240,10 +240,23 @@ class HomeModel extends ChangeNotifier {
     }
   }
 
+  /// Set [isLoading] if the request takes more than 200ms.
+  /// Leads to a smoother transition if the loading screen would only be shown for a short time.
+  void _setIsLoadingDelayed(CancelableOperation? request) {
+    Future.delayed(const Duration(milliseconds: 200), () {
+      return request == null || request.isCanceled || request.isCompleted;
+    }).then((isRequestFinished) {
+      if (!isRequestFinished) {
+        currentState.isLoading = true;
+        notifyListeners();
+      }
+    });
+  }
+
   /// Perform the given api request & update the state according to the progress/result.
   Future<void> _apiRequest(CancelableOperation<Directory?> request) async {
-    currentState.isLoading = true;
     currentState.error = null;
+    _setIsLoadingDelayed(_currentRequest);
 
     return request.then((result) {
       _updateCurrentState(result);
