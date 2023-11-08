@@ -59,10 +59,12 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   }
 
   String _getServerUrlOrThrow() {
-    if (_serverUrl == null) {
+    String? url = _serverUrl;
+    if (url == null) {
       throw Exception(Strings.errorNoServerConfigured);
+    } else {
+      return url;
     }
-    return _serverUrl!;
   }
 
   /// Full API path to [item].
@@ -101,17 +103,17 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   }
 
   @override
-  Future<Directory?> getDirectories({String? path}) {
+  Future<Directory?> getDirectories({String? path}) async {
     return _requestWithAuth((SessionData? sessionData) => _api.getDirectories(serverUrl: _getServerUrlOrThrow(), path: path, sessionData: sessionData));
   }
 
   @override
-  Future<Directory?> search({String searchText = ""}) {
+  Future<Directory?> search({String searchText = ""}) async {
     return _requestWithAuth((SessionData? sessionData) => _api.search(serverUrl: _getServerUrlOrThrow(), searchText: searchText, sessionData: sessionData));
   }
 
   @override
-  Future<Directory?> getTopPicks(int daysLength) {
+  Future<Directory?> getTopPicks(int daysLength) async {
     return _requestWithAuth((SessionData? sessionData) => _api.getTopPicks(serverUrl: _getServerUrlOrThrow(), daysLength: daysLength, sessionData: sessionData));
   }
 

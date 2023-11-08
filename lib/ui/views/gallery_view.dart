@@ -27,7 +27,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     if (error != null) {
       SnackBar snackBar = SnackBar(
-        action: error == Strings.errorNoServerConfigured
+        action: error.contains(Strings.errorNoServerConfigured)
             ? SnackBarAction(
                 label: "Add",
                 onPressed: widget.showServerSettings,

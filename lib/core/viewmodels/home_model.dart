@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:pigallery2_android/core/models/models.dart';
 import 'package:pigallery2_android/core/services/api.dart';
 import 'package:pigallery2_android/core/services/storage_helper.dart';
-import 'package:pigallery2_android/core/util/strings.dart';
 import 'package:pigallery2_android/core/util/extensions.dart';
 import 'package:async/async.dart';
 
@@ -175,14 +174,11 @@ class HomeModel extends ChangeNotifier {
   /// Retrieve serverUrl from [ApiService].
   String? get serverUrl => _apiDelegate.serverUrl;
 
-  /// Whether an api request is ongoing.
-  bool _requestAwaitingResponse = false;
-
   bool _isSearching = false;
 
   bool get isSearching => _isSearching;
 
-  CancelableOperation? _currentSearch;
+  CancelableOperation<Directory?>? _currentRequest;
 
   HomeModel(this._apiDelegate, this._storageHelper)
       : _state = [
@@ -207,66 +203,23 @@ class HomeModel extends ChangeNotifier {
       // never remove last screen; should be unreachable
       return;
     }
+    _currentRequest?.cancel();
+    _currentRequest = null;
     _state.removeLast();
-  }
-
-  /// Request [File]s from the [ApiService] for the current [HomeView] screen.
-  /// Ensures that only one request is executed at a time.
-  Future<void> fetchItems() async {
-    if (!_requestAwaitingResponse) {
-      _requestAwaitingResponse = true;
-      return _fetchItems().whenComplete(() => _requestAwaitingResponse = false);
-    }
-  }
-
-  Future<void> _fetchItems() async {
-    if (serverUrl == null) {
-      currentState.error = Strings.errorNoServerConfigured;
-      currentState.files = [];
-      currentState.baseDirectory = null;
-      notifyListeners();
-      return;
-    }
-
-    currentState.isLoading = true;
-    currentState.error = null;
-    Directory? currentDirBefore = currentState.baseDirectory;
-    notifyListeners();
-
-    Directory? result = await _apiDelegate.getDirectories(path: currentState.baseDirectory?.apiPath).catchError((e) {
-      currentState.error = e.toString();
-      return Future<Directory?>.value(null);
-    });
-    // Ensure that state has not been updated before this call completed.
-    if (currentDirBefore == currentState.baseDirectory) {
-      currentState.baseDirectory = result;
-      currentState.files = [];
-      currentState.isLoading = false;
-      if (result != null) {
-        currentState.files = [...result.directories, ...result.media];
-      }
-      notifyListeners();
-    }
   }
 
   void startSearch() {
     if (!_isSearching) {
       _state.add(HomeModelState(null, sortOption, sortAscending));
+      _isSearching = true;
     }
-    _isSearching = true;
   }
 
-  void textSearch(String searchText) {
-    _currentSearch?.cancel();
-    _currentSearch = CancelableOperation.fromFuture(_search(searchText)).then((result) {
-      currentState.baseDirectory = result;
-      currentState.files = [];
-      currentState.isLoading = false;
-      if (result != null) {
-        currentState.files = [...result.directories, ...result.media];
-      }
-      notifyListeners();
-    });
+  void stopSearch() {
+    if (_isSearching) {
+      _isSearching = false;
+      popStack();
+    }
   }
 
   void topPicksSearch(Directory directory) {
@@ -276,26 +229,56 @@ class HomeModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void stopSearch() {
-    _currentSearch?.cancel();
-    _currentSearch = null;
-    _isSearching = false;
-    popStack();
+  /// Update [currentState] to represent the given [Directory].
+  void _updateCurrentState(Directory? result) {
+    currentState.isLoading = false;
+    if (result != null) {
+      currentState.baseDirectory = result;
+      currentState.files = [...result.directories, ...result.media];
+    } else {
+      currentState.files = [];
+    }
   }
 
-  Future<Directory?> _search(String searchText) {
-    if (serverUrl == null) {
-      currentState.error = Strings.errorNoServerConfigured;
-      currentState.files = [];
-      currentState.baseDirectory = null;
-      return Future<Directory?>.value(null);
-    }
+  /// Perform the given api request & update the state according to the progress/result.
+  Future<void> _apiRequest(CancelableOperation<Directory?> request) async {
     currentState.isLoading = true;
     currentState.error = null;
 
-    return _apiDelegate.search(searchText: searchText).catchError((e) {
+    return request.then((result) {
+      _updateCurrentState(result);
+      notifyListeners();
+    }).value;
+  }
+
+  /// Cancels the previous request when invoking the given [request].
+  Future<void> _cancelableApiRequest(Future<Directory?> Function() request) async {
+    _currentRequest?.cancel();
+    try {
+      CancelableOperation<Directory?> cancelableRequest = CancelableOperation.fromFuture(request());
+      _currentRequest = cancelableRequest;
+      await _apiRequest(cancelableRequest);
+    } on Exception catch (e) {
+      _updateCurrentState(null);
       currentState.error = e.toString();
-      return Future<Directory?>.value(null);
+      notifyListeners();
+      return Future.value();
+    }
+  }
+
+  /// Request [File]s from the [ApiService] for the current [HomeView] screen.
+  /// Result will be available via [currentState].
+  void fetchItems() {
+    _cancelableApiRequest(() {
+      return _apiDelegate.getDirectories(path: currentState.baseDirectory?.apiPath);
+    });
+  }
+
+  /// Start a search for the given text [searchText].
+  /// Result will be available via [currentState].
+  void textSearch(String searchText) {
+    _cancelableApiRequest(() {
+      return _apiDelegate.search(searchText: searchText);
     });
   }
 }

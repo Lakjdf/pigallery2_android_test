@@ -1,6 +1,8 @@
 import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/core/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/core/viewmodels/home_model.dart';
+import 'package:pigallery2_android/core/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/views/gallery_view.dart';
 import 'package:pigallery2_android/ui/views/home/back_layer.dart';
 import 'package:pigallery2_android/ui/views/home/bottom_sheet/bad_certificate_selection.dart';
@@ -37,7 +39,11 @@ class HomeView extends StatelessWidget {
           ),
         );
       },
-    ).whenComplete(() => Provider.of<HomeModel>(context, listen: false).fetchItems());
+    ).whenComplete(() {
+      Provider.of<HomeModel>(context, listen: false).fetchItems();
+      int daysLength = Provider.of<GlobalSettingsModel>(context, listen: false).topPicksDaysLength;
+      Provider.of<TopPicksModel>(context, listen: false).fetchTopPicks(daysLength);
+    });
   }
 
   @override
