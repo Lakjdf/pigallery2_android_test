@@ -49,12 +49,14 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
-    return WillPopScope(
-      onWillPop: () async {
+    // flutter only supports predictive back for the root element as of 3.16.0
+    return PopScope(
+      canPop: true,
+      onPopInvoked: ((bool didPop) {
+        if (!didPop) return;
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         model.popStack();
-        return true;
-      },
+      }),
       child: BackdropScaffold(
         key: ValueKey(stackPosition),
         frontLayerBorderRadius: BorderRadius.zero,

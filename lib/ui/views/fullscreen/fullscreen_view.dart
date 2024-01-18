@@ -74,13 +74,14 @@ class _FullscreenViewState extends State<FullscreenView> {
     model.enableFullScreen();
     List<Media> media = Provider.of<HomeModel>(context, listen: false).currentState.media;
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
-    return WillPopScope(
-      onWillPop: (() {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: ((bool didPop) {
+        if (didPop) return;
         if (!model.appInFullScreen) {
           model.disableFullScreen();
         }
         Navigator.pop(context, fullscreenModel.currentItem);
-        return Future.value(false);
       }),
       child: Scaffold(
         backgroundColor: Colors.transparent,
