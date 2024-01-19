@@ -26,7 +26,6 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion 33
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -42,9 +41,11 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    namespace "com.lakjdf.pigallery2_android"
     defaultConfig {
         applicationId "com.lakjdf.pigallery2_android"
-        minSdkVersion 21
+        compileSdk 34
+        minSdkVersion 24
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -67,5 +68,5 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'androidx.core:core-splashscreen:1.1.0-alpha01'
+    implementation 'androidx.core:core-splashscreen:1.1.0-alpha02'
 }
