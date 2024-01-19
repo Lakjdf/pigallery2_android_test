@@ -4,7 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/ui/views/fullscreen/video/fade_animation.dart';
 
 class VideoControls extends StatefulWidget {
-  const VideoControls(this.controller, this.onTap, {Key? key}) : super(key: key);
+  const VideoControls(this.controller, this.onTap, {super.key});
 
   final BetterPlayerController controller;
   final VoidCallback onTap;

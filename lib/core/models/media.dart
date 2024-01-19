@@ -10,7 +10,7 @@ List<Media> allMediaFromJson(List<Map<String, dynamic>> jsonData, List<String> p
 class Media extends File {
   MediaMetadata metadata;
 
-  Media.fromJson(Map<String, dynamic> json, String parentPath)
+  Media.fromJson(super.json, super.parentPath)
       : metadata = MediaMetadata.fromJson(json['metadata'] ?? json['m']),
-        super.fromJson(json, parentPath);
+        super.fromJson();
 }

@@ -13,7 +13,7 @@ import 'package:pigallery2_android/ui/views/fullscreen/video_view_widget.dart';
 import 'package:provider/provider.dart';
 
 class FullscreenView extends StatefulWidget {
-  const FullscreenView({Key? key}) : super(key: key);
+  const FullscreenView({super.key});
 
   @override
   State<FullscreenView> createState() => _FullscreenViewState();

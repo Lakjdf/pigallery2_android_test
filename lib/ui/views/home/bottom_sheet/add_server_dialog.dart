@@ -5,7 +5,7 @@ import 'package:pigallery2_android/core/viewmodels/server_model.dart';
 import 'package:provider/provider.dart';
 
 class AddServerDialog extends StatefulWidget {
-  const AddServerDialog({Key? key}) : super(key: key);
+  const AddServerDialog({super.key});
 
   @override
   State<AddServerDialog> createState() => _AddServerDialogState();

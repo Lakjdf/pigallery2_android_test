@@ -4,10 +4,10 @@ import 'package:pigallery2_android/ui/views/fullscreen/video/better_player_mater
 
 class VideoSeekBar extends StatefulWidget {
   const VideoSeekBar({
-    Key? key,
+    super.key,
     required this.controller,
     required this.opacity,
-  }) : super(key: key);
+  });
 
   final BetterPlayerController controller;
   final double opacity;

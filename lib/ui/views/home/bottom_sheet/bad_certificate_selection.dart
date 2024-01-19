@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BadCertificateSelection extends StatefulWidget {
-  const BadCertificateSelection({Key? key}) : super(key: key);
+  const BadCertificateSelection({super.key});
 
   @override
   State<BadCertificateSelection> createState() => _BadCertificateSelectionState();

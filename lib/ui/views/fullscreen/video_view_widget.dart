@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 class VideoViewWidget extends StatefulWidget {
   final Media item;
 
-  const VideoViewWidget({Key? key, required this.item}) : super(key: key);
+  const VideoViewWidget({super.key, required this.item});
 
   @override
   State<VideoViewWidget> createState() => _VideoViewWidgetState();

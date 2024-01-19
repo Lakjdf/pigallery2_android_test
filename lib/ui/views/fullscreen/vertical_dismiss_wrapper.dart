@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 
 class VerticalDismissWrapper extends StatefulWidget {
   const VerticalDismissWrapper({
-    Key? key,
+    super.key,
     required this.child,
     this.onOpacityChanged,
-  }) : super(key: key);
+  });
 
   final Widget child;
   final Function(double)? onOpacityChanged;

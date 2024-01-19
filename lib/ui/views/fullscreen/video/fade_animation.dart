@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FadeAnimation extends StatefulWidget {
-  const FadeAnimation({Key? key, this.child, required this.duration, this.curve = Curves.linear}) : super(key: key);
+  const FadeAnimation({super.key, this.child, required this.duration, this.curve = Curves.linear});
 
   final Widget? child;
   final Duration duration;

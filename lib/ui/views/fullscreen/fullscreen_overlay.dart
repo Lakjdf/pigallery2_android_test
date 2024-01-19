@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 class FullscreenOverlay extends StatefulWidget {
   final Widget child;
 
-  const FullscreenOverlay({required this.child, Key? key}) : super(key: key);
+  const FullscreenOverlay({required this.child, super.key});
 
   @override
   State<FullscreenOverlay> createState() => _FullscreenOverlayState();

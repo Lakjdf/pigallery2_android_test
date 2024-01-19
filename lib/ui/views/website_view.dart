@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class WebsiteView extends StatefulWidget {
   final String serverUrl;
 
-  const WebsiteView(this.serverUrl, {Key? key}) : super(key: key);
+  const WebsiteView(this.serverUrl, {super.key});
 
   @override
   State<WebsiteView> createState() => _WebsiteViewState();

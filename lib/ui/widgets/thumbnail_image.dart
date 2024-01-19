@@ -10,7 +10,7 @@ class ThumbnailImage extends StatelessWidget {
   final BoxFit fit;
   final ImageWidgetBuilder? imageBuilder;
 
-  const ThumbnailImage(this.apiPath, {Key? key, this.fit = BoxFit.contain, this.imageBuilder}) : super(key: key);
+  const ThumbnailImage(this.apiPath, {super.key, this.fit = BoxFit.contain, this.imageBuilder});
 
   @override
   Widget build(BuildContext context) {

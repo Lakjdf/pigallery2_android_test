@@ -6,7 +6,7 @@ List<Directory> allDirectoriesFromJson(List<Map<String, dynamic>> jsonData, Stri
 }
 
 class DirectoryPath extends File {
-  DirectoryPath({required id, required name, required String path}) : super(id: id, name: name, parentPath: path);
+  DirectoryPath({required super.id, required super.name, required String path}) : super(parentPath: path);
 
   static String _parsePath(Map<String, dynamic> json) {
     String path = json['path'];
@@ -28,16 +28,16 @@ class Directory extends DirectoryPath {
   final List<Media> media;
 
   Directory({
-    required id,
-    required name,
-    required path,
+    required super.id,
+    required super.name,
+    required super.path,
     required this.mediaCount,
     required this.lastModified,
     required this.directories,
     required this.cover,
     required this.media,
     required String parentPath,
-  }) : super(id: id, name: name, path: path);
+  });
 
   static List<Directory> _parseDirectories(Map<String, dynamic> json, String parentPath) {
     dynamic directoriesJson = json['directories'];
@@ -59,11 +59,11 @@ class Directory extends DirectoryPath {
     return DirectoryCover.fromJson(coverJson, parentPath);
   }
 
-  Directory.fromJson(Map<String, dynamic> json, String parentPath)
+  Directory.fromJson(super.json, super.parentPath)
       : mediaCount = json['mediaCount'],
         lastModified = json['lastModified'],
         directories = _parseDirectories(json, parentPath),
         cover = _parseCover(json, parentPath),
         media = _parseMedia(json, parentPath),
-        super.fromJson(json, parentPath);
+        super.fromJson();
 }

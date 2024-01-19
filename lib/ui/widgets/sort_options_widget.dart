@@ -40,7 +40,7 @@ class SortOptionsWidget extends StatelessWidget {
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<dynamic>>[
-        ...SortOption.values.map((e) => _buildPopupItem(e, model.sortOption, e.getName())).toList(),
+        ...SortOption.values.map((e) => _buildPopupItem(e, model.sortOption, e.getName())),
         const PopupMenuDivider(),
         _buildPopupItem(true, model.sortAscending, "Ascending"),
         _buildPopupItem(false, model.sortAscending, "Descending"),

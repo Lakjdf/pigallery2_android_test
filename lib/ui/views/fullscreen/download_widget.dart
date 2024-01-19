@@ -13,7 +13,7 @@ class DownloadWidget extends StatefulWidget {
   final Media item;
   final double opacity;
 
-  const DownloadWidget({Key? key, required this.item, required this.opacity}) : super(key: key);
+  const DownloadWidget({super.key, required this.item, required this.opacity});
 
   @override
   State<DownloadWidget> createState() => _DownloadWidgetState();

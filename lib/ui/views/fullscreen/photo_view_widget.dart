@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 class PhotoViewWidget extends StatelessWidget {
   final Media item;
 
-  const PhotoViewWidget(this.item, {Key? key}) : super(key: key);
+  const PhotoViewWidget(this.item, {super.key});
 
   @override
   Widget build(BuildContext context) {

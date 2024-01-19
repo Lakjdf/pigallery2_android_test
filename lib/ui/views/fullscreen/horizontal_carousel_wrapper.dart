@@ -12,8 +12,8 @@ class HorizontalCarouselWrapper extends StatefulWidget {
     required this.initialIndex,
     required this.builder,
     this.onPageChanged,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<HorizontalCarouselWrapper> createState() => _HorizontalCarouselWrapperState();

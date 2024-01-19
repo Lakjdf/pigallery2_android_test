@@ -1,4 +1,4 @@
-/// https://github.com/jhomlala/betterplayer/blob/master/lib/src/controls/better_player_material_progress_bar.dart
+// https://github.com/jhomlala/betterplayer/blob/master/lib/src/controls/better_player_material_progress_bar.dart
 
 import 'dart:async';
 import 'package:better_player/better_player.dart';
@@ -12,9 +12,8 @@ class BetterPlayerMaterialVideoProgressBar extends StatefulWidget {
     this.onDragStart,
     this.onDragUpdate,
     this.onTapDown,
-    Key? key,
-  })  : colors = colors ?? BetterPlayerProgressColors(),
-        super(key: key);
+    super.key,
+  })  : colors = colors ?? BetterPlayerProgressColors();
 
   final BetterPlayerController? betterPlayerController;
   final BetterPlayerProgressColors colors;

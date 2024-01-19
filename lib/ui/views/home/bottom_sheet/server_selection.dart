@@ -4,7 +4,7 @@ import 'package:pigallery2_android/ui/views/home/bottom_sheet/add_server_dialog.
 import 'package:provider/provider.dart';
 
 class ServerSelection extends StatelessWidget {
-  const ServerSelection({Key? key}) : super(key: key);
+  const ServerSelection({super.key});
 
   askDeleteServer(BuildContext context, String url) {
     Widget cancelButton = TextButton(
