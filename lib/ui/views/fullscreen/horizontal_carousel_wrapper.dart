@@ -42,6 +42,25 @@ class _HorizontalCarouselWrapperState extends State<HorizontalCarouselWrapper> {
       itemCount: model.currentState.media.length,
       itemBuilder: widget.builder,
       onPageChanged: widget.onPageChanged,
+      physics: const FasterPageViewScrollPhysics(),
     );
   }
+}
+
+/// [ScrollPhysics] with a faster animation.
+/// See https://github.com/flutter/flutter/issues/55103#issuecomment-747059541
+class FasterPageViewScrollPhysics extends ScrollPhysics {
+  const FasterPageViewScrollPhysics({super.parent});
+
+  @override
+  FasterPageViewScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return FasterPageViewScrollPhysics(parent: buildParent(ancestor)!);
+  }
+
+  @override
+  SpringDescription get spring => const SpringDescription(
+    mass: 50,
+    stiffness: 100,
+    damping: 0.8,
+  );
 }
