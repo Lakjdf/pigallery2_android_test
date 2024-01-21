@@ -23,7 +23,10 @@ class ThumbnailImage extends StatelessWidget {
       placeholder: (context, url) => SpinKitRipple(
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
-      fadeOutDuration: const Duration(milliseconds: 500), // see https://github.com/Baseflow/flutter_cached_network_image/issues/716
+      fadeOutDuration: const Duration(milliseconds: 300),
+      fadeOutCurve: Curves.easeOutCubic,
+      fadeInDuration: const Duration(milliseconds: 300),
+      fadeInCurve: Curves.easeInCubic,
       errorWidget: (context, url, error) {
         return const ErrorImage();
       },
