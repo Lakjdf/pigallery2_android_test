@@ -56,10 +56,6 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
     });
   }
 
-  DateTime _dateFromUnixTimestamp(double timestamp) {
-    return DateUtils.dateOnly(DateTime.fromMillisecondsSinceEpoch(timestamp.toInt() * 1000));
-  }
-
   Widget _buildListView(int itemCount, Widget Function(BuildContext context, int pos) builder) {
     return ListView.separated(
       separatorBuilder: (context, index) => const SizedBox(width: 20),
@@ -71,6 +67,10 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
         return builder(context, pos - 1);
       },
     );
+  }
+
+  DateTime _dateFromUnixTimestamp(int timestamp) {
+    return DateUtils.dateOnly(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000));
   }
 
   Widget _buildCircularThumbnail(Item item) {
@@ -153,43 +153,57 @@ class _TopPicksViewState extends State<TopPicksView> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    TopPicksModel model = Provider.of<TopPicksModel>(context, listen: true);
-    Map<DateTime, List<Media>> mediaByDate = groupBy(model.content, (obj) => _dateFromUnixTimestamp(obj.metadata.date));
-    mediaByDate.removeWhere((key, value) => key.year == DateTime.now().year);
-    if (mediaByDate.isEmpty) {
+    TopPicksModel model = context.watch<TopPicksModel>();
+    Map<int, List<Media>> mediaByYear = model.content;
+    if (mediaByYear.isEmpty) {
       return const TopPicksContainer(expand: false);
     }
-    List<DateTime> sortedDateTimes = mediaByDate.keys.sorted();
+    List<int> sortedYears = mediaByYear.keys.sorted((a, b) => a.compareTo(b));
     return TopPicksContainer(
       expand: true,
       child: _buildListView(
-        mediaByDate.length,
+        mediaByYear.length,
         (context, pos) {
-          DateTime dateTime = sortedDateTimes.elementAt(pos);
-          List<Media> media = mediaByDate[dateTime]!;
+          int year = sortedYears.elementAt(pos);
+          List<Media> media = mediaByYear[year]!;
           return Column(
             key: ValueKey(media.first.id),
             children: [
               GestureDetector(
-                onTap: () => _openDirectory(
-                  context,
-                  Directory(
-                    id: -1,
-                    name: format.format(dateTime),
-                    relativeApiPath: "",
-                    relativeThumbnailPath: "",
-                    directories: [],
-                    media: media,
-                    metadata: DirectoryMetadata(
-                      lastModified: 0,
-                      mediaCount: media.length
-                    )
-                  ),
-                ),
+                onTap: () {
+                  List<int> sortedDates = media.map((it) => it.metadata.date.toInt()).sorted((a, b) => a.compareTo(b));
+                  DateTime first = _dateFromUnixTimestamp(sortedDates.first);
+                  DateTime last = _dateFromUnixTimestamp(sortedDates.last);
+                  String name;
+                  if (first == last) {
+                    name = format.format(first);
+                  } else {
+                    name = "${format.format(first)} – ${format.format(last)}";
+                  }
+                  _openDirectory(
+                    context,
+                    Directory(
+                      id: -1,
+                      name: name,
+                      relativeApiPath: "",
+                      relativeThumbnailPath: "",
+                      directories: [],
+                      media: media,
+                      metadata: DirectoryMetadata(lastModified: 0, mediaCount: media.length),
+                    ),
+                  );
+                },
                 child: model.isLoading ? _buildCircularThumbnailWithAnimation(media.first) : _buildCircularThumbnail(media.first),
               ),
               const SizedBox(height: 7),
-              Text(format.format(dateTime)),
+              Text(
+                year.toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
+                  fontSize: 15,
+                ),
+              )
             ],
           );
         },

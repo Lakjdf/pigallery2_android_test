@@ -1,4 +1,5 @@
 import 'package:async/async.dart';
+import 'package:collection/collection.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_helper.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
@@ -17,22 +18,33 @@ class TopPicksModel extends SafeChangeNotifier {
 
   CancelableOperation? _currentRequest;
   bool _isLoading = false;
-  List<Media> _content = [];
+  Map<int, List<Media>> _content = {};
   int? _currentDaysLength;
+
   /// Reload content if a different server has been selected
   String? _currentServerUrl;
 
   bool get isLoading => _isLoading;
 
-  List<Media> get content => _content;
+  Map<int, List<Media>> get content => _content;
 
   Future<Directory?> _fetchTopPicks(int daysLength) {
     return _itemRepository.getTopPicks(daysLength).onError((error, stackTrace) {
       _isLoading = false;
-      _content = [];
+      _content = {};
       notifyListeners();
       return null;
     });
+  }
+
+  int _yearFromUnixTimestamp(double timestamp) {
+    return (DateTime.fromMillisecondsSinceEpoch(timestamp.toInt() * 1000)).year;
+  }
+
+  Map<int, List<Media>> _groupMedia(List<Media> media) {
+    Map<int, List<Media>> mediaByYear = groupBy(media, (it) => _yearFromUnixTimestamp(it.metadata.date));
+    mediaByYear.removeWhere((key, value) => key == DateTime.now().year);
+    return mediaByYear;
   }
 
   void fetchTopPicks(int daysLength) {
@@ -41,11 +53,15 @@ class TopPicksModel extends SafeChangeNotifier {
     _isLoading = true;
     _currentRequest?.cancel();
     _currentDaysLength = daysLength;
+    if (_currentServerUrl == serverUrl) {
+      notifyListeners();
+    } else {
+      _content = {};
+    }
     _currentServerUrl = serverUrl;
-    notifyListeners();
     _currentRequest = CancelableOperation.fromFuture(_fetchTopPicks(daysLength)).then((value) {
       _isLoading = false;
-      _content = value?.media ?? [];
+      _content = _groupMedia(value?.media ?? []);
       notifyListeners();
     });
   }
