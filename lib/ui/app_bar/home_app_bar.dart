@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_helper.dart';
-import 'package:pigallery2_android/ui/app_bar/actions/sort_options_widget.dart';
+import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/app_bar/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/app_bar/views/website_view.dart';
@@ -79,7 +79,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         if (stackPosition == 0) const AnimatedBackdropToggleButton(),
         const FullscreenToggleAction(),
-        const SortOptionsWidget(),
+        const SortOptionWidget(),
       ],
     );
   }

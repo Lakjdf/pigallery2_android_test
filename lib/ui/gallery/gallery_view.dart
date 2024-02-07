@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/util/strings.dart';
-import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_grid_view.dart';
-import 'package:pigallery2_android/ui/top_picks/views/top_picks_container.dart';
 import 'package:pigallery2_android/ui/top_picks/views/top_picks_view.dart';
 import 'package:pigallery2_android/ui/shared/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
@@ -53,19 +51,6 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
     }
   }
 
-  Widget buildTopPicksView() {
-    return Selector<GlobalSettingsModel, bool>(
-        selector: (context, model) => model.showTopPicks,
-        builder: (context, showTopPicks, child) {
-          if (showTopPicks && context.read<HomeModel>().isServerConfigured) {
-            return const TopPicksView();
-          } else {
-            return const TopPicksContainer(expand: false);
-          }
-        },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Selector<HomeModel, bool>(
@@ -85,7 +70,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           },
           child: Column(
             children: [
-              if (widget.stackPosition == 0) ...[buildTopPicksView()],
+              if (widget.stackPosition == 0) const TopPicksView(),
               Flexible(
                 child: Selector<HomeModel, List<Item>>(
                   selector: (context, model) => model.stateOf(widget.stackPosition).items,

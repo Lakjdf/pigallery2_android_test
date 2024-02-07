@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/server_settings/views/add_server_dialog.dart';
+import 'package:pigallery2_android/ui/shared/widgets/selectable_card.dart';
 import 'package:provider/provider.dart';
 
 class ServerSelection extends StatelessWidget {
@@ -44,86 +45,45 @@ class ServerSelection extends StatelessWidget {
     );
   }
 
-  Widget _buildListItem(
-    BuildContext context, {
-    required String url,
-    Widget? title,
-    Widget? leading,
-    Widget? trailing,
-  }) {
-    return Card(
-      color: Theme.of(context).colorScheme.secondaryContainer.withAlpha((0.5 * 255).toInt()),
-      shape: url == Provider.of<ServerModel>(context, listen: false).serverUrl
-          ? RoundedRectangleBorder(
-              side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1.6),
-              borderRadius: BorderRadius.circular(10),
-            )
-          : RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-      child: InkWell(
-        onTap: () => Provider.of<ServerModel>(context, listen: false).selectServer(url),
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              if (leading != null) leading,
-              if (title != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: title,
-                ),
-              const Spacer(),
-              if (trailing != null) trailing,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Widget> buildListItems(BuildContext context) {
-    List<Widget> listItems = [];
-    for (String url in Provider.of<ServerModel>(context).serverUrls) {
-      listItems.add(
-        _buildListItem(
-          context,
-          url: url,
+  List<Widget> buildListItems(BuildContext context, String? selectedServer) {
+    return context.select<ServerModel, List<String>>((it) => it.serverUrls).map(
+      (url) {
+        return SelectableCard(
+          isSelected: url == selectedServer,
+          onSelected: () => context.read<ServerModel>().selectServer(url),
           title: Text(url),
           trailing: IconButton(
             onPressed: () => askDeleteServer(context, url),
             icon: const Icon(Icons.delete),
           ),
-        ),
-      );
-    }
-    return listItems;
+        );
+      },
+    ).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: buildListItems(context) +
-          [
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 35,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                child: MaterialButton(
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                  onPressed: () => addServerDialog(context),
-                  child: Text(
-                    'Add Server',
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer),
-                  ),
-                ),
+      children: [
+        ...buildListItems(context, context.select<ServerModel, String?>((it) => it.serverUrl)),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 35,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+            child: MaterialButton(
+              color: Theme.of(context).colorScheme.secondaryContainer,
+              onPressed: () => addServerDialog(context),
+              child: Text(
+                'Add Server',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSecondaryContainer),
               ),
             ),
-            const SizedBox(height: 24),
-          ],
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 }

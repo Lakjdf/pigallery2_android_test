@@ -26,7 +26,7 @@ class ServerRepositoryImpl implements ServerRepository {
 
   @override
   Future<bool> addServer(String url, String? username, String? password, SessionData? sessionData) async {
-    List<String> currentServerUrls = serverUrls;
+    List<String> currentServerUrls = serverUrls.toList();
     if (currentServerUrls.addDistinct(url)) {
       await _storage.set(StorageKey.serverUrls, currentServerUrls);
       if (username != null && password != null) {

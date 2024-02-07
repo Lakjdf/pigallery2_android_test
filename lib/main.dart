@@ -99,7 +99,7 @@ class MyApp extends StatelessWidget {
             if (previous == null) {
               return TopPicksModel(Provider.of<ItemRepository>(context, listen: false), _storage);
             }
-            return previous..fetchTopPicks(model.topPicksDaysLength);
+            return previous..update(model.topPicksDaysLength, model.showTopPicks);
           },
         ),
       ],

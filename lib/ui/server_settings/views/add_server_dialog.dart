@@ -51,8 +51,8 @@ class _AddServerDialogState extends State<AddServerDialog> {
 
   InputDecoration buildInputDecorationUrl(BuildContext context) {
     ServerModel model = Provider.of<ServerModel>(context, listen: false);
-    return model.testFailedUrl
-        ? const InputDecoration(errorText: "Can't connect to server")
+    return model.testUrlErrorText != null
+        ? InputDecoration(errorText: model.testUrlErrorText)
         : (model.testSuccessUrl
             ? buildSuccessInputDecoration(context, "Valid server")
             : InputDecoration(
@@ -88,7 +88,8 @@ class _AddServerDialogState extends State<AddServerDialog> {
         color: Theme.of(context).colorScheme.secondaryContainer,
         onPressed: () async {
           if (serverModel.testSuccessUrl && serverModel.testSuccessAuth) {
-            await serverModel.addServer(addServerController.text, usernameController.text.ifEmpty(null), passwordController.text.ifEmpty(null));
+            serverModel.addServer(addServerController.text, usernameController.text.ifEmpty(null), passwordController.text.ifEmpty(null));
+            // close without awaiting the server to be persisted
             if (mounted) Navigator.pop(context);
           } else {
             testConnection(context);

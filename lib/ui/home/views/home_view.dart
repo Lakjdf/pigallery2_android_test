@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/server_settings/views/bad_certificate_selection.dart';
 import 'package:pigallery2_android/ui/server_settings/views/bottom_sheet_handle.dart';
 import 'package:pigallery2_android/ui/server_settings/views/server_selection.dart';
-import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
@@ -41,8 +40,7 @@ class HomeView extends StatelessWidget {
       },
     ).whenComplete(() {
       Provider.of<HomeModel>(context, listen: false).fetchItems();
-      int daysLength = Provider.of<GlobalSettingsModel>(context, listen: false).topPicksDaysLength;
-      Provider.of<TopPicksModel>(context, listen: false).fetchTopPicks(daysLength);
+      Provider.of<TopPicksModel>(context, listen: false).refresh();
     });
   }
 

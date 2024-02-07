@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/ui/app_bar/actions/sort_options_widget.dart';
+import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/fullscreen_toggle_button.dart';
@@ -36,7 +36,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   List<Widget>? buildActions(BuildContext context) {
     return [
       const FullscreenToggleAction(),
-      const SortOptionsWidget()
+      const SortOptionWidget()
     ];
   }
 

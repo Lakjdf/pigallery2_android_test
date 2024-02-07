@@ -2,6 +2,7 @@ import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_helper.dart';
+import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
@@ -13,16 +14,23 @@ class TopPicksModel extends SafeChangeNotifier {
 
   TopPicksModel(this._itemRepository, this._storage) {
     _storageHelper = StorageHelper(_storage);
-    _currentServerUrl = _storageHelper.getSelectedServerUrl();
+    _currentServerUrl = null;
+    _showTopPicks = _storage.get(StorageKey.showTopPicks);
+    _daysLength = _storage.get(StorageKey.topPicksDaysLength);
   }
+
+  late int _daysLength;
+  late bool _showTopPicks;
 
   CancelableOperation? _currentRequest;
   bool _isLoading = false;
   Map<int, List<Media>> _content = {};
-  int? _currentDaysLength;
 
   /// Reload content if a different server has been selected
   String? _currentServerUrl;
+
+  /// Whether the top picks have been retrieved for the current server and are empty.
+  bool get isUpToDateAndEmpty => _content.isEmpty && _currentServerUrl != null && _currentServerUrl == _storageHelper.getSelectedServerUrl();
 
   bool get isLoading => _isLoading;
 
@@ -47,22 +55,47 @@ class TopPicksModel extends SafeChangeNotifier {
     return mediaByYear;
   }
 
-  void fetchTopPicks(int daysLength) {
-    String? serverUrl = _storageHelper.getSelectedServerUrl();
-    if (_currentDaysLength == daysLength && _currentServerUrl == serverUrl) return;
+  void _fetch() {
     _isLoading = true;
-    _currentRequest?.cancel();
-    _currentDaysLength = daysLength;
-    if (_currentServerUrl == serverUrl) {
-      notifyListeners();
-    } else {
-      _content = {};
-    }
-    _currentServerUrl = serverUrl;
-    _currentRequest = CancelableOperation.fromFuture(_fetchTopPicks(daysLength)).then((value) {
+    notifyListeners();
+    _currentRequest = CancelableOperation.fromFuture(_fetchTopPicks(_daysLength)).then((value) {
       _isLoading = false;
       _content = _groupMedia(value?.media ?? []);
       notifyListeners();
     });
+  }
+
+  /// Inform about changes to [daysLength] and [showTopPicks].
+  /// Only fetches from [ItemRepository] if
+  /// - showTopPicks is true and
+  /// - [daysLength] or the current server url have changed.
+  void update(int daysLength, bool showTopPicks) {
+    _showTopPicks = showTopPicks;
+    String? serverUrl = _storageHelper.getSelectedServerUrl();
+    if (_daysLength == daysLength && _currentServerUrl == serverUrl) {
+      // nothing changed
+      return;
+    }
+    if (!showTopPicks) return; // only fetch if top picks are visible
+    _daysLength = daysLength;
+    _currentServerUrl = serverUrl;
+
+    _currentRequest?.cancel();
+    if (serverUrl == null) {
+      // no server configured
+      _content = {};
+      notifyListeners();
+      return;
+    }
+    _fetch();
+  }
+
+  /// Refresh the state in case the serverUrl has changed.
+  void refresh() {
+    if (_showTopPicks) {
+      update(_daysLength, _showTopPicks);
+    } else {
+      _content = {};
+    }
   }
 }

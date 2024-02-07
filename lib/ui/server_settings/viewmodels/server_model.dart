@@ -12,7 +12,7 @@ class ServerModel extends SafeChangeNotifier {
 
   bool testSuccessUrl = false;
   bool testSuccessAuth = false;
-  bool testFailedUrl = false;
+  String? testUrlErrorText;
   bool testFailedAuth = false;
 
   String? get serverUrl => _serverRepository.serverUrl;
@@ -44,7 +44,7 @@ class ServerModel extends SafeChangeNotifier {
   }
 
   void urlChanged() {
-    testFailedUrl = false;
+    testUrlErrorText = null;
     testSuccessUrl = false;
     testSuccessAuth = false;
     testFailedAuth = false;
@@ -53,21 +53,30 @@ class ServerModel extends SafeChangeNotifier {
   }
 
   Future<void> testConnection(String url, String? username, String? password) async {
+    if (serverUrls.contains(url)) {
+      testUrlErrorText = "Server already exists";
+      testFailedAuth = false;
+      testSuccessAuth = false;
+      testSuccessUrl = false;
+      _lastSessionData = null;
+      notifyListeners();
+      return;
+    }
     ConnectionTestResult result = await _serverRepository.testConnection(url, username, password);
     if (result.serverUnreachable) {
-      testFailedUrl = true;
+      testUrlErrorText = "Can't connect to server";
       testFailedAuth = false;
       testSuccessAuth = false;
       testSuccessUrl = false;
       _lastSessionData = null;
     } else if (result.authFailed) {
-      testFailedUrl = false;
+      testUrlErrorText = null;
       testFailedAuth = true;
       testSuccessUrl = true;
       testSuccessAuth = false;
       _lastSessionData = null;
     } else {
-      testFailedUrl = false;
+      testUrlErrorText = null;
       testFailedAuth = false;
       testSuccessAuth = true;
       testSuccessUrl = true;
@@ -78,7 +87,7 @@ class ServerModel extends SafeChangeNotifier {
 
   reset() {
     testFailedAuth = false;
-    testFailedUrl = false;
+    testUrlErrorText = null;
     testSuccessAuth = false;
     testSuccessUrl = false;
     _lastSessionData = null;
