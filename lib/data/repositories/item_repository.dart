@@ -12,11 +12,14 @@ class ItemRepositoryImpl implements ItemRepository {
 
   @override
   Future<Directory?> search(Directory? baseDir, String searchText) async {
+    String path = baseDir?.relativeApiPath ?? ".";
     SearchQuery query = AndSearchQuery([
-      DirectorySearchQuery(text: baseDir?.relativeApiPath ?? "."),
+      DirectorySearchQuery(text: path),
       AnyTextSearchQuery(text: searchText),
     ]);
     BackendDirectory? result = await _api.search(query);
+    // remove current directory from response
+    result?.directories.removeWhere((element) => element.apiPath == path);
     return result?.let((it) => Directory.fromBackend(result));
   }
 
@@ -36,8 +39,7 @@ class ItemRepositoryImpl implements ItemRepository {
   Future<Directory?> flattenDirectory(Directory? dir) async {
     String path = dir?.relativeApiPath ?? ".";
     BackendDirectory? result = await _api.search(DirectorySearchQuery(text: path));
-    // remove current directory from response
-    result?.directories.removeWhere((element) => element.apiPath == path);
+    result?.directories.clear();
     return result?.let((it) => Directory.fromBackend(result));
   }
 }
