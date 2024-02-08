@@ -51,7 +51,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             HomeModel model = Provider.of<HomeModel>(context, listen: false);
             model.startSearch();
             await showSearch(context: context, delegate: GallerySearchDelegate(stackPosition));
-            model.popStack();
+            model.stopSearch();
           },
           icon: const Icon(Icons.search),
         ),
@@ -89,7 +89,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    String? directoryName = context.select<HomeModel, String?>((it) => it.stateOf(stackPosition).baseDirectory?.name);
+    String? directoryName = context.select<HomeModel, String?>((it) => it.stateOf(stackPosition).title);
     return AppBar(
       iconTheme: theme.iconTheme,
       titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),

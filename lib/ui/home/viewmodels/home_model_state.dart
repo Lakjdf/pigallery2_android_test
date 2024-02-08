@@ -7,6 +7,10 @@ class HomeModelState {
   /// [Directory] received from the backend.
   Directory? baseDirectory;
 
+  String? _title;
+
+  String get title => _title ?? baseDirectory?.name ?? "";
+
   /// Whether this state represents a search result.
   bool isSearching = false;
 
@@ -42,7 +46,9 @@ class HomeModelState {
 
   HomeModelState(this.baseDirectory, this.sortOption, this.sortAscending);
 
-  HomeModelState.searching(this.sortOption, this.sortAscending, {this.baseDirectory}) : isSearching = true;
+  HomeModelState.searching(this.sortOption, this.sortAscending, {String? title, this.baseDirectory})
+      : _title = title,
+        isSearching = true;
 
   //region sorting
   void updateSortOption(SortOption option) {

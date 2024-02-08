@@ -66,10 +66,14 @@ class HomeModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
+  void _addStack(HomeModelState state) {
+    _isSearchPending = false;
+    _state.add(state);
+  }
+
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
-    _isSearchPending = false;
-    _state.add(HomeModelState(baseDirectory, sortOption, sortAscending));
+    _addStack(HomeModelState(baseDirectory, sortOption, sortAscending));
     fetchItems();
   }
 
@@ -91,8 +95,16 @@ class HomeModel extends SafeChangeNotifier {
     }
   }
 
+  void stopSearch() {
+    if (!_isSearchPending) {
+      popStack();
+    } else {
+      _isSearchPending = false;
+    }
+  }
+
   void topPicksSearch(Directory directory) {
-    _state.add(HomeModelState.searching(sortOption, sortAscending, baseDirectory: directory));
+    _addStack(HomeModelState.searching(sortOption, sortAscending, baseDirectory: directory));
     currentState.items = directory.media;
     notifyListeners();
   }
@@ -158,10 +170,10 @@ class HomeModel extends SafeChangeNotifier {
   /// Start a search for the given text [searchText].
   /// Result will be available via [currentState].
   void textSearch(String searchText) {
+    if (currentState.isSearching && currentState.title == searchText) return;
     if (!currentState.isSearching) {
-      _state.add(HomeModelState.searching(sortOption, sortAscending));
+      _addStack(HomeModelState.searching(sortOption, sortAscending, title: searchText));
     }
-    if (currentState.baseDirectory?.name == searchText) return;
     Directory? baseDir = _state.reversed.skip(1).first.baseDirectory;
     _cancelableApiRequest(() {
       return _itemRepository.search(baseDir, searchText);
@@ -172,7 +184,7 @@ class HomeModel extends SafeChangeNotifier {
   /// Result will be available via [currentState].
   void flattenDir() {
     Directory? dirToFlatten = currentState.baseDirectory;
-    _state.add(HomeModelState.searching(sortOption, sortAscending));
+    _addStack(HomeModelState.searching(sortOption, sortAscending, title: dirToFlatten?.name));
     _cancelableApiRequest(() {
       return _itemRepository.flattenDirectory(dirToFlatten);
     });
