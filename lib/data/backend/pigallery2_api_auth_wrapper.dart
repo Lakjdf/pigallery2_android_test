@@ -1,5 +1,6 @@
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/backend/models/api_response.dart';
+import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
 import 'package:pigallery2_android/data/storage/credential_storage.dart';
 import 'package:pigallery2_android/data/backend/models/auth/login_credentials.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
@@ -78,13 +79,8 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   }
 
   @override
-  Future<BackendDirectory?> search({String searchText = ""}) async {
-    return _requestWithAuth((String url, SessionData? sessionData) => _api.search(serverUrl: url, searchText: searchText, sessionData: sessionData));
-  }
-
-  @override
-  Future<BackendDirectory?> getTopPicks(int daysLength) async {
-    return _requestWithAuth((String url, SessionData? sessionData) => _api.getTopPicks(serverUrl: url, daysLength: daysLength, sessionData: sessionData));
+  Future<BackendDirectory?> search(SearchQuery query) async {
+    return _requestWithAuth((String url, SessionData? sessionData) => _api.search(serverUrl: url, query: query, sessionData: sessionData));
   }
 
   @override

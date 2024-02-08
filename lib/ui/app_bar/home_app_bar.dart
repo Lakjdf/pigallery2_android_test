@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_helper.dart';
+import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/app_bar/search/gallery_search_delegate.dart';
@@ -41,7 +42,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    String? directoryName = context.read<HomeModel>().stateOf(stackPosition).baseDirectory?.name;
+    String? directoryName = context.select<HomeModel, String?>((it) => it.stateOf(stackPosition).baseDirectory?.name);
     return AppBar(
       iconTheme: theme.iconTheme,
       titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -78,6 +79,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               : Container(),
         ),
         if (stackPosition == 0) const AnimatedBackdropToggleButton(),
+        if (context.select<HomeModel, bool>((it) => it.isServerConfigured) && !context.select<HomeModel, bool>((it) => it.isFlattened(stackPosition))) const FlattenDirButton(),
         const FullscreenToggleAction(),
         const SortOptionWidget(),
       ],

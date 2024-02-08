@@ -1,6 +1,5 @@
 import 'package:pigallery2_android/data/backend/models/models.dart';
 import 'package:path/path.dart' as p;
-import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
 
 class SearchResult {
   final String name;
@@ -40,7 +39,7 @@ class SearchResult {
   }
 
   SearchResult.fromJson(Map<String, dynamic> json)
-      : name = TextSearchQuery.fromJson(json["searchResult"]["searchQuery"]).text,
+      : name = json["searchResult"]["searchQuery"]["text"] ?? "",
         media = _parseMedia(json),
         directories = _parseDirectories(json);
 }

@@ -90,8 +90,7 @@ class PiGallery2Api {
     return await _runCatching(() => _getDirectories(serverUrl, path ?? "", sessionData));
   }
 
-  Future<ApiResponse<BackendDirectory>> _search(String serverUrl, String searchText, SessionData? sessionData) async {
-    TextSearchQuery query = TextSearchQuery(text: searchText);
+  Future<ApiResponse<BackendDirectory>> _search(String serverUrl, SearchQuery query, SessionData? sessionData) async {
     Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + jsonEncode(query));
 
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
@@ -105,30 +104,9 @@ class PiGallery2Api {
 
   Future<ApiResponse<BackendDirectory>> search({
     required String serverUrl,
-    String searchText = "",
+    required SearchQuery query,
     SessionData? sessionData,
   }) async {
-    return await _runCatching(() => _search(serverUrl, searchText, sessionData));
-  }
-
-  Future<ApiResponse<BackendDirectory>> _getTopPicks(String serverUrl, int daysLength, SessionData? sessionData) async {
-    TopPicksQuery query = TopPicksQuery(daysLength: daysLength);
-    Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + jsonEncode(query));
-
-    http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
-    Map<String, dynamic> result = json.decode(response.body);
-    if (result["error"] == null) {
-      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result']).toDirectory());
-    } else {
-      return ApiResponse(error: result["error"].toString(), code: response.statusCode);
-    }
-  }
-
-  Future<ApiResponse<BackendDirectory>> getTopPicks({
-    required String serverUrl,
-    required int daysLength,
-    SessionData? sessionData,
-  }) async {
-    return await _runCatching(() => _getTopPicks(serverUrl, daysLength, sessionData));
+    return await _runCatching(() => _search(serverUrl, query, sessionData));
   }
 }

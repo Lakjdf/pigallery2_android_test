@@ -2,22 +2,34 @@ sealed class SearchQuery {
   abstract int type;
 
   SearchQuery();
+
+  Map<String, dynamic> toJson();
 }
 
-class TextSearchQuery extends SearchQuery {
-  @override
-  int type = 100;
-
+abstract class TextSearchQuery extends SearchQuery {
   String text;
 
   TextSearchQuery({required this.text});
 
+  @override
   Map<String, dynamic> toJson() => {
         'type': type,
         'text': text,
       };
+}
 
-  TextSearchQuery.fromJson(Map<String, dynamic> json) : text = json["text"] ?? "";
+class AnyTextSearchQuery extends TextSearchQuery {
+  @override
+  int type = 100;
+
+  AnyTextSearchQuery({required super.text});
+}
+
+class DirectorySearchQuery extends TextSearchQuery {
+  @override
+  int type = 102;
+
+  DirectorySearchQuery({required super.text});
 }
 
 class TopPicksQuery extends SearchQuery {
@@ -27,6 +39,7 @@ class TopPicksQuery extends SearchQuery {
 
   TopPicksQuery({this.daysLength = 3});
 
+  @override
   Map<String, dynamic> toJson() => {
         'type': type,
         'daysLength': daysLength,

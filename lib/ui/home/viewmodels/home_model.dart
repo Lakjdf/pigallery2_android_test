@@ -28,6 +28,9 @@ class HomeModel extends SafeChangeNotifier {
   /// [HomeModelState] of the given position in the [Navigator] stack.
   HomeModelState stateOf(int stackPosition) => _state[stackPosition];
 
+  /// How many pages are on the [Navigator] stack.
+  int get stackPosition => _state.length - 1;
+
   /// [HomeModelState] of the top-most [HomeView] in the [Navigator] stack.
   HomeModelState get currentState => _state.last;
 
@@ -37,6 +40,13 @@ class HomeModel extends SafeChangeNotifier {
   bool _isSearching = false;
 
   bool get isSearching => _isSearching;
+
+  /// Whether the current state represents a flattened directory.
+  bool isFlattened(int stackPosition) {
+    if (stackPosition == 0) return false;
+    if (stateOf(stackPosition).baseDirectory == null) return true;
+    return _state.length > 1 && stateOf(stackPosition).baseDirectory?.name == stateOf(stackPosition - 1).baseDirectory?.relativeApiPath;
+  }
 
   CancelableOperation<Directory?>? _currentRequest;
 
@@ -163,6 +173,20 @@ class HomeModel extends SafeChangeNotifier {
     if (currentState.baseDirectory?.name == searchText) return;
     _cancelableApiRequest(() {
       return _itemRepository.search(searchText: searchText);
+    });
+  }
+
+  /// Flatten the current directory.
+  /// Result will be available via [currentState].
+  void flattenDir() {
+    String path = currentState.baseDirectory?.relativeApiPath ?? ".";
+    _state.add(HomeModelState(null, sortOption, sortAscending));
+    _cancelableApiRequest(() {
+      return _itemRepository.flattenDirectory(path).then((Directory? dir) {
+        // remove current directory from response
+        dir?.directories.removeWhere((element) => element.relativeApiPath == path);
+        return dir;
+      });
     });
   }
 }

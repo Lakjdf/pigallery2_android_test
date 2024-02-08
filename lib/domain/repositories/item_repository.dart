@@ -6,4 +6,6 @@ abstract interface class ItemRepository {
   Future<Directory?> getDirectories({String? path});
 
   Future<Directory?> getTopPicks(int daysLength);
+
+  Future<Directory?> flattenDirectory(String dirName);
 }
