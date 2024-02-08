@@ -46,3 +46,17 @@ class TopPicksQuery extends SearchQuery {
         'frequency': 3, // every_year
       };
 }
+
+class AndSearchQuery extends SearchQuery {
+  @override
+  int type = 1;
+  List<SearchQuery> queries;
+
+  AndSearchQuery(this.queries);
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'list': queries.map((e) => e.toJson()).toList(),
+      };
+}

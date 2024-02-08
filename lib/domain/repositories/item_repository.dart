@@ -1,7 +1,7 @@
 import 'package:pigallery2_android/domain/models/item.dart';
 
 abstract interface class ItemRepository {
-  Future<Directory?> search({String searchText});
+  Future<Directory?> search(Directory? baseDir, String searchText);
 
   Future<Directory?> getDirectories({String? path});
 

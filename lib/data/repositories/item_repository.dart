@@ -11,8 +11,12 @@ class ItemRepositoryImpl implements ItemRepository {
   ItemRepositoryImpl(this._api);
 
   @override
-  Future<Directory?> search({String searchText = ""}) async {
-    BackendDirectory? result = await _api.search(AnyTextSearchQuery(text: searchText));
+  Future<Directory?> search(Directory? baseDir, String searchText) async {
+    SearchQuery query = AndSearchQuery([
+      DirectorySearchQuery(text: baseDir?.relativeApiPath ?? "."),
+      AnyTextSearchQuery(text: searchText),
+    ]);
+    BackendDirectory? result = await _api.search(query);
     return result?.let((it) => Directory.fromBackend(result));
   }
 

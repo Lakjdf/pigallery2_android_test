@@ -49,6 +49,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           onPressed: () async {
             HomeModel model = Provider.of<HomeModel>(context, listen: false);
+            model.startSearch();
             await showSearch(context: context, delegate: GallerySearchDelegate());
             model.popStack();
           },

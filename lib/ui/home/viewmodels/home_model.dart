@@ -37,8 +37,9 @@ class HomeModel extends SafeChangeNotifier {
   /// Whether a server has been added.
   bool get isServerConfigured => _storage.get(StorageKey.serverUrls).isNotEmpty;
 
+  bool _isSearching = false;
 
-  bool get isSearching => currentState.isSearching;
+  bool get isSearching => _isSearching;
 
   CancelableOperation<Directory?>? _currentRequest;
 
@@ -78,7 +79,14 @@ class HomeModel extends SafeChangeNotifier {
     }
     _currentRequest?.cancel();
     _currentRequest = null;
+    _isSearching = false;
     _state.removeLast();
+  }
+
+  void startSearch() {
+    if (!_isSearching) {
+      _isSearching = true;
+    }
   }
 
   void topPicksSearch(Directory directory) {
@@ -152,8 +160,9 @@ class HomeModel extends SafeChangeNotifier {
       _state.add(HomeModelState.searching(sortOption, sortAscending));
     }
     if (currentState.baseDirectory?.name == searchText) return;
+    Directory? baseDir = _state.reversed.skip(1).first.baseDirectory;
     _cancelableApiRequest(() {
-      return _itemRepository.search(searchText: searchText);
+      return _itemRepository.search(baseDir, searchText);
     });
   }
 
