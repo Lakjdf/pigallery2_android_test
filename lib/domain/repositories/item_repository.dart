@@ -7,5 +7,5 @@ abstract interface class ItemRepository {
 
   Future<Directory?> getTopPicks(int daysLength);
 
-  Future<Directory?> flattenDirectory(String dirName);
+  Future<Directory?> flattenDirectory(Directory? dir);
 }

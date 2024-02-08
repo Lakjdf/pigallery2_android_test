@@ -179,14 +179,9 @@ class HomeModel extends SafeChangeNotifier {
   /// Flatten the current directory.
   /// Result will be available via [currentState].
   void flattenDir() {
-    String path = currentState.baseDirectory?.relativeApiPath ?? ".";
     _state.add(HomeModelState(null, sortOption, sortAscending));
     _cancelableApiRequest(() {
-      return _itemRepository.flattenDirectory(path).then((Directory? dir) {
-        // remove current directory from response
-        dir?.directories.removeWhere((element) => element.relativeApiPath == path);
-        return dir;
-      });
+      return _itemRepository.flattenDirectory(currentState.baseDirectory);
     });
   }
 }

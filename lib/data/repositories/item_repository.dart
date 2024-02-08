@@ -29,8 +29,11 @@ class ItemRepositoryImpl implements ItemRepository {
   }
 
   @override
-  Future<Directory?> flattenDirectory(String dirName) async {
-    BackendDirectory? result = await _api.search(DirectorySearchQuery(text: dirName));
+  Future<Directory?> flattenDirectory(Directory? dir) async {
+    String path = dir?.relativeApiPath ?? ".";
+    BackendDirectory? result = await _api.search(DirectorySearchQuery(text: path));
+    // remove current directory from response
+    result?.directories.removeWhere((element) => element.apiPath == path);
     return result?.let((it) => Directory.fromBackend(result));
   }
 }
