@@ -37,9 +37,10 @@ class HomeModel extends SafeChangeNotifier {
   /// Whether a server has been added.
   bool get isServerConfigured => _storage.get(StorageKey.serverUrls).isNotEmpty;
 
-  bool _isSearching = false;
+  bool _isSearchPending = false;
 
-  bool get isSearching => _isSearching;
+  /// Whether a search view has been entered, but no search has been submitted yet.
+  bool get isSearchPending => _isSearchPending;
 
   CancelableOperation<Directory?>? _currentRequest;
 
@@ -67,6 +68,7 @@ class HomeModel extends SafeChangeNotifier {
 
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
+    _isSearchPending = false;
     _state.add(HomeModelState(baseDirectory, sortOption, sortAscending));
     fetchItems();
   }
@@ -79,18 +81,18 @@ class HomeModel extends SafeChangeNotifier {
     }
     _currentRequest?.cancel();
     _currentRequest = null;
-    _isSearching = false;
     _state.removeLast();
+    _isSearchPending = false;
   }
 
   void startSearch() {
-    if (!_isSearching) {
-      _isSearching = true;
+    if (!_isSearchPending) {
+      _isSearchPending = true;
     }
   }
 
   void topPicksSearch(Directory directory) {
-    _state.add(HomeModelState(directory, sortOption, sortAscending));
+    _state.add(HomeModelState.searching(sortOption, sortAscending, baseDirectory: directory));
     currentState.items = directory.media;
     notifyListeners();
   }

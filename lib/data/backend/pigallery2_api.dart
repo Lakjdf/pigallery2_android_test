@@ -96,7 +96,7 @@ class PiGallery2Api {
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
     Map<String, dynamic> result = json.decode(response.body);
     if (result["error"] == null) {
-      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result']).toDirectory());
+      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result'], query.title).toDirectory());
     } else {
       return ApiResponse(error: result["error"].toString(), code: response.statusCode);
     }

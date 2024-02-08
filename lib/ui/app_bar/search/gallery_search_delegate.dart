@@ -6,6 +6,9 @@ import 'package:pigallery2_android/ui/app_bar/actions/fullscreen_toggle_button.d
 import 'package:provider/provider.dart';
 
 class GallerySearchDelegate extends SearchDelegate<String> {
+  final int baseStackPosition;
+  GallerySearchDelegate(this.baseStackPosition);
+
   @override
   ThemeData appBarTheme(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -34,7 +37,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   List<Widget>? buildActions(BuildContext context) {
     return [
       const FullscreenToggleAction(),
-      const SortOptionWidget()
+      const SortOptionWidget(),
     ];
   }
 
@@ -50,12 +53,14 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     model.textSearch(query);
-    return GalleryView(model.stackPosition, () {});
+    return GalleryView(baseStackPosition + 1, () {});
   }
 
+  /// Returns the currently visible [GalleryView] until the search has been submitted.
   @override
   Widget buildSuggestions(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
-    return GalleryView(model.stackPosition, () {});
+    int pos = model.stackPosition == baseStackPosition + 1 ? model.stackPosition : baseStackPosition;
+    return GalleryView(pos, () {});
   }
 }

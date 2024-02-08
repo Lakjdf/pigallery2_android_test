@@ -38,8 +38,8 @@ class SearchResult {
     return allDirectoriesFromJson(List.from(directoriesJson), "");
   }
 
-  SearchResult.fromJson(Map<String, dynamic> json)
-      : name = json["searchResult"]["searchQuery"]["text"] ?? "",
+  SearchResult.fromJson(Map<String, dynamic> json, String title)
+      : name = title,
         media = _parseMedia(json),
         directories = _parseDirectories(json);
 }

@@ -1,5 +1,8 @@
+import 'package:collection/collection.dart';
+
 sealed class SearchQuery {
   abstract int type;
+  String get title;
 
   SearchQuery();
 
@@ -21,6 +24,8 @@ abstract class TextSearchQuery extends SearchQuery {
 class AnyTextSearchQuery extends TextSearchQuery {
   @override
   int type = 100;
+  @override
+  String get title => super.text;
 
   AnyTextSearchQuery({required super.text});
 }
@@ -28,6 +33,8 @@ class AnyTextSearchQuery extends TextSearchQuery {
 class DirectorySearchQuery extends TextSearchQuery {
   @override
   int type = 102;
+  @override
+  String get title => super.text;
 
   DirectorySearchQuery({required super.text});
 }
@@ -36,6 +43,8 @@ class TopPicksQuery extends SearchQuery {
   @override
   int type = 60;
   int daysLength;
+  @override
+  String get title => "";
 
   TopPicksQuery({this.daysLength = 3});
 
@@ -51,6 +60,8 @@ class AndSearchQuery extends SearchQuery {
   @override
   int type = 1;
   List<SearchQuery> queries;
+  @override
+  String get title => queries.firstWhereOrNull((it) => it is AnyTextSearchQuery)?.title ?? "";
 
   AndSearchQuery(this.queries);
 
