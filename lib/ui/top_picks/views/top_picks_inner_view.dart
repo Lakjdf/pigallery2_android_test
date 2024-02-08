@@ -24,7 +24,7 @@ class TopPicksInnerView extends StatelessWidget {
         builder: ((context) => HomeView(1)),
       ),
     ).then((value) {
-      model.stopSearch();
+      model.popStack();
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
     });
   }

@@ -19,7 +19,7 @@ class HomeModel extends SafeChangeNotifier {
           HomeModelState(
             null,
             _storage.get(StorageKey.sortOption),
-            _storage.get(StorageKey.sortAscending),
+            _storage.get(StorageKey.sortAscending)
           )
         ] {
     fetchItems();
@@ -37,16 +37,8 @@ class HomeModel extends SafeChangeNotifier {
   /// Whether a server has been added.
   bool get isServerConfigured => _storage.get(StorageKey.serverUrls).isNotEmpty;
 
-  bool _isSearching = false;
 
-  bool get isSearching => _isSearching;
-
-  /// Whether the current state represents a flattened directory.
-  bool isFlattened(int stackPosition) {
-    if (stackPosition == 0) return false;
-    if (stateOf(stackPosition).baseDirectory == null) return true;
-    return _state.length > 1 && stateOf(stackPosition).baseDirectory?.name == stateOf(stackPosition - 1).baseDirectory?.relativeApiPath;
-  }
+  bool get isSearching => currentState.isSearching;
 
   CancelableOperation<Directory?>? _currentRequest;
 
@@ -87,20 +79,6 @@ class HomeModel extends SafeChangeNotifier {
     _currentRequest?.cancel();
     _currentRequest = null;
     _state.removeLast();
-  }
-
-  void startSearch() {
-    if (!_isSearching) {
-      _state.add(HomeModelState(null, sortOption, sortAscending));
-      _isSearching = true;
-    }
-  }
-
-  void stopSearch() {
-    if (_isSearching) {
-      _isSearching = false;
-      popStack();
-    }
   }
 
   void topPicksSearch(Directory directory) {
@@ -170,6 +148,9 @@ class HomeModel extends SafeChangeNotifier {
   /// Start a search for the given text [searchText].
   /// Result will be available via [currentState].
   void textSearch(String searchText) {
+    if (!currentState.isSearching) {
+      _state.add(HomeModelState.searching(sortOption, sortAscending));
+    }
     if (currentState.baseDirectory?.name == searchText) return;
     _cancelableApiRequest(() {
       return _itemRepository.search(searchText: searchText);
@@ -179,9 +160,10 @@ class HomeModel extends SafeChangeNotifier {
   /// Flatten the current directory.
   /// Result will be available via [currentState].
   void flattenDir() {
-    _state.add(HomeModelState(null, sortOption, sortAscending));
+    Directory? dirToFlatten = currentState.baseDirectory;
+    _state.add(HomeModelState.searching(sortOption, sortAscending));
     _cancelableApiRequest(() {
-      return _itemRepository.flattenDirectory(currentState.baseDirectory);
+      return _itemRepository.flattenDirectory(dirToFlatten);
     });
   }
 }

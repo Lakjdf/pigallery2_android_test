@@ -39,6 +39,52 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  List<Widget> _buildActions(BuildContext context) {
+    List<Widget> actions = [];
+    bool isServerConfigured = context.select<HomeModel, bool>((it) => it.isServerConfigured);
+    bool isSearching = context.select<HomeModel, bool>((it) => it.stateOf(stackPosition).isSearching);
+    bool areDirectoriesDisplayed = context.select<HomeModel, bool>((it) => it.stateOf(stackPosition).directories.isNotEmpty);
+    if (isServerConfigured && !isSearching) {
+      actions.add(
+        IconButton(
+          onPressed: () async {
+            HomeModel model = Provider.of<HomeModel>(context, listen: false);
+            await showSearch(context: context, delegate: GallerySearchDelegate());
+            model.popStack();
+          },
+          icon: const Icon(Icons.search),
+        ),
+      );
+    }
+    if (stackPosition == 0) {
+      actions.add(
+        IconButton(
+          onPressed: showServerSettings,
+          icon: const Icon(Icons.settings),
+        ),
+      );
+    }
+    if (stackPosition == 0 && isServerConfigured) {
+      actions.add(
+        IconButton(
+          onPressed: () {
+            String? url = StorageHelper(context.read<SharedPrefsStorage>()).getSelectedServerUrl();
+            url?.let((it) => showAdminPanel(context, it));
+          },
+          icon: const Icon(Icons.manage_accounts),
+        ),
+      );
+    }
+    if (stackPosition == 0) {
+      actions.add(const AnimatedBackdropToggleButton());
+    }
+    if (isServerConfigured && !isSearching && areDirectoriesDisplayed) {
+      actions.add(const FlattenDirButton());
+    }
+    actions.addAll([const FullscreenToggleAction(), const SortOptionWidget()]);
+    return actions;
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
@@ -46,43 +92,8 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       iconTheme: theme.iconTheme,
       titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-      title: Text(stackPosition == 0 && directoryName == "." ? "" : directoryName ?? ""), // don't show name of root dir '.'
-      actions: [
-        Consumer<HomeModel>(
-          builder: (context, model, child) => stackPosition == 0 && model.isServerConfigured
-              ? IconButton(
-                  onPressed: () async {
-                    HomeModel model = Provider.of<HomeModel>(context, listen: false);
-                    model.startSearch();
-                    await showSearch(context: context, delegate: GallerySearchDelegate());
-                    model.stopSearch();
-                  },
-                  icon: const Icon(Icons.search),
-                )
-              : Container(),
-        ),
-        stackPosition == 0
-            ? IconButton(
-                onPressed: showServerSettings,
-                icon: const Icon(Icons.settings),
-              )
-            : Container(),
-        Consumer<HomeModel>(
-          builder: (context, model, child) => stackPosition == 0 && model.isServerConfigured
-              ? IconButton(
-                  onPressed: () {
-                    String? url = StorageHelper(context.read<SharedPrefsStorage>()).getSelectedServerUrl();
-                    url?.let((it) => showAdminPanel(context, it));
-                  },
-                  icon: const Icon(Icons.manage_accounts),
-                )
-              : Container(),
-        ),
-        if (stackPosition == 0) const AnimatedBackdropToggleButton(),
-        if (context.select<HomeModel, bool>((it) => it.isServerConfigured) && !context.select<HomeModel, bool>((it) => it.isFlattened(stackPosition))) const FlattenDirButton(),
-        const FullscreenToggleAction(),
-        const SortOptionWidget(),
-      ],
+      title: Text(directoryName == "." ? "" : directoryName ?? ""), // don't show name of root dir '.'
+      actions: _buildActions(context),
     );
   }
 

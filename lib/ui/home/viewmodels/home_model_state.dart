@@ -7,6 +7,8 @@ class HomeModelState {
   /// [Directory] received from the backend.
   Directory? baseDirectory;
 
+  bool isSearching = false;
+
   /// Whether to show a loading indicator.
   bool isLoading = false;
 
@@ -34,7 +36,12 @@ class HomeModelState {
   /// All [items] of type [Media].
   List<Media> get media => _media;
 
+  /// All [items] of type [Directory].
+  List<Directory> get directories => _directories;
+
   HomeModelState(this.baseDirectory, this.sortOption, this.sortAscending);
+
+  HomeModelState.searching(this.sortOption, this.sortAscending) : isSearching = true;
 
   //region sorting
   void updateSortOption(SortOption option) {
@@ -84,5 +91,5 @@ class HomeModelState {
       return _compareItems(a, b, null);
     };
   }
-  //endregion
+//endregion
 }

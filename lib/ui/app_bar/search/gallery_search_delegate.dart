@@ -26,8 +26,6 @@ class GallerySearchDelegate extends SearchDelegate<String> {
 
   @override
   void close(BuildContext context, String result) {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
-    model.stopSearch();
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     super.close(context, result);
   }
@@ -52,11 +50,12 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
     model.textSearch(query);
-    return GalleryView(1, () {});
+    return GalleryView(model.stackPosition, () {});
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return GalleryView(1, () {});
+    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    return GalleryView(model.stackPosition, () {});
   }
 }
