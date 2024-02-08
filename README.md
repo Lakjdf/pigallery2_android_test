@@ -17,7 +17,7 @@ Only tested with PiGallery2 v1.9.5 & v2.0.0.
 - [mime](https://pub.dev/packages/mime) - distinguish between images and videos
 - [better_player](https://pub.dev/packages/better_player) - display videos with HTTP headers
 - [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) - store credentials
-- [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) - show admin panel within a webview that respects cookies
+- [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) - show admin panel within a WebView that respects cookies
 - [path_provider](https://pub.dev/packages/path_provider) - retrieve path to temporarily store media
 - [share_plus](https://pub.dev/packages/share_plus) - open dialog to share downloaded media
 - [collection](https://pub.dev/packages/collection) - natural sorting
@@ -25,6 +25,8 @@ Only tested with PiGallery2 v1.9.5 & v2.0.0.
 - [backdrop](https://pub.dev/packages/backdrop) - show a back layer for some settings
 - [path](https://pub.dev/packages/path) - concatenate api paths
 - [async](https://pub.dev/packages/async) - utility classes for async operations
+- [intl](https://pub.dev/packages/intl) - DateTime formatting
+- [ionicons](https://pub.dev/packages/ionicons) - Icon set
 
 ## Credits
 
