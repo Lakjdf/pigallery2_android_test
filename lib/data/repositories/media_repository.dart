@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:pigallery2_android/data/backend/api_service.dart';
+import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/util/path.dart';
@@ -52,6 +53,8 @@ class MediaRepositoryImpl implements MediaRepository {
   @override
   Future<String?> getFilePath(Media item) async {
     File? localFile = await _getExistingFile(item);
+    // todo download directly using cache manager as well
+    localFile ??= (await PiGallery2CacheManager.fullRes.getFileFromCache(_api.getMediaApiPath(item)))?.file;
     if (localFile != null) {
       http.StreamedResponse remoteResponse = await _request(item);
       if (localFile.lengthSync() == remoteResponse.contentLength) {

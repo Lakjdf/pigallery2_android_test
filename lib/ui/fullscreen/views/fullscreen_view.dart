@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mime/mime.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
@@ -57,7 +56,7 @@ class _FullscreenViewState extends State<FullscreenView> {
         return hero.child;
       },
       tag: item.id.toString(),
-      child: lookupMimeType(item.name)!.contains("video")
+      child: item.isVideo
           ? VideoViewWidget(
               key: ValueKey(item.id),
               item: item,

@@ -7,11 +7,13 @@ import 'package:pigallery2_android/data/backend/pigallery2_api_auth_wrapper.dart
 import 'package:pigallery2_android/data/repositories/item_repository.dart';
 import 'package:pigallery2_android/data/repositories/media_repository.dart';
 import 'package:pigallery2_android/data/repositories/server_repository.dart';
+import 'package:pigallery2_android/data/storage/pigallery2_image_cache.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/util/path.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
@@ -27,8 +29,13 @@ class MyHttpOverrides extends HttpOverrides {
     return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
+class MyWidgetsBinding extends WidgetsFlutterBinding {
+   @override
+   ImageCache createImageCache() => PiGallery2ImageCache();
+ }
 
 void main() async {
+  MyWidgetsBinding();
   WidgetsFlutterBinding.ensureInitialized();
   SharedPrefsStorage storage = SharedPrefsStorage();
   await storage.init();
@@ -73,6 +80,11 @@ class MyApp extends StatelessWidget {
             _credentialStorage,
           );
         }),
+        // needs to be defined here already since the photo view
+        // is part of the hero animation to the fullscreen view
+        ChangeNotifierProvider<PhotoModel>(
+          create: ((context) => PhotoModel(context.read())),
+        ),
         ChangeNotifierProvider<ServerModel>(
           create: ((context) {
             return ServerModel(Provider.of<ServerRepository>(context, listen: false));

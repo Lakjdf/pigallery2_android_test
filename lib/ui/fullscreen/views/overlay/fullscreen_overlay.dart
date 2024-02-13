@@ -1,10 +1,10 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
-import 'package:mime/mime.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/download_widget.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/overlay/motion_photo_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_controls.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_seek_bar.dart';
 import 'package:provider/provider.dart';
@@ -57,10 +57,6 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   void didChangeMetrics() {
     /// Reset scale on orientation change
     Provider.of<VideoModel>(context, listen: false).videoScale = 1.0;
-  }
-
-  bool isVideo(Media item) {
-    return lookupMimeType(item.name)!.contains("video");
   }
 
   void handleTap() {
@@ -136,12 +132,16 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
             ),
             Padding(
               padding: const EdgeInsets.only(right: 8),
+              child: MotionPhotoWidget(item, controlsOpacity),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
               child: DownloadWidget(
                 controlsOpacity,
                 key: ObjectKey(item),
               ),
             ),
-            !isVideo(item) ? Container() : buildAspectRatioToggle(context, controlsOpacity),
+            !item.isVideo ? Container() : buildAspectRatioToggle(context, controlsOpacity),
           ],
         ),
       ),
@@ -204,7 +204,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                 ),
                 Selector<FullscreenModel, ({Media item, double opacity})>(
                   selector: (context, model) => (item: model.currentItem, opacity: model.opacity),
-                  builder: (context, ({Media item, double opacity}) data, child) => !isVideo(data.item) ? Container() : buildVideoSeekBar(context, data.opacity),
+                  builder: (context, ({Media item, double opacity}) data, child) => !data.item.isVideo ? Container() : buildVideoSeekBar(context, data.opacity),
                 ),
               ],
             ),

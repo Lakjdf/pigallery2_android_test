@@ -2,10 +2,11 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'package:path_provider/path_provider.dart';
+import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 
 /// Helper class to access files downloaded to the app cache.
 class Downloads {
-  static const String _downloadsFolder = "downloaded";
+  static final String _downloadsFolder = PiGallery2CacheManager.fullRes.store.storeKey;
 
   // For some reason, share_plus copies every file to a different directory before sharing it.
   // share_plus deletes it once another file is shared.

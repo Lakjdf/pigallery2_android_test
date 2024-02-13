@@ -1,3 +1,4 @@
+import 'package:mime/mime.dart';
 import 'package:pigallery2_android/data/backend/models/models.dart';
 
 import 'media_dimension.dart';
@@ -27,6 +28,12 @@ class Media extends Item {
           relativeThumbnailPath: backendMedia.apiPath,
           metadata: MediaMetadata.fromBackend(backendMedia.metadata),
         );
+
+  bool get isVideo => lookupMimeType(name)?.contains("video") == true;
+
+  bool get isImage => !isVideo;
+
+  double get aspectRatio => dimension.width / dimension.height;
 }
 
 class Directory extends Item {

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/shared/widgets/error_image.dart';
@@ -21,6 +22,7 @@ class ThumbnailImage extends StatelessWidget {
     return CachedNetworkImage(
       key: ValueKey(apiPath),
       imageUrl: apiPath,
+      cacheManager: PiGallery2CacheManager.thumbs,
       httpHeaders: repository.headers,
       imageBuilder: imageBuilder,
       placeholder: (context, url) => SpinKitRipple(

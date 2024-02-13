@@ -5,6 +5,7 @@ import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/download_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
@@ -87,6 +88,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                   return FullscreenModel(
                     [
                       Provider.of<VideoModel>(context, listen: false),
+                      Provider.of<PhotoModel>(context, listen: false),
                       Provider.of<DownloadModel>(context, listen: false),
                     ],
                     item,

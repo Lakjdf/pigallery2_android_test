@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mime/mime.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
 
@@ -9,10 +8,6 @@ class MediaItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const MediaItem({required this.item, required this.borderRadius, required this.onTap, super.key});
-
-  bool isVideo(Media item) {
-    return lookupMimeType(item.name)?.contains("video") == true;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +28,7 @@ class MediaItem extends StatelessWidget {
                     image: imageProvider,
                     fit: BoxFit.cover,
                   ),
-                  if (isVideo(item))
+                  if (item.isVideo)
                     Icon(
                       Icons.play_arrow,
                       size: 70,

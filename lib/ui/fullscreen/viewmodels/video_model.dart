@@ -1,5 +1,4 @@
 import 'package:better_player/better_player.dart';
-import 'package:mime/mime.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
@@ -23,7 +22,7 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   set currentItem(Media item) {
     /// Remove controller if new item is not a video.
     /// Else wait for addController() to be called. Avoids a lag when switching items.
-    if (!lookupMimeType(item.name)!.contains("video")) {
+    if (!item.isVideo) {
       _betterPlayerController = null;
     }
     awaitingNewController = true;
