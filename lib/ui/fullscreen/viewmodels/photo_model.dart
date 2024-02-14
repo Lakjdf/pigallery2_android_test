@@ -1,7 +1,9 @@
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:better_player/better_player.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:motion_photos/motion_photos.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
@@ -49,6 +51,19 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
       });
   }
 
+  Future<Uint8List?> _loadMotionVideo(String localPath) async {
+    MotionPhotos photo = MotionPhotos(localPath);
+    return await Isolate.run(() async {
+      var videoIndex = await photo.getMotionVideoIndex();
+      if (videoIndex != null) {
+        return await photo.getMotionVideo(index: videoIndex);
+      }
+      return null;
+    }).catchError((error) {
+      return null;
+    });
+  }
+
   void _loadImage(PhotoModelState state, Media item) {
     Stream<FileResponse> stream = PiGallery2CacheManager.fullRes.getFileStream(
       state.url,
@@ -57,7 +72,8 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     );
     stream.listen((FileResponse event) {
       if (event is FileInfo) {
-        state.onDownloadFinished(event.file.path).then((_) {
+        _loadMotionVideo(event.file.path).then((bytes) {
+          state.video = bytes;
           notifyListeners();
           if (_longPressPending) {
             // handle long press once the image has been downloaded to the cache
@@ -70,7 +86,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
 
   void handleLongPress(Media item) async {
     PhotoModelState state = stateOf(item);
-    Uint8List? bytes = await state.getMotionVideo();
+    Uint8List? bytes = state.video;
     if (bytes != null) {
       _longPressPending = false;
       _initMotionVideoController(state, item, bytes);
