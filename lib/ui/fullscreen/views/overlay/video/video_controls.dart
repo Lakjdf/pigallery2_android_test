@@ -1,12 +1,12 @@
-import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/ui/shared/widgets/fade_animation.dart';
 
 class VideoControls extends StatefulWidget {
   const VideoControls(this.controller, this.onTap, {super.key});
 
-  final BetterPlayerController controller;
+  final VideoController controller;
   final VoidCallback onTap;
 
   @override
@@ -18,7 +18,7 @@ class VideoControls extends StatefulWidget {
 class _VideoControlsState extends State<VideoControls> {
   Widget imageFadeAnim = Container();
 
-  BetterPlayerController get controller => widget.controller;
+  VideoController get controller => widget.controller;
 
   /// The position of an input that has not been handled yet.
   int? newInputPosition;
@@ -43,22 +43,11 @@ class _VideoControlsState extends State<VideoControls> {
   @override
   void initState() {
     super.initState();
-    // event types that should trigger a reload.
-    final relevantEventTypes = [
-      BetterPlayerEventType.pause,
-      BetterPlayerEventType.play,
-      BetterPlayerEventType.bufferingStart,
-      BetterPlayerEventType.bufferingEnd,
-      BetterPlayerEventType.seekTo
-    ];
-    controller.addEventsListener((event) {
-      if (relevantEventTypes.contains(event.betterPlayerEventType)) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          if (!controller.isVideoInitialized()!) return;
-          setState(() {});
-        });
-      }
+    controller.player.stream.buffering.listen((event) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {});
+      });
     });
   }
 
@@ -116,11 +105,11 @@ class _VideoControlsState extends State<VideoControls> {
         ],
       ),
     );
-    Duration newPosition = controller.videoPlayerController!.value.position - const Duration(seconds: 10);
+    Duration newPosition = controller.player.state.position - const Duration(seconds: 10);
     if (newPosition > Duration.zero) {
-      controller.seekTo(newPosition);
+      controller.player.seek(newPosition);
     } else {
-      controller.seekTo(Duration.zero);
+      controller.player.seek(Duration.zero);
     }
   }
 
@@ -148,16 +137,16 @@ class _VideoControlsState extends State<VideoControls> {
         ],
       ),
     );
-    Duration newPosition = controller.videoPlayerController!.value.position + const Duration(seconds: 10);
-    if (newPosition < controller.videoPlayerController!.value.duration!) {
-      controller.seekTo(newPosition);
+    Duration newPosition = controller.player.state.position + const Duration(seconds: 10);
+    if (newPosition < controller.player.state.duration) {
+      controller.player.seek(newPosition);
     } else {
-      controller.seekTo(Duration.zero);
+      controller.player.seek(Duration.zero);
     }
   }
 
   void handlePlayPause() {
-    bool isPlaying = controller.isPlaying()!;
+    bool isPlaying = controller.player.state.playing;
     IconData iconData = isPlaying ? Icons.pause : Icons.play_arrow;
 
     imageFadeAnim = FadeAnimation(
@@ -169,19 +158,15 @@ class _VideoControlsState extends State<VideoControls> {
       ),
     );
     if (isPlaying) {
-      controller.pause();
+      controller.player.pause();
     } else {
-      controller.play();
+      controller.player.play();
     }
   }
 
   void handleSingleTap() => widget.onTap();
 
   Future<void> handleDoubleTap() async {
-    if (!controller.isVideoInitialized()!) {
-      return;
-    }
-
     switch (currentInputPosition) {
       case 0:
         handleSeekBackwards();
@@ -192,6 +177,7 @@ class _VideoControlsState extends State<VideoControls> {
       default:
         handlePlayPause();
     }
+    setState(() {});
   }
 
   @override
@@ -240,7 +226,7 @@ class _VideoControlsState extends State<VideoControls> {
               ),
             ),
             Center(
-              child: controller.isBuffering()!
+              child: controller.player.state.buffering
                   ? SpinKitRipple(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       size: 0.5 * (MediaQuery.of(context).orientation == Orientation.landscape ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width),

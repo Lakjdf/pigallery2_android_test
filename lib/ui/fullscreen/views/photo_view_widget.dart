@@ -1,6 +1,6 @@
-import 'package:better_player/better_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
@@ -35,14 +35,19 @@ class PhotoViewWidget extends StatelessWidget {
   Widget _buildPhotoViewInner(BuildContext context) {
     bool isVideoInitialized = context.select<PhotoModel, bool>((it) => it.stateOf(item).isVideoInitialized);
     PhotoModelState state = context.read<PhotoModel>().stateOf(item);
+    // need to rotate the player due to some issue with mpv rotating portrait videos.
+    bool rotateVideoPlayer = item.aspectRatio < 1 && state.isVideoInitialized;
     String url = state.url;
-    BetterPlayerController? controller = state.betterPlayerController;
+    VideoController? controller = state.videoController;
     if (controller == null || !isVideoInitialized) {
       return _buildImage(context, url);
     } else {
-      return BetterPlayer(
-        key: ValueKey(url),
-        controller: controller,
+      return RotatedBox(
+        quarterTurns: rotateVideoPlayer ? 1 : 0,
+        child: Video(
+          key: ValueKey(url),
+          controller: controller,
+        ),
       );
     }
   }

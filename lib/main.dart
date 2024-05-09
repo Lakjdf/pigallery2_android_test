@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/storage/credential_storage.dart';
 import 'package:pigallery2_android/data/backend/pigallery2_api_auth_wrapper.dart';
@@ -14,6 +15,7 @@ import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/util/path.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
@@ -37,6 +39,7 @@ class MyWidgetsBinding extends WidgetsFlutterBinding {
 void main() async {
   MyWidgetsBinding();
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
   SharedPrefsStorage storage = SharedPrefsStorage();
   await storage.init();
   bool allowBadCertificate = storage.get(StorageKey.allowBadCertificates);
@@ -84,6 +87,9 @@ class MyApp extends StatelessWidget {
         // is part of the hero animation to the fullscreen view
         ChangeNotifierProvider<PhotoModel>(
           create: ((context) => PhotoModel(context.read())),
+        ),
+        ChangeNotifierProvider<VideoModel>(
+          create: ((context) => VideoModel()),
         ),
         ChangeNotifierProvider<ServerModel>(
           create: ((context) {

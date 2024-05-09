@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:better_player/better_player.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
 class PhotoModelState {
   Uint8List? video;
@@ -10,10 +10,10 @@ class PhotoModelState {
 
   /// For playing the video part of the motion photo.
   /// Returns null if it is not a motion video, or has not been downloaded yet.
-  BetterPlayerController? betterPlayerController;
+  VideoController? videoController;
 
-  /// Whether the [betterPlayerController] has been initialized.
-  bool get isVideoInitialized => betterPlayerController?.isVideoInitialized() ?? false;
+  /// Whether the [VideoController] has been initialized.
+  bool get isVideoInitialized => videoController?.player.platform?.videoControllerCompleter.isCompleted ?? false;
 
   /// Whether the photo is a motion photo.
   /// Always returns false until it has been downloaded.

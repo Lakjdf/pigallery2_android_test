@@ -1,12 +1,12 @@
-import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/download_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/motion_photo_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_controls.dart';
-import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_seek_bar.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_progress_bar.dart';
 import 'package:provider/provider.dart';
 
 class FullscreenOverlay extends StatefulWidget {
@@ -68,31 +68,26 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   }
 
   Widget buildAspectRatioToggle(BuildContext context, double controlsOpacity) {
-    return Selector<VideoModel, bool>(
-      selector: (context, model) => model.awaitingNewController,
-      builder: (context, awaiting, child) => IconButton(
-        padding: const EdgeInsets.all(0),
-        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
-        constraints: const BoxConstraints(),
-        icon: const Icon(Icons.aspect_ratio),
-        onPressed: awaiting
-            ? null
-            : () {
-                VideoModel videoModel = context.read<VideoModel>();
-                double aspectRatio = videoModel.betterPlayerController!.getAspectRatio()!;
-                double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
-                double currentScale = videoModel.videoScale;
-                double newScale = 1;
-                if (currentScale == 1) {
-                  if (aspectRatio > screenAspectRatio) {
-                    newScale = aspectRatio / screenAspectRatio;
-                  } else {
-                    newScale = screenAspectRatio / aspectRatio;
-                  }
-                }
-                videoModel.videoScale = newScale;
-              },
-      ),
+    return IconButton(
+      padding: const EdgeInsets.all(0),
+      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
+      constraints: const BoxConstraints(),
+      icon: const Icon(Icons.aspect_ratio),
+      onPressed: () {
+        VideoModel videoModel = context.read<VideoModel>();
+        double aspectRatio = videoModel.videoController!.rect.value!.width / videoModel.videoController!.rect.value!.height;
+        double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
+        double currentScale = videoModel.videoScale;
+        double newScale = 1;
+        if (currentScale == 1) {
+          if (aspectRatio > screenAspectRatio) {
+            newScale = aspectRatio / screenAspectRatio;
+          } else {
+            newScale = screenAspectRatio / aspectRatio;
+          }
+        }
+        videoModel.videoScale = newScale;
+      },
     );
   }
 
@@ -149,15 +144,15 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   }
 
   Widget buildVideoSeekBar(BuildContext context, double opacity) {
-    return Selector<VideoModel, BetterPlayerController?>(
-      selector: (context, model) => model.betterPlayerController,
+    return Selector<VideoModel, VideoController?>(
+      selector: (context, model) => model.videoController,
       builder: (context, controller, child) => controller == null
           ? Container()
           : Align(
               alignment: Alignment.bottomCenter,
               child: SizedBox(
                 height: 50,
-                child: VideoSeekBar(
+                child: VideoProgressBar(
                   key: ObjectKey(controller),
                   controller: controller,
                   opacity: opacity,
@@ -180,8 +175,8 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
             );
           },
         ),
-        Selector<VideoModel, BetterPlayerController?>(
-          selector: (context, model) => model.betterPlayerController,
+        Selector<VideoModel, VideoController?>(
+          selector: (context, model) => model.videoController,
           builder: (context, controller, child) => controller == null
               ? GestureDetector(onTap: handleTap)
               : VideoControls(key: ObjectKey(controller), controller, handleTap),

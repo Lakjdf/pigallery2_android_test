@@ -1,11 +1,12 @@
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:better_player/better_player.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:motion_photos/motion_photos.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
-import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model_state.dart';
@@ -17,38 +18,38 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   final MediaRepository _mediaRepository;
   final LruMap<int, PhotoModelState> _state = LruMap(maximumSize: 3);
 
-  PhotoModelState _createState(Media item) {
+  PhotoModelState _createState(models.Media item) {
     PhotoModelState state = PhotoModelState(_mediaRepository.getMediaApiPath(item));
     _state[item.id] = state;
     _loadImage(state, item);
     return state;
   }
 
-  PhotoModelState stateOf(Media item) {
+  PhotoModelState stateOf(models.Media item) {
     PhotoModelState state = _state[item.id] ??= _createState(item);
     return state;
   }
 
   PhotoModel(this._mediaRepository);
 
-  void _initMotionVideoController(PhotoModelState state, Media item, Uint8List bytes) {
-    // needs to be recreated since the controller is disposed when BetterPlayer is removed from the widget tree
-    state.betterPlayerController = BetterPlayerController(
-      BetterPlayerConfiguration(
-        autoPlay: true,
-        looping: true,
-        // fit: BoxFit.contain,
-        aspectRatio: item.aspectRatio,
-        controlsConfiguration: const BetterPlayerControlsConfiguration(
-          showControls: false,
+  void _initMotionVideoController(PhotoModelState state, models.Media item, Uint8List bytes) {
+    // needs to be recreated since the controller is disposed when the video player is removed from the widget tree
+    Player player = Player();
+    // By default media_kit/mpv rotates the video.
+    // Might be width/height issue of media_kit or related to mpv applying rotation based on (incorrect/missing) metadata.
+    (player.platform as NativePlayer).setProperty("video-rotate", "no").then((_) {
+      player.setPlaylistMode(PlaylistMode.loop);
+      Media.memory(bytes).then((Playable playable) => player.open(playable));
+      state.videoController = VideoController(
+        player,
+        configuration: const VideoControllerConfiguration(
+          vo: "mediacodec_embed",
+          hwdec: "mediacodec",
+          enableHardwareAcceleration: true,
+          androidAttachSurfaceAfterVideoParameters: false,
         ),
-      ),
-      betterPlayerDataSource: BetterPlayerDataSource.memory(bytes),
-    )..addEventsListener((p0) {
-        if (p0.betterPlayerEventType == BetterPlayerEventType.initialized) {
-          notifyListeners();
-        }
-      });
+      )..waitUntilFirstFrameRendered.then((value) => notifyListeners());
+    });
   }
 
   Future<Uint8List?> _loadMotionVideo(String localPath) async {
@@ -64,7 +65,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     });
   }
 
-  void _loadImage(PhotoModelState state, Media item) {
+  void _loadImage(PhotoModelState state, models.Media item) {
     Stream<FileResponse> stream = PiGallery2CacheManager.fullRes.getFileStream(
       state.url,
       headers: _mediaRepository.headers,
@@ -84,7 +85,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     });
   }
 
-  void handleLongPress(Media item) async {
+  void handleLongPress(models.Media item) async {
     PhotoModelState state = stateOf(item);
     Uint8List? bytes = state.video;
     if (bytes != null) {
@@ -95,16 +96,16 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     }
   }
 
-  void handleLongPressEnd(Media item) {
+  void handleLongPressEnd(models.Media item) {
     _longPressPending = false;
-    var controller = stateOf(item).betterPlayerController;
-    stateOf(item).betterPlayerController = null;
-    controller?.dispose();
+    var controller = stateOf(item).videoController;
+    stateOf(item).videoController = null;
+    controller?.player.dispose();
     notifyListeners();
   }
 
   @override
-  set currentItem(Media item) {
+  set currentItem(models.Media item) {
     _longPressPending = false;
   }
 }

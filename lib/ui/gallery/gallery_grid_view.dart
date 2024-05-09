@@ -73,9 +73,6 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           return MultiProvider(
             providers: [
               ChangeNotifierProvider(
-                create: ((context) => VideoModel()),
-              ),
-              ChangeNotifierProvider(
                 create: ((context) {
                   return DownloadModel(
                     Provider.of<MediaRepository>(context, listen: false),
