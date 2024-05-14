@@ -24,7 +24,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
 
   @override
   void dispose() {
-    videoModel.unregisterVideoView(widget.item.id);
+    videoModel.unregisterMountedWidget(widget.item.id);
     super.dispose();
   }
 
@@ -66,7 +66,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
   void initState() {
     super.initState();
     videoModel = Provider.of<VideoModel>(context, listen: false);
-    videoModel.registerVideoView(widget.item.id);
+    videoModel.registerMountedWidget(widget.item.id);
     init();
   }
 
@@ -89,7 +89,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
           controls: NoVideoControls,
           width: screenSize.width,
           height: imageHeight,
-          alignment: Alignment.center,
+          alignment: Alignment.center
         ),
       );
     }

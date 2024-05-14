@@ -63,7 +63,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     );
   }
 
-  void openFullscreen(BuildContext context, Media item) async {
+  void openFullscreen(BuildContext context, int index, Media item) async {
     Media lastItem = await Navigator.push(
       context,
       PageRouteBuilder(
@@ -88,7 +88,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                       Provider.of<PhotoModel>(context, listen: false),
                       Provider.of<DownloadModel>(context, listen: false),
                     ],
-                    item,
+                    index,
                   );
                 }),
               )
@@ -131,7 +131,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
               : MediaItem(
                   item: widget.items[index] as Media,
                   borderRadius: model.gridRoundedCorners,
-                  onTap: () => openFullscreen(context, widget.items[index] as Media),
+                  onTap: () => openFullscreen(context, index, widget.items[index] as Media),
                 );
         },
       ),

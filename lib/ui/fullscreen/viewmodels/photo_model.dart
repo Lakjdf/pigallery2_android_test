@@ -8,6 +8,7 @@ import 'package:motion_photos/motion_photos.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model_state.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
@@ -105,7 +106,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   }
 
   @override
-  set currentItem(models.Media item) {
+  set currentItem(FullscreenItem item) {
     _longPressPending = false;
   }
 }

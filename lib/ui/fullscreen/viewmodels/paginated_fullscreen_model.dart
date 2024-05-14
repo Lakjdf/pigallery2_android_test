@@ -1,5 +1,5 @@
-import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 
 abstract interface class PaginatedFullscreenModel {
-  set currentItem(Media item);
+  set currentItem(FullscreenItem item);
 }

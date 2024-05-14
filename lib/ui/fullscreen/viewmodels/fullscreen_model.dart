@@ -1,27 +1,51 @@
+import 'package:collection/collection.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_view.dart';
 
+class FullscreenItem {
+  FullscreenItem(this.item);
+  final Media item;
+  FullscreenItem? next;
+  FullscreenItem? previous;
+}
+
 class FullscreenModel extends SafeChangeNotifier {
   final List<PaginatedFullscreenModel> _fullscreenModels;
+  final List<FullscreenItem> _items = [];
 
-  FullscreenModel(this._fullscreenModels, this._currentItem);
+  FullscreenModel(this._fullscreenModels, this._currentPage);
 
-  Media _currentItem;
+  int _currentPage;
   double _opacity = 1;
   double _heroAnimationProgress = 0;
 
-  set currentItem(Media item) {
-    _currentItem = item;
+  set media(List<Media> media) {
+    _items.clear();
+    media.forEachIndexed((idx, media) {
+      final item = FullscreenItem(media);
+      if (idx > 0) {
+        _items.last.next = item;
+        item.previous = _items.last;
+      }
+      _items.add(item);
+    });
+  }
+
+  set currentPage(int idx) {
+    _currentPage = idx;
     for (var model in _fullscreenModels) {
-      model.currentItem = item;
+      model.currentItem = _items[idx];
     }
     notifyListeners();
   }
 
   /// [Media] item displayed at the current page.
-  Media get currentItem => _currentItem;
+  int get currentPage => _currentPage;
+
+  /// [Media] item displayed at the current page.
+  Media get currentItem => _items[_currentPage].item;
 
   set opacity(double val) {
     _opacity = val;

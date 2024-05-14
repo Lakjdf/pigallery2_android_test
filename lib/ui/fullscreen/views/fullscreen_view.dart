@@ -79,6 +79,9 @@ class _FullscreenViewState extends State<FullscreenView> {
   @override
   Widget build(BuildContext context) {
     List<Media> media = Provider.of<HomeModel>(context, listen: false).currentState.media;
+    FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
+    fullscreenModel.media = media;
+    fullscreenModel.currentPage = media.indexOf(widget.item);
     return PopScope(
       canPop: false,
       onPopInvoked: ((bool didPop) {
@@ -93,7 +96,7 @@ class _FullscreenViewState extends State<FullscreenView> {
         backgroundColor: Colors.transparent,
         body: FullscreenOverlay(
           child: HorizontalCarouselWrapper(
-            onPageChanged: (idx) => context.read<FullscreenModel>().currentItem = media[idx],
+            onPageChanged: (idx) => fullscreenModel.currentPage = idx,
             initialIndex: media.indexOf(widget.item),
             itemCount: media.length,
             builder: ((context, index) {

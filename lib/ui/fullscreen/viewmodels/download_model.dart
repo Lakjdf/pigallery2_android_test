@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 import 'package:share_plus/share_plus.dart';
@@ -30,11 +31,11 @@ class DownloadModel extends SafeChangeNotifier implements PaginatedFullscreenMod
   }
 
   @override
-  set currentItem(Media item) {
+  set currentItem(FullscreenItem item) {
     _currentSubscription?.cancel();
     progress = 0;
     downloading = false;
-    _item = item;
+    _item = item.item;
   }
 
   Future<void> cancel() async {
