@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:mutex/mutex.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
+import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
@@ -26,6 +29,8 @@ class VideoControllerCache<K, V> {
   final Map<K, _LinkedEntry<K, V>> _entries = HashMap<K, _LinkedEntry<K, V>>();
   final int _maximumSize;
   final void Function(V)? _onRemove;
+
+  final Logger _logger = Logger("VideoControllerCache");
 
   VideoControllerCache({
     void Function(V)? onRemove,
@@ -85,6 +90,7 @@ class VideoControllerCache<K, V> {
   /// Invokes onRemove callback.
   void removeLru() {
     if (_tail == null) return;
+    _logger.log(Level.FINE, "evicting ${_tail?.key}");
 
     // Remove the tail from the internal map.
     final removedEntry = _entries.remove(_tail!.key);
@@ -136,54 +142,94 @@ class VideoControllerCache<K, V> {
       assert(length == maximumSize + 1);
       removeLru();
     }
+
+    _logger.log(Level.FINE, "state after inserting/updating $key: $this");
+  }
+
+  @override
+  String toString() {
+    final keys = [];
+    var cur = _head;
+    while (cur != null) {
+      keys.add(cur.key);
+      cur = cur.next;
+    }
+    return "keys: $keys";
   }
 }
 
+/// Holds a [VideoController] alongside its error events.
+/// Required since error events are emitted only once.
+class VideoControllerItem {
+  final VideoController controller;
+  final List<String> _errorEvents = [];
+
+  VideoControllerItem(this.controller) {
+    controller.player.stream.error.listen((value) {
+      _errorEvents.add(value);
+    });
+  }
+
+  Stream<String> errorStream() async* {
+    for (String event in _errorEvents) {
+      yield event;
+    }
+    yield* controller.player.stream.error;
+  }
+
+  Player get player => controller.player;
+}
+
 class VideoModelControllerState {
-  late final VideoControllerCache<int, VideoController> _cache;
+  late final VideoControllerCache<int, VideoControllerItem> _cache;
   int? _currentItemId;
 
   VideoModelControllerState() {
     _cache = VideoControllerCache(
       onRemove: _onRemove,
-      maximumSize: 3,
+      maximumSize: 5,
     );
   }
 
-  VideoController? get videoController => _currentItemId?.let((it) => _cache[it]);
+  VideoControllerItem? get videoController => _currentItemId?.let((it) => _cache[it]);
 
-  void _onRemove(VideoController controller) {
-    controller.player.dispose();
+  void _onRemove(VideoControllerItem item) {
+    item.controller.player.dispose();
     if (_cache.length == 0) {
       _currentItemId = null;
     }
   }
 
-  void addController(int id, VideoController controller) {
+  void addController(int id, VideoControllerItem controller) {
     _cache[id] = controller;
-    if (_cache.length == 1) {
-      setCurrentItemId(id);
+    // unmute if fullscreen just got opened
+    if (_currentItemId == null || _currentItemId == id) {
+      getController(id)?.controller.player.setVolume(100);
     }
   }
 
-  VideoController? getController(int id) {
+  VideoControllerItem? getController(int id) {
     return _cache[id];
   }
 
-  VideoController? getCurrentController() {
+  VideoControllerItem? getCurrentController() {
     return _currentItemId?.let((it) => getController(it));
   }
 
   /// Unmutes the video player for the [models.Media] item with the given [id].
   /// Mutes all other video players.
   void setCurrentItemId(int? id) {
-    _currentItemId?.let((it) => getController(it)?.player.setVolume(0));
-    id?.let((it) => getController(it))?.player.setVolume(100);
+    _currentItemId?.let((it) => getController(it)?.controller.player.setVolume(0));
     _currentItemId = id;
-    if (id == null) {
-      _cache.removeLru();
-    } else {
+    if (id != null) {
       _cache.promoteEntry(id);
+      getController(id)?.controller.player.setVolume(100);
+    }
+  }
+
+  void free() {
+    while (_cache.length > 0) {
+      _cache.removeLru();
     }
   }
 }
@@ -205,7 +251,7 @@ class VideoModelRefs {
     if (currentRefs != null) {
       if (currentRefs <= 1) {
         _refs.remove(id);
-        _state.getController(id)?.player.pause();
+        _state.getController(id)?.controller.player.pause();
       } else {
         _refs[id] = currentRefs - 1;
       }
@@ -213,11 +259,12 @@ class VideoModelRefs {
   }
 
   /// Increase the [_refs] counter by 1 for the given id.
-  /// Starts playback if this is the first widget registered.
+  /// Starts/Resumes playback if this is the first widget registered.
   void registerMountedWidget(int id) {
     _refs.update(id, (value) => value += 1, ifAbsent: () => 1);
-    if (_refs[id] == 1) {
-      _state.getController(id)?.player.play();
+    final controller = _state.getController(id);
+    if (controller != null) {
+      controller.player.play();
     }
   }
 }
@@ -227,16 +274,23 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
 
   late final VideoModelRefs _refs;
 
-  VideoModel() {
+  late final MediaRepository _mediaRepository;
+
+  VideoModel(MediaRepository mediaRepository) {
     _state = VideoModelControllerState();
     _refs = VideoModelRefs(_state);
+    _mediaRepository = mediaRepository;
   }
 
   double _videoScale = 1.0;
 
   /// The [VideoController] of the Widget with > 50% visibility.
   /// null if the current item is not a video.
-  VideoController? get videoController => _state.getCurrentController();
+  VideoController? get videoController => _state.getCurrentController()?.controller;
+
+  VideoControllerItem? getVideoControllerItem(int id) {
+    return _state.getController(id);
+  }
 
   /// Unregister a Widget that displayed the [models.Media] video with the given [id].
   /// Required to stop the playback after the video is no longer visible.
@@ -249,45 +303,88 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     _refs.registerMountedWidget(id);
   }
 
-  /// Creates a [VideoController] for the given [url] and [headers].
-  /// Returns a [Stream] that emits once the controller is ready to display the first frame.
-  Stream<VideoController> initializeVideoController(String url, Map<String, String> headers, int id) {
-    VideoController? existingController = _state.getController(id);
-    if (existingController != null) {
-      return existingController.waitUntilFirstFrameRendered.asStream().map((event) => existingController);
+  Media _mediaFromModel(models.Media media) {
+    return Media(_mediaRepository.getMediaApiPath(media), httpHeaders: _mediaRepository.headers);
+  }
+
+  VideoControllerItem _initVideoController(models.Media media, bool autoPlay) {
+    VideoControllerItem? existingItem = _state.getController(media.id);
+    if (existingItem != null) {
+      return existingItem;
     }
 
-    Player player = Player(configuration: const PlayerConfiguration(bufferSize: 128 * 1024 * 1024));
+    Player player = Player(configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024));
     player.setVolume(0);
     VideoController newController = VideoController(
       player,
       configuration: const VideoControllerConfiguration(
         vo: "mediacodec_embed",
         hwdec: "mediacodec",
-        enableHardwareAcceleration: true,
+        enableHardwareAcceleration: false,
         androidAttachSurfaceAfterVideoParameters: false,
       ),
     );
+    VideoControllerItem item = VideoControllerItem(newController);
 
-    Media playable = Media(url, httpHeaders: headers);
+    Media playable = _mediaFromModel(media);
     player.setPlaylistMode(PlaylistMode.loop);
-    player.open(playable);
+    player.open(playable, play: autoPlay);
 
-    _state.addController(id, newController);
-    return newController.waitUntilFirstFrameRendered.asStream().map((event) => newController);
+    _state.addController(media.id, item);
+    notifyListeners();
+    return item;
+  }
+
+  final Mutex _initVideoControllerLock = Mutex();
+
+  Future<VideoControllerItem> _initVideoControllerSafe(models.Media media, bool autoPlay) async {
+    await _initVideoControllerLock.acquire();
+    VideoControllerItem controller;
+    try {
+      controller = _initVideoController(media, autoPlay);
+    } finally {
+      _initVideoControllerLock.release();
+    }
+    return controller;
+  }
+
+  /// Creates a [VideoController] for the given [models.Media].
+  /// Returns a [Stream] that emits once the controller is ready to display the first frame.
+  Stream<VideoControllerItem> _initializeVideoController(models.Media media, {bool autoPlay = true}) {
+    return Stream.fromFuture(_initVideoControllerSafe(media, autoPlay).then((item) {
+      return item.controller.waitUntilFirstFrameRendered.then((value) => item);
+    }));
   }
 
   /// Invoked when the page changes (a new view has > 50% visibility)
   @override
   set currentItem(FullscreenItem item) {
+    _videoScale = 1.0;
+
     /// Remove controller if new item is not a video.
     if (!item.item.isVideo) {
       _state.setCurrentItemId(null);
     } else {
       _state.setCurrentItemId(item.item.id);
+
+      // preloading
+      _initializeVideoController(item.item).listen((VideoControllerItem videoController) {
+        models.Media? previous = item.previous?.item;
+        if (previous != null && previous.isVideo == true) {
+          _initializeVideoController(previous, autoPlay: false);
+        }
+        models.Media? next = item.next?.item;
+        if (next != null && next.isVideo == true) {
+          _initializeVideoController(next, autoPlay: false);
+        }
+      });
     }
-    _videoScale = 1.0;
     notifyListeners();
+  }
+
+  @override
+  void close() {
+    _state.free();
   }
 
   set videoScale(double val) {

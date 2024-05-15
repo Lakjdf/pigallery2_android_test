@@ -81,11 +81,16 @@ class _FullscreenViewState extends State<FullscreenView> {
     List<Media> media = Provider.of<HomeModel>(context, listen: false).currentState.media;
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
     fullscreenModel.media = media;
-    fullscreenModel.currentPage = media.indexOf(widget.item);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      fullscreenModel.currentPage = media.indexOf(widget.item);
+    });
     return PopScope(
       canPop: false,
       onPopInvoked: ((bool didPop) {
-        if (didPop) return;
+        if (didPop) {
+          context.read<FullscreenModel>().close();
+          return;
+        }
         GlobalSettingsModel model = context.read<GlobalSettingsModel>();
         if (!model.appInFullScreen) {
           model.disableFullScreen();

@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
-import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
@@ -17,14 +19,22 @@ class VideoViewWidget extends StatefulWidget {
 }
 
 class _VideoViewWidgetState extends State<VideoViewWidget> {
-  VideoController? _videoController;
   bool error = false;
-  bool isInitialized = false;
+  StreamSubscription<String>? errorStream;
   late VideoModel videoModel;
+  final Logger _logger = Logger("VideoViewWidget");
+
+  @override
+  void initState() {
+    super.initState();
+    videoModel = Provider.of<VideoModel>(context, listen: false);
+    videoModel.registerMountedWidget(widget.item.id);
+  }
 
   @override
   void dispose() {
     videoModel.unregisterMountedWidget(widget.item.id);
+    errorStream?.cancel();
     super.dispose();
   }
 
@@ -38,60 +48,57 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     );
   }
 
-  void init() {
-    if (isInitialized) return;
-    isInitialized = true;
+  Widget buildVideo(BuildContext context, VideoController videoController) {
+    Size screenSize = MediaQuery.of(context).size;
+    double imageHeight = MediaQuery.of(context).size.width * (widget.item.dimension.height / widget.item.dimension.width);
 
-    MediaRepository repository = Provider.of<MediaRepository>(context, listen: false);
-    VideoModel model = Provider.of<VideoModel>(context, listen: false);
-    model.initializeVideoController(
-      repository.getMediaApiPath(widget.item),
-      repository.headers,
-      widget.item.id,
-    ).listen((VideoController? videoController) {
-      if (!mounted || videoController == null) return;
+    return Center(
+      child: Video(
+        key: ValueKey("${widget.item.id}: $screenSize"),
+        // has to include the screenSize; won't update on orientation changes otherwise
+        controller: videoController,
+        fit: BoxFit.contain,
+        aspectRatio: widget.item.aspectRatio,
+        controls: NoVideoControls,
+        width: screenSize.width,
+        height: imageHeight,
+        alignment: Alignment.center,
+        pauseUponEnteringBackgroundMode: true,
+        resumeUponEnteringForegroundMode: true,
+      ),
+    );
+  }
+
+  void listenForError(VideoControllerItem item) {
+    errorStream ??= item.errorStream().listen((data) {
+      _logger.warning("Received error from VideoController: $data");
       setState(() {
-        _videoController = videoController;
-      });
-      videoController.player.stream.error.listen((event) {
-        if (!mounted) return;
-        setState(() {
-          error = true;
-        });
+        error = true;
       });
     });
   }
 
   @override
-  void initState() {
-    super.initState();
-    videoModel = Provider.of<VideoModel>(context, listen: false);
-    videoModel.registerMountedWidget(widget.item.id);
-    init();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    double imageHeight = MediaQuery.of(context).size.width * (widget.item.dimension.height / widget.item.dimension.width);
-
-    if (error) {
-      return const ErrorImage();
-    } else if (!isInitialized || _videoController == null || _videoController?.player.platform?.videoControllerCompleter.isCompleted != true) {
+    final controllerItem = context.select<VideoModel, VideoControllerItem?>((model) => model.getVideoControllerItem(widget.item.id));
+    if (controllerItem == null) {
       return buildPlaceholder();
     } else {
-      return Center(
-        child: Video(
-          key: ValueKey("${widget.item.id}: $screenSize"), // has to include the screenSize; won't update on orientation changes otherwise
-          controller: _videoController!,
-          fit: BoxFit.contain,
-          aspectRatio: widget.item.aspectRatio,
-          controls: NoVideoControls,
-          width: screenSize.width,
-          height: imageHeight,
-          alignment: Alignment.center
-        ),
-      );
+      listenForError(controllerItem);
+      if (error) {
+        return const ErrorImage();
+      } else {
+        return FutureBuilder(
+          future: controllerItem.controller.waitUntilFirstFrameRendered,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return buildPlaceholder();
+            } else {
+              return buildVideo(context, controllerItem.controller);
+            }
+          },
+        );
+      }
     }
   }
 }

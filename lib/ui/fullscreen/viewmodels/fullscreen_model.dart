@@ -41,6 +41,13 @@ class FullscreenModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
+  /// Inform that the fullscreen is closed.
+  void close() {
+    for (var model in _fullscreenModels) {
+      model.close();
+    }
+  }
+
   /// [Media] item displayed at the current page.
   int get currentPage => _currentPage;
 

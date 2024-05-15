@@ -109,4 +109,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   set currentItem(FullscreenItem item) {
     _longPressPending = false;
   }
+
+  @override
+  void close() {}
 }

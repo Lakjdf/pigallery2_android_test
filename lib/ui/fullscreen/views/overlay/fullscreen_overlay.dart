@@ -75,7 +75,9 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
       icon: const Icon(Icons.aspect_ratio),
       onPressed: () {
         VideoModel videoModel = context.read<VideoModel>();
-        double aspectRatio = videoModel.videoController!.rect.value!.width / videoModel.videoController!.rect.value!.height;
+        VideoController? controller = videoModel.videoController;
+        if (controller == null) return;
+        double aspectRatio = controller.rect.value!.width / controller.rect.value!.height;
         double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
         double currentScale = videoModel.videoScale;
         double newScale = 1;

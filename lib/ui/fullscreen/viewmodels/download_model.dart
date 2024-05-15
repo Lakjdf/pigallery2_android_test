@@ -38,6 +38,11 @@ class DownloadModel extends SafeChangeNotifier implements PaginatedFullscreenMod
     _item = item.item;
   }
 
+  @override
+  void close() {
+    _currentSubscription?.cancel();
+  }
+
   Future<void> cancel() async {
     StreamSubscription<double>? subscription = _currentSubscription;
     if (subscription != null) {

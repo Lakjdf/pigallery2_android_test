@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/storage/credential_storage.dart';
@@ -31,10 +32,18 @@ class MyHttpOverrides extends HttpOverrides {
     return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
+
 class MyWidgetsBinding extends WidgetsFlutterBinding {
-   @override
-   ImageCache createImageCache() => PiGallery2ImageCache();
- }
+  @override
+  ImageCache createImageCache() => PiGallery2ImageCache();
+}
+
+void setupLogging() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    print('${record.level.name}: ${record.loggerName}: ${record.message}');
+  });
+}
 
 void main() async {
   MyWidgetsBinding();
@@ -47,6 +56,7 @@ void main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   Downloads.clear();
+  setupLogging();
   runApp(MyApp(storage));
 }
 
@@ -89,7 +99,7 @@ class MyApp extends StatelessWidget {
           create: ((context) => PhotoModel(context.read())),
         ),
         ChangeNotifierProvider<VideoModel>(
-          create: ((context) => VideoModel()),
+          create: ((context) => VideoModel(context.read())),
         ),
         ChangeNotifierProvider<ServerModel>(
           create: ((context) {
