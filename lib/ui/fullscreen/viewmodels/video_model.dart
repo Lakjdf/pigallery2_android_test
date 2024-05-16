@@ -182,28 +182,28 @@ class VideoControllerItem {
 
 class VideoModelControllerState {
   late final VideoControllerCache<int, VideoControllerItem> _cache;
-  int? _currentItemId;
+  final StreamController<VideoControllerItem?> _currentVideoControllerStream = StreamController();
 
   VideoModelControllerState() {
     _cache = VideoControllerCache(
       onRemove: _onRemove,
-      maximumSize: 5,
+      maximumSize: 4,
     );
   }
-
-  VideoControllerItem? get videoController => _currentItemId?.let((it) => _cache[it]);
 
   void _onRemove(VideoControllerItem item) {
     item.controller.player.dispose();
     if (_cache.length == 0) {
-      _currentItemId = null;
+      _currentVideoControllerStream.add(null);
     }
   }
 
   void addController(int id, VideoControllerItem controller) {
     _cache[id] = controller;
+
     // unmute if fullscreen just got opened
-    if (_currentItemId == null || _currentItemId == id) {
+    if (_cache._head?.key == id) {
+      _currentVideoControllerStream.add(controller);
       getController(id)?.controller.player.setVolume(100);
     }
   }
@@ -212,18 +212,14 @@ class VideoModelControllerState {
     return _cache[id];
   }
 
-  VideoControllerItem? getCurrentController() {
-    return _currentItemId?.let((it) => getController(it));
+  Stream<VideoControllerItem?> getCurrentController() {
+    return _currentVideoControllerStream.stream;
   }
 
-  /// Unmutes the video player for the [models.Media] item with the given [id].
-  /// Mutes all other video players.
   void setCurrentItemId(int? id) {
-    _currentItemId?.let((it) => getController(it)?.controller.player.setVolume(0));
-    _currentItemId = id;
+    _currentVideoControllerStream.add(_cache[id]);
     if (id != null) {
       _cache.promoteEntry(id);
-      getController(id)?.controller.player.setVolume(100);
     }
   }
 
@@ -276,17 +272,26 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
 
   late final MediaRepository _mediaRepository;
 
+  VideoControllerItem? _currentVideoControllerItem;
+
   VideoModel(MediaRepository mediaRepository) {
     _state = VideoModelControllerState();
     _refs = VideoModelRefs(_state);
     _mediaRepository = mediaRepository;
+
+    _state.getCurrentController().listen((videoController) {
+      if (videoController != _currentVideoControllerItem) {
+        _currentVideoControllerItem = videoController;
+        notifyListeners();
+      }
+    });
   }
 
   double _videoScale = 1.0;
 
   /// The [VideoController] of the Widget with > 50% visibility.
   /// null if the current item is not a video.
-  VideoController? get videoController => _state.getCurrentController()?.controller;
+  VideoController? get videoController => _currentVideoControllerItem?.controller;
 
   VideoControllerItem? getVideoControllerItem(int id) {
     return _state.getController(id);
@@ -313,8 +318,13 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
       return existingItem;
     }
 
-    Player player = Player(configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024));
-    player.setVolume(0);
+    Player player = Player(configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024))..setVolume(0);
+    // https://github.com/media-kit/media-kit/issues/776#issuecomment-2072158673
+    (player.platform as dynamic).setProperty('cache', 'no');                   // --cache=<yes|no|auto>
+    (player.platform as dynamic).setProperty('cache-secs', '0');               // --cache-secs=<seconds> with cache but why not.
+    (player.platform as dynamic).setProperty('demuxer-seekable-cache', 'no');  // --demuxer-seekable-cache=<yes|no|auto> Redundant with cache but why not.
+    (player.platform as dynamic).setProperty('demuxer-max-back-bytes', '0');   // --demuxer-max-back-bytes=<bytesize>
+    (player.platform as dynamic).setProperty('demuxer-donate-buffer', 'no');   // --demuxer-donate-buffer==<yes|no>
     VideoController newController = VideoController(
       player,
       configuration: const VideoControllerConfiguration(
@@ -356,6 +366,12 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     }));
   }
 
+  void _preload(models.Media? media) {
+    if (media != null && media.isVideo == true) {
+      _initializeVideoController(media, autoPlay: false);
+    }
+  }
+
   /// Invoked when the page changes (a new view has > 50% visibility)
   @override
   set currentItem(FullscreenItem item) {
@@ -364,19 +380,16 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     /// Remove controller if new item is not a video.
     if (!item.item.isVideo) {
       _state.setCurrentItemId(null);
+
+      _preload(item.previous?.item);
+      _preload(item.next?.item);
     } else {
       _state.setCurrentItemId(item.item.id);
 
-      // preloading
-      _initializeVideoController(item.item).listen((VideoControllerItem videoController) {
-        models.Media? previous = item.previous?.item;
-        if (previous != null && previous.isVideo == true) {
-          _initializeVideoController(previous, autoPlay: false);
-        }
-        models.Media? next = item.next?.item;
-        if (next != null && next.isVideo == true) {
-          _initializeVideoController(next, autoPlay: false);
-        }
+      // preload after first frame is rendered
+      _initializeVideoController(item.item).listen((_) {
+        _preload(item.previous?.item);
+        _preload(item.next?.item);
       });
     }
     notifyListeners();
