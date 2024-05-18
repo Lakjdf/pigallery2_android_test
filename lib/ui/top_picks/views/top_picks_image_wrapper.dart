@@ -39,7 +39,7 @@ class _TopPicksImageWrapperState extends State<TopPicksImageWrapper> with Ticker
           gradient: LinearGradient(
             colors: [
               Theme.of(context).colorScheme.onSurfaceVariant,
-              Theme.of(context).colorScheme.surfaceVariant,
+              Theme.of(context).colorScheme.surfaceContainerHighest,
             ],
             stops: const [0, 1],
           ),
@@ -72,7 +72,7 @@ class _TopPicksImageWrapperState extends State<TopPicksImageWrapper> with Ticker
                     alignment: Alignment.center,
                     fit: StackFit.passthrough,
                     children: [
-                      Container(color: Theme.of(context).colorScheme.surfaceVariant),
+                      Container(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                       widget.image,
                     ],
                   ),

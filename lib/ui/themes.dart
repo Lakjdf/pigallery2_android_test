@@ -15,7 +15,7 @@ class CustomThemeData {
         backgroundColor: colorScheme.primary,
       ),
       iconTheme: IconThemeData(color: colorScheme.onPrimary),
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: colorScheme.surface,
       highlightColor: Colors.transparent,
       focusColor: focusColor,
       canvasColor: colorScheme.primary,
@@ -55,11 +55,11 @@ class CustomThemeData {
       dividerColor: const Color(0x1FFFFFFF),
       dividerTheme: DividerThemeData(color: colorScheme.secondaryContainer),
       switchTheme: SwitchThemeData(
-        trackColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return customTextColor.withAlpha(50);
           } else {
-            return colorScheme.background;
+            return colorScheme.surface;
           }
         }),
       ),
@@ -74,9 +74,7 @@ class CustomThemeData {
     onSecondary: Colors.white,
     error: Colors.red,
     onError: Colors.white,
-    background: Colors.black,
-    onBackground: Colors.white,
-    surface: Color(0xff000000),
+    surface: Colors.black,
     onSurface: Colors.white,
   );
 }

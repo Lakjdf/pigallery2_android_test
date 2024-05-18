@@ -62,7 +62,7 @@ class _VideoControlsState extends State<VideoControls> {
   }
 
   Widget buildScrim({double xTranslation = 0, double yTranslation = 0}) {
-    Color surfaceVariant = Theme.of(context).colorScheme.surfaceVariant;
+    Color surfaceVariant = Theme.of(context).colorScheme.surfaceContainerHighest;
     return Container(
       width: 300,
       height: 300,

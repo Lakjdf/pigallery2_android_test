@@ -48,7 +48,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
   Widget build(BuildContext context) {
     Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     return Container(
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
       padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
       child: Row(
         children: [

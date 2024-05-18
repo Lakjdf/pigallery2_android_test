@@ -47,7 +47,8 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HomeModel model = Provider.of<HomeModel>(context, listen: false);
-    // flutter only supports predictive back for the root element as of 3.16.0
+    // BackdropScaffold does not enable predictive back gestures.
+    // With it enabled, touch inputs are not registered for ~0.5s after the animation is finished.
     return PopScope(
       canPop: true,
       onPopInvoked: ((bool didPop) {

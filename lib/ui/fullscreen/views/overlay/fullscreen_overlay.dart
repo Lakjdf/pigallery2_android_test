@@ -193,7 +193,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                   selector: (context, model) => model.opacity,
                   builder: (context, controlsOpacity, child) {
                     return Container(
-                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4 * controlsOpacity),
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4 * controlsOpacity),
                       height: 40,
                       child: buildControlsTop(context, controlsOpacity),
                     );
