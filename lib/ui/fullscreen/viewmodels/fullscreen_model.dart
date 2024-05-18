@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_scroll_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_view.dart';
 
@@ -14,8 +15,9 @@ class FullscreenItem {
 class FullscreenModel extends SafeChangeNotifier {
   final List<PaginatedFullscreenModel> _fullscreenModels;
   final List<FullscreenItem> _items = [];
+  final FullscreenScrollModel _scrollModel;
 
-  FullscreenModel(this._fullscreenModels, this._currentPage);
+  FullscreenModel(this._fullscreenModels, this._currentPage, this._scrollModel);
 
   int _currentPage;
   double _opacity = 1;
@@ -38,6 +40,7 @@ class FullscreenModel extends SafeChangeNotifier {
     for (var model in _fullscreenModels) {
       model.currentItem = _items[idx];
     }
+    _scrollModel.currentIndex = idx;
     notifyListeners();
   }
 

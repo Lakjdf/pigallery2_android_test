@@ -95,7 +95,7 @@ class _FullscreenViewState extends State<FullscreenView> {
         if (!model.appInFullScreen) {
           model.disableFullScreen();
         }
-        Navigator.pop(context, widget.item);
+        Navigator.pop(context);
       }),
       child: Scaffold(
         backgroundColor: Colors.transparent,
