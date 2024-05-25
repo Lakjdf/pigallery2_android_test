@@ -112,5 +112,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   }
 
   @override
-  void close() {}
+  void close() {
+    _state.clear();
+  }
 }

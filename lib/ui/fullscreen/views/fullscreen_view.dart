@@ -87,10 +87,7 @@ class _FullscreenViewState extends State<FullscreenView> {
     return PopScope(
       canPop: false,
       onPopInvoked: ((bool didPop) {
-        if (didPop) {
-          context.read<FullscreenModel>().close();
-          return;
-        }
+        if (didPop) return;
         GlobalSettingsModel model = context.read<GlobalSettingsModel>();
         if (!model.appInFullScreen) {
           model.disableFullScreen();

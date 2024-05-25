@@ -88,10 +88,14 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     );
   }
 
-  void openFullscreen(BuildContext context, int index, Media item, int directoriesCount) async {
+  void openFullscreen(BuildContext context, List<Item> items, int totalIndex) async {
+    Media media = items[totalIndex] as Media;
+    // skip directories since there's no fullscreen view for them
+    int index = totalIndex - items.whereType<Directory>().length;
+
     FullscreenScrollModel scrollModel = FullscreenScrollModel();
     final subscription = scrollModel.getCurrentIndex().listen((index) {
-      _scrollToShowedItem(context, directoriesCount + index);
+      _scrollToShowedItem(context, index);
     });
     await Navigator.push(
       context,
@@ -105,7 +109,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                 create: ((context) {
                   return DownloadModel(
                     Provider.of<MediaRepository>(context, listen: false),
-                    item,
+                    media,
                   );
                 }),
               ),
@@ -123,7 +127,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                 }),
               )
             ],
-            child: FullscreenView(item),
+            child: FullscreenView(media),
           );
         },
       ),
@@ -146,17 +150,18 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           childAspectRatio: model.gridAspectRatio,
         ),
         itemBuilder: (BuildContext context, int index) {
-          return widget.items[index] is Directory
+          Item item = widget.items[index];
+          return item is Directory
               ? DirectoryItem(
-                  dir: widget.items[index] as Directory,
+                  dir: item,
                   borderRadius: model.gridRoundedCorners,
                   showDirectoryItemCount: model.showDirectoryItemCount,
-                  onTap: () => openDirectory(context, widget.items[index] as Directory),
+                  onTap: () => openDirectory(context, item),
                 )
               : MediaItem(
-                  item: widget.items[index] as Media,
+                  item: item as Media,
                   borderRadius: model.gridRoundedCorners,
-                  onTap: () => openFullscreen(context, index, widget.items[index] as Media, widget.items.whereType<Directory>().length),
+                  onTap: () => openFullscreen(context, widget.items, index),
                 );
         },
       ),
