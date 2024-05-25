@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/download_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/motion_photo_widget.dart';
@@ -75,9 +75,9 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
       icon: const Icon(Icons.aspect_ratio),
       onPressed: () {
         VideoModel videoModel = context.read<VideoModel>();
-        VideoController? controller = videoModel.videoController;
-        if (controller == null) return;
-        double aspectRatio = controller.rect.value!.width / controller.rect.value!.height;
+        VideoControllerItem? controllerItem = videoModel.videoControllerItem;
+        if (controllerItem == null || controllerItem.hasError) return;
+        double aspectRatio = controllerItem.controller.rect.value!.width / controllerItem.controller.rect.value!.height;
         double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
         double currentScale = videoModel.videoScale;
         double newScale = 1;
@@ -148,17 +148,17 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   }
 
   Widget buildVideoSeekBar(BuildContext context, double opacity) {
-    return Selector<VideoModel, VideoController?>(
-      selector: (context, model) => model.videoController,
-      builder: (context, controller, child) => controller == null
+    return Selector<VideoModel, VideoControllerItem?>(
+      selector: (context, model) => model.videoControllerItem,
+      builder: (context, controllerItem, child) => controllerItem == null || controllerItem.hasError
           ? Container()
           : Align(
               alignment: Alignment.bottomCenter,
               child: SizedBox(
                 height: 50,
                 child: VideoProgressBar(
-                  key: ObjectKey(controller),
-                  controller: controller,
+                  key: ObjectKey(controllerItem),
+                  controller: controllerItem.controller,
                   opacity: opacity,
                 ),
               ),
@@ -179,8 +179,8 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
             );
           },
         ),
-        Selector<VideoModel, VideoController?>(
-          selector: (context, model) => model.videoController,
+        Selector<VideoModel, VideoControllerItem?>(
+          selector: (context, model) => model.videoControllerItem,
           builder: (context, controller, child) => controller == null ? GestureDetector(onTap: handleTap) : VideoControls(key: ObjectKey(controller), controller, handleTap),
         ),
         IgnorePointer(

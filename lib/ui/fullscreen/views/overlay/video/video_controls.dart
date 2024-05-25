@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
 import 'package:pigallery2_android/ui/shared/widgets/fade_animation.dart';
 
 class VideoControls extends StatefulWidget {
   const VideoControls(this.controller, this.onTap, {super.key});
 
-  final VideoController controller;
+  final VideoControllerItem controller;
   final VoidCallback onTap;
 
   @override
@@ -18,7 +18,7 @@ class VideoControls extends StatefulWidget {
 class _VideoControlsState extends State<VideoControls> {
   Widget imageFadeAnim = Container();
 
-  VideoController get controller => widget.controller;
+  VideoControllerItem get controller => widget.controller;
 
   /// The position of an input that has not been handled yet.
   int? newInputPosition;
@@ -43,6 +43,9 @@ class _VideoControlsState extends State<VideoControls> {
   @override
   void initState() {
     super.initState();
+    controller.errorStream().listen((_) {
+      setState(() {});
+    });
     controller.player.stream.buffering.listen((event) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -167,6 +170,7 @@ class _VideoControlsState extends State<VideoControls> {
   void handleSingleTap() => widget.onTap();
 
   Future<void> handleDoubleTap() async {
+    if (controller.hasError) return;
     switch (currentInputPosition) {
       case 0:
         handleSeekBackwards();
@@ -226,7 +230,7 @@ class _VideoControlsState extends State<VideoControls> {
               ),
             ),
             Center(
-              child: controller.player.state.buffering
+              child: controller.player.state.buffering && !controller.hasError
                   ? SpinKitRipple(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       size: 0.5 * (MediaQuery.of(context).orientation == Orientation.landscape ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width),

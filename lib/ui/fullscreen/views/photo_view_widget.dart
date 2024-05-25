@@ -24,7 +24,7 @@ class PhotoViewWidget extends StatelessWidget {
       httpHeaders: context.read<MediaRepository>().headers,
       fadeInDuration: const Duration(milliseconds: 1),
       fadeOutDuration: const Duration(milliseconds: 1),
-      errorWidget: (context, url, error) => const ErrorImage(),
+      errorWidget: (context, url, error) => const ErrorImage(), // not working most of the time https://github.com/Baseflow/flutter_cached_network_image/issues/932
       placeholder: (context, url) => ThumbnailImage(
         key: ObjectKey(item),
         item,

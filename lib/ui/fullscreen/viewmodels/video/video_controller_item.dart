@@ -21,4 +21,6 @@ class VideoControllerItem {
   }
 
   Player get player => controller.player;
+
+  bool get hasError => _errorEvents.isNotEmpty;
 }

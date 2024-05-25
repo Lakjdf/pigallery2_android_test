@@ -43,9 +43,9 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
 
   double get videoScale => _videoScale;
 
-  /// The [VideoController] of the Widget with > 50% visibility.
+  /// The [VideoControllerItem] of the Widget with > 50% visibility.
   /// null if the current item is not a video.
-  VideoController? get videoController => _currentVideoControllerItem?.controller;
+  VideoControllerItem? get videoControllerItem => _currentVideoControllerItem;
 
   VideoControllerItem? getVideoControllerItem(int id) {
     return _state.getController(id);
@@ -72,7 +72,7 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
       return existingItem;
     }
 
-    Player player = Player(configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024))..setVolume(0);
+    Player player = Player(configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024, logLevel: MPVLogLevel.trace))..setVolume(0);
     // https://github.com/media-kit/media-kit/issues/776#issuecomment-2072158673
     (player.platform as dynamic).setProperty('cache', 'no'); // --cache=<yes|no|auto>
     (player.platform as dynamic).setProperty('cache-secs', '0'); // --cache-secs=<seconds> with cache but why not.
@@ -84,7 +84,7 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
       configuration: const VideoControllerConfiguration(
         vo: "mediacodec_embed",
         hwdec: "mediacodec",
-        enableHardwareAcceleration: false,
+        enableHardwareAcceleration: true,
         androidAttachSurfaceAfterVideoParameters: false,
       ),
     );
