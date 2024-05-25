@@ -127,10 +127,12 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                     ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: MotionPhotoWidget(item, controlsOpacity),
-            ),
+            item.isVideo
+                ? Container()
+                : Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: MotionPhotoWidget(item, controlsOpacity),
+                  ),
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: DownloadWidget(
@@ -138,7 +140,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                 key: ObjectKey(item),
               ),
             ),
-            !item.isVideo ? Container() : buildAspectRatioToggle(context, controlsOpacity),
+            item.isImage ? Container() : buildAspectRatioToggle(context, controlsOpacity),
           ],
         ),
       ),
@@ -179,9 +181,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
         ),
         Selector<VideoModel, VideoController?>(
           selector: (context, model) => model.videoController,
-          builder: (context, controller, child) => controller == null
-              ? GestureDetector(onTap: handleTap)
-              : VideoControls(key: ObjectKey(controller), controller, handleTap),
+          builder: (context, controller, child) => controller == null ? GestureDetector(onTap: handleTap) : VideoControls(key: ObjectKey(controller), controller, handleTap),
         ),
         IgnorePointer(
           ignoring: !controlsVisible,

@@ -27,6 +27,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   }
 
   PhotoModelState stateOf(models.Media item) {
+    assert(item.isImage);
     PhotoModelState state = _state[item.id] ??= _createState(item);
     return state;
   }
