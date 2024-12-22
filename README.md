@@ -52,6 +52,12 @@ Only tested with PiGallery2 v1.9.5 & v2.0.0.
 - [flutter_spinkit](https://pub.dev/packages/flutter_spinkit) - loading animations
 - [ionicons](https://pub.dev/packages/ionicons) - icon set
 
+## Linux build
+
+The linux build exists for development purposes and is not fully functional.
+
+Required dependencies in addition to the flutter linux setup:
+`sudo apt-get install libmpv-dev mpv libsecret-1-dev libjsoncpp-dev`
 
 ## Credits
 

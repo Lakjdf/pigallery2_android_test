@@ -6,6 +6,7 @@ import 'package:pigallery2_android/domain/models/item.dart' as models show Media
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_config_factory.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_model_controller_state.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_model_refs.dart';
@@ -81,12 +82,7 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     (player.platform as dynamic).setProperty('demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer==<yes|no>
     VideoController newController = VideoController(
       player,
-      configuration: const VideoControllerConfiguration(
-        vo: "mediacodec_embed",
-        hwdec: "mediacodec",
-        enableHardwareAcceleration: true,
-        androidAttachSurfaceAfterVideoParameters: false,
-      ),
+      configuration: VideoControllerConfigFactory.createConfiguration()
     );
     VideoControllerItem item = VideoControllerItem(newController);
 
