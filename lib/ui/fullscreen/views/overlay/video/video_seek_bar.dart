@@ -1,17 +1,16 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 class VideoSeekBar extends StatefulWidget {
-  VideoSeekBar(
+  const VideoSeekBar(
     this.videoController, {
-    VideoProgressBarColors? colors,
+    required this.colors,
     this.onDragEnd,
     this.onDragStart,
     this.onDragUpdate,
     this.onTapDown,
     super.key,
-  }) : colors = colors ?? VideoProgressBarColors();
+  });
 
   final VideoController videoController;
   final VideoProgressBarColors colors;
@@ -27,120 +26,101 @@ class VideoSeekBar extends StatefulWidget {
 }
 
 class _VideoProgressBarState extends State<VideoSeekBar> {
-  bool _controllerWasPlaying = false;
+  /// Current seek position as displayed in the ui
+  Duration? _currentSeek;
 
   VideoController get videoController => widget.videoController;
 
-  bool shouldPlayAfterDragEnd = false;
-  Duration? lastSeek;
-  Timer? _updateBlockTimer;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   void deactivate() {
-    _cancelUpdateBlockTimer();
+    _currentSeek = null;
     super.deactivate();
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onHorizontalDragStart: (DragStartDetails details) {
-        _controllerWasPlaying = videoController.player.state.playing;
-        if (_controllerWasPlaying) {
-          videoController.player.pause();
-        }
+      onHorizontalDragStart: (_) => _onDragStart(),
+      onHorizontalDragUpdate: (details) => _onDragUpdate(details.globalPosition),
+      onHorizontalDragEnd: (_) => _onDragEnd(),
+      onTapDown: (details) => _onTapDown(details.globalPosition),
+      child: _buildProgressBar(),
+    );
+  }
 
-        if (widget.onDragStart != null) {
-          widget.onDragStart!();
-        }
-      },
-      onHorizontalDragUpdate: (DragUpdateDetails details) {
-        seekToRelativePosition(details.globalPosition); // wait for previous seek to finish; either skip or queue
-
-        if (widget.onDragUpdate != null) {
-          widget.onDragUpdate!();
-        }
-      },
-      onHorizontalDragEnd: (DragEndDetails details) {
-        if (_controllerWasPlaying) {
-          videoController.player.play();
-          shouldPlayAfterDragEnd = true;
-        }
-        _setupUpdateBlockTimer();
-
-        if (widget.onDragEnd != null) {
-          widget.onDragEnd!();
-        }
-      },
-      onTapDown: (TapDownDetails details) {
-        seekToRelativePosition(details.globalPosition);
-        _setupUpdateBlockTimer();
-        if (widget.onTapDown != null) {
-          widget.onTapDown!();
-        }
-      },
-      child: Center(
-        child: Container(
-          height: MediaQuery.of(context).size.height / 2,
-          width: MediaQuery.of(context).size.width,
-          color: Colors.transparent,
-          child: CustomPaint(
-            painter: _ProgressBarPainter(
-              _getValue(),
-              widget.colors,
-            ),
+  Widget _buildProgressBar() {
+    return Center(
+      child: Container(
+        height: MediaQuery.of(context).size.height / 2,
+        width: MediaQuery.of(context).size.width,
+        color: Colors.transparent,
+        child: CustomPaint(
+          painter: _ProgressBarPainter(
+            _getValue(),
+            widget.colors,
           ),
         ),
       ),
     );
   }
 
-  void _setupUpdateBlockTimer() {
-    _updateBlockTimer = Timer(const Duration(milliseconds: 1000), () {
-      lastSeek = null;
-      _cancelUpdateBlockTimer();
-    });
+  void _onDragStart() {
+    widget.onDragStart?.call();
   }
 
-  void _cancelUpdateBlockTimer() {
-    _updateBlockTimer?.cancel();
-    _updateBlockTimer = null;
+  void _onDragUpdate(Offset globalPosition) {
+    seekToRelativePosition(globalPosition);
+    widget.onDragUpdate?.call();
+  }
+
+  void _onDragEnd() {
+    widget.onDragEnd?.call();
+  }
+
+  void _onTapDown(Offset globalPosition) {
+    seekToRelativePosition(globalPosition);
+    widget.onTapDown?.call();
+  }
+
+  void seekToRelativePosition(Offset globalPosition) {
+    final renderObject = context.findRenderObject() as RenderBox?;
+    if (renderObject == null) return;
+
+    final Offset tapPos = renderObject.globalToLocal(globalPosition);
+    final double relative = tapPos.dx / renderObject.size.width;
+    if (relative < 0 || relative > 1) return;
+
+    final position = videoController.player.state.duration * relative;
+
+    // only seek if there's no seek pending
+    var pendingSeek = _currentSeek;
+    _currentSeek = position;
+    if (pendingSeek == null) {
+      seekToPosition(position);
+    }
+  }
+
+  void seekToPosition(Duration position) {
+    videoController.player.seek(position)
+        .then((_) => _onSeekComplete(position));
+  }
+
+  void _onSeekComplete(Duration position) {
+    Duration? pendingSeek = _currentSeek;
+
+    if (pendingSeek != null && pendingSeek != position) {
+      seekToPosition(pendingSeek);
+    } else {
+      _currentSeek = null;
+    }
   }
 
   VideoProgress _getValue() {
-    return VideoProgress(duration: videoController.player.state.duration, position: lastSeek ?? videoController.player.state.position, buffered: videoController.player.state.buffer);
-  }
-
-  void seekToRelativePosition(Offset globalPosition) async {
-    final RenderObject? renderObject = context.findRenderObject();
-    if (renderObject != null) {
-      final box = renderObject as RenderBox;
-      final Offset tapPos = box.globalToLocal(globalPosition);
-      final double relative = tapPos.dx / box.size.width;
-      if (relative > 0) {
-        final Duration position = videoController.player.state.duration * relative;
-        lastSeek = position;
-        await videoController.player.seek(position);
-        onFinishedLastSeek();
-        if (relative >= 1) {
-          lastSeek = videoController.player.state.duration;
-          await videoController.player.seek(videoController.player.state.duration);
-          onFinishedLastSeek();
-        }
-      }
-    }
-  }
-
-  void onFinishedLastSeek() {
-    if (shouldPlayAfterDragEnd) {
-      shouldPlayAfterDragEnd = false;
-      videoController.player.play();
-    }
+    return VideoProgress(
+      duration: videoController.player.state.duration,
+      position: _currentSeek ?? videoController.player.state.position,
+      buffered: videoController.player.state.buffer,
+    );
   }
 }
 
@@ -158,10 +138,10 @@ class VideoProgress {
 
 class VideoProgressBarColors {
   VideoProgressBarColors({
-    Color playedColor = const Color.fromRGBO(255, 0, 0, 0.7),
-    Color bufferedColor = const Color.fromRGBO(30, 30, 200, 0.2),
-    Color handleColor = const Color.fromRGBO(200, 200, 200, 1.0),
-    Color backgroundColor = const Color.fromRGBO(200, 200, 200, 0.5),
+    required Color playedColor,
+    required Color bufferedColor,
+    required Color handleColor,
+    required Color backgroundColor,
   })  : playedPaint = Paint()..color = playedColor,
         bufferedPaint = Paint()..color = bufferedColor,
         handlePaint = Paint()..color = handleColor,
