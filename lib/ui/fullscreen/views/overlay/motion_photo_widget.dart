@@ -27,7 +27,7 @@ class MotionPhotoWidget extends StatelessWidget {
           icon: Icon(
             Icons.motion_photos_paused,
             size: 20,
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(opacity),
+            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: opacity),
           ),
         ),
       ),

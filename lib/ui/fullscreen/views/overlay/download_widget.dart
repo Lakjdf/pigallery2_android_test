@@ -18,7 +18,7 @@ class DownloadWidget extends StatelessWidget {
           downloading
               ? CircularProgressIndicator(
                   value: context.select((DownloadModel model) => model.progress),
-                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(opacity),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: opacity),
                   strokeWidth: 2.0,
                 )
               : Container(),
@@ -35,7 +35,7 @@ class DownloadWidget extends StatelessWidget {
             icon: Icon(
               downloading ? Icons.stop : Icons.share,
               size: 20,
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(opacity),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: opacity),
             ),
           )
         ],

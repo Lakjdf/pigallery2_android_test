@@ -87,7 +87,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
         onVerticalDragUpdate: (details) => _whileVerticalDrag(details),
         onVerticalDragEnd: (details) => _endVerticalDrag(details),
         child: Container(
-          color: Colors.black.withOpacity(opacity * animationProgress),
+          color: Colors.black.withValues(alpha: opacity * animationProgress),
           constraints: BoxConstraints.expand(
             height: MediaQuery.of(context).size.height,
           ),

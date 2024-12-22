@@ -70,7 +70,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   Widget buildAspectRatioToggle(BuildContext context, double controlsOpacity) {
     return IconButton(
       padding: const EdgeInsets.all(0),
-      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
+      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
       constraints: const BoxConstraints(),
       icon: const Icon(Icons.aspect_ratio),
       onPressed: () {
@@ -110,7 +110,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
               },
               icon: Icon(
                 Icons.close,
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
               ),
             ),
             Expanded(
@@ -120,10 +120,10 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                 softWrap: false,
                 item.name,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
                         ) ??
                     TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(controlsOpacity),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
                     ),
               ),
             ),
@@ -193,7 +193,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                   selector: (context, model) => model.opacity,
                   builder: (context, controlsOpacity, child) {
                     return Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4 * controlsOpacity),
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4 * controlsOpacity),
                       height: 40,
                       child: buildControlsTop(context, controlsOpacity),
                     );

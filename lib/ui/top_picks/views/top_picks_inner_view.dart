@@ -24,6 +24,7 @@ class TopPicksInnerView extends StatelessWidget {
         builder: ((context) => HomeView(1)),
       ),
     ).then((value) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
     });
   }

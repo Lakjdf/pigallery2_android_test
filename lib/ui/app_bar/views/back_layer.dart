@@ -93,14 +93,14 @@ class BackLayer extends StatelessWidget {
                             color: theme.colorScheme.onSurfaceVariant,
                             onPressed: (gridCrossAxisCount > 1) ? () => model.storeGridCrossAxisCount(MediaQuery.of(context).orientation, gridCrossAxisCount - 1) : null,
                             icon: const Icon(Icons.remove),
-                            disabledColor: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                            disabledColor: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                           ),
                           Text(gridCrossAxisCount.toString()),
                           IconButton(
                             color: theme.colorScheme.onSurfaceVariant,
                             onPressed: (gridCrossAxisCount < 10) ? () => model.storeGridCrossAxisCount(MediaQuery.of(context).orientation, gridCrossAxisCount + 1) : null,
                             icon: const Icon(Icons.add),
-                            disabledColor: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                            disabledColor: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                           ),
                         ],
                       );

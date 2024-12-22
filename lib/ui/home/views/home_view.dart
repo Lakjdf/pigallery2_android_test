@@ -39,6 +39,7 @@ class HomeView extends StatelessWidget {
         );
       },
     ).whenComplete(() {
+      if (!context.mounted) return;
       Provider.of<HomeModel>(context, listen: false).fetchItems();
       Provider.of<TopPicksModel>(context, listen: false).refresh();
     });

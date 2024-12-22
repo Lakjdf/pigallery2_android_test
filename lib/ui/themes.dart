@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomThemeData {
-  static final Color _darkFocusColor = Colors.white.withOpacity(0.12);
+  static final Color _darkFocusColor = Colors.white.withValues(alpha: 0.12);
 
   static ThemeData oledThemeData = themeData(oledColorScheme, _darkFocusColor);
 

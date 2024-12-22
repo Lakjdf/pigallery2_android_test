@@ -74,9 +74,9 @@ class _VideoControlsState extends State<VideoControls> {
         shape: BoxShape.circle,
         gradient: RadialGradient(
           colors: [
-            surfaceVariant.withOpacity(0.15),
-            surfaceVariant.withOpacity(0.1),
-            surfaceVariant.withOpacity(0),
+            surfaceVariant.withValues(alpha: 0.15),
+            surfaceVariant.withValues(alpha: 0.1),
+            surfaceVariant.withValues(alpha: 0),
           ],
           stops: const [0, 0.44, 1],
         ),

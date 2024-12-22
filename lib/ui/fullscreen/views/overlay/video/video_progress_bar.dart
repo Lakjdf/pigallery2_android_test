@@ -48,7 +48,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
   Widget build(BuildContext context) {
     Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
       padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
       child: Row(
         children: [
@@ -56,7 +56,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
             padding: const EdgeInsets.only(top: 2.0),
             child: Text(
               formatDuration(controller.player.state.position),
-              style: TextStyle(color: onSurfaceVariant.withOpacity(widget.opacity)),
+              style: TextStyle(color: onSurfaceVariant.withValues(alpha: widget.opacity)),
             ),
           ),
           Flexible(
@@ -66,10 +66,10 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                 controller,
                 onDragUpdate: () => setState(() {}),
                 colors: VideoProgressBarColors(
-                  handleColor: onSurfaceVariant.withOpacity(widget.opacity),
-                  playedColor: onSurfaceVariant.withOpacity(widget.opacity),
-                  bufferedColor: onSurfaceVariant.withOpacity(.5 * widget.opacity),
-                  backgroundColor: onSurfaceVariant.withOpacity(.2 * widget.opacity),
+                  handleColor: onSurfaceVariant.withValues(alpha: widget.opacity),
+                  playedColor: onSurfaceVariant.withValues(alpha: widget.opacity),
+                  bufferedColor: onSurfaceVariant.withValues(alpha: .5 * widget.opacity),
+                  backgroundColor: onSurfaceVariant.withValues(alpha: .2 * widget.opacity),
                 ),
               ),
             ),
@@ -78,7 +78,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
             padding: const EdgeInsets.only(top: 2.0),
             child: Text(
               formatDuration(controller.player.state.duration),
-              style: TextStyle(color: onSurfaceVariant.withOpacity(widget.opacity)),
+              style: TextStyle(color: onSurfaceVariant.withValues(alpha: widget.opacity)),
             ),
           ),
         ],

@@ -144,7 +144,7 @@ class MyApp extends StatelessWidget {
                 dividerTheme: DividerThemeData(color: colorScheme.secondaryContainer),
                 scrollbarTheme: ScrollbarThemeData(
                   thumbVisibility: WidgetStateProperty.all(true),
-                  thumbColor: WidgetStateProperty.all(colorScheme.onSurfaceVariant.withOpacity(0.4)),
+                  thumbColor: WidgetStateProperty.all(colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
                 ),
               );
             }

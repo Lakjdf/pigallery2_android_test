@@ -95,6 +95,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
 
     FullscreenScrollModel scrollModel = FullscreenScrollModel();
     final subscription = scrollModel.getCurrentIndex().listen((index) {
+      if (!context.mounted) return;
       _scrollToShowedItem(context, index);
     });
     await Navigator.push(
