@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
@@ -17,6 +19,7 @@ class VideoControls extends StatefulWidget {
 
 class _VideoControlsState extends State<VideoControls> {
   Widget imageFadeAnim = Container();
+  Timer? _doubleTapTimer;
 
   VideoControllerItem get controller => widget.controller;
 
@@ -169,7 +172,7 @@ class _VideoControlsState extends State<VideoControls> {
 
   void handleSingleTap() => widget.onTap();
 
-  Future<void> handleDoubleTap() async {
+  void handleDoubleTap() {
     if (controller.hasError) return;
     switch (currentInputPosition) {
       case 0:
@@ -191,7 +194,7 @@ class _VideoControlsState extends State<VideoControls> {
       onTapUp: ((details) {
         newInputPosition = getInputPosition(context, details);
       }),
-      onTap: () async {
+      onTap: () {
         // Reset tapCount if too much time has passed or a different input has been made.
         bool sameInput = newInputPosition != null && currentInputPosition != null && newInputPosition == currentInputPosition;
         bool outdatedInput = currentInputDateTime == null || DateTime.now().difference(currentInputDateTime!).compareTo(fadeAnimationDuration) > 0;
@@ -203,16 +206,17 @@ class _VideoControlsState extends State<VideoControls> {
         currentInputDateTime = DateTime.now();
         currentInputPosition = newInputPosition;
         newInputPosition = null;
+
+        _doubleTapTimer?.cancel();
         if (tapCount == 1) {
-          tapCount = await Future.delayed(doubleTapTimeout, () {
+          _doubleTapTimer = Timer(doubleTapTimeout, () {
             if (tapCount == 1) {
               handleSingleTap();
-              return 0;
+              tapCount = 0;
             }
-            return tapCount;
           });
         } else {
-          await handleDoubleTap();
+          handleDoubleTap();
         }
       },
       child: IgnorePointer(

@@ -4,7 +4,9 @@ import 'package:pigallery2_android/ui/shared/widgets/expanded_section.dart';
 import 'package:provider/provider.dart';
 
 class BackLayer extends StatelessWidget {
-  const BackLayer({super.key});
+  BackLayer({super.key});
+
+  final scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,9 @@ class BackLayer extends StatelessWidget {
         maxHeight: (MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - kToolbarHeight) / 2.5,
       ),
       child: Scrollbar(
+        controller: scrollController,
         child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
             children: [
               ListTile(

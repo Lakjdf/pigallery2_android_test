@@ -63,7 +63,7 @@ class HomeView extends StatelessWidget {
         keepFrontLayerActive: true,
         stickyFrontLayer: true,
         frontLayer: GalleryView(stackPosition, () => showServerSettings(context)),
-        backLayer: const BackLayer(),
+        backLayer: BackLayer(),
         appBar: HomeAppBar(stackPosition, () => showServerSettings(context)),
       ),
     );

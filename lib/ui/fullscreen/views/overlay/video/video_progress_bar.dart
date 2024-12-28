@@ -7,10 +7,12 @@ class VideoProgressBar extends StatefulWidget {
     super.key,
     required this.controller,
     required this.opacity,
+    this.height = 50,
   });
 
   final VideoController controller;
   final double opacity;
+  final double height;
 
   @override
   State createState() => _VideoProgressBarState();
@@ -44,45 +46,73 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
     return tokens.join(':');
   }
 
+  Widget _buildLeftTime(Color color) {
+    return Text(
+      formatDuration(controller.player.state.position),
+      style: TextStyle(color: color.withValues(alpha: widget.opacity)),
+    );
+  }
+
+  Widget _buildRightTime(Color color) {
+    return Text(
+      formatDuration(controller.player.state.duration),
+      style: TextStyle(color: color.withValues(alpha: widget.opacity)),
+    );
+  }
+
+  Widget _buildProgressBar(Color color) {
+    return VideoSeekBar(
+      controller,
+      height: widget.height,
+      onDragUpdate: () => setState(() {}),
+      colors: VideoProgressBarColors(
+        handleColor: color.withValues(alpha: widget.opacity),
+        playedColor: color.withValues(alpha: widget.opacity),
+        bufferedColor: color.withValues(alpha: .5 * widget.opacity),
+        backgroundColor: color.withValues(alpha: .2 * widget.opacity),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-      padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: Text(
-              formatDuration(controller.player.state.position),
-              style: TextStyle(color: onSurfaceVariant.withValues(alpha: widget.opacity)),
-            ),
-          ),
-          Flexible(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: VideoSeekBar(
-                controller,
-                onDragUpdate: () => setState(() {}),
-                colors: VideoProgressBarColors(
-                  handleColor: onSurfaceVariant.withValues(alpha: widget.opacity),
-                  playedColor: onSurfaceVariant.withValues(alpha: widget.opacity),
-                  bufferedColor: onSurfaceVariant.withValues(alpha: .5 * widget.opacity),
-                  backgroundColor: onSurfaceVariant.withValues(alpha: .2 * widget.opacity),
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        Container(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          height: widget.height,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              SizedBox(
+                height: widget.height,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: _buildLeftTime(onSurfaceVariant),
                 ),
               ),
-            ),
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: _buildProgressBar(onSurfaceVariant),
+                ),
+              ),
+              SizedBox(
+                height: widget.height,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: _buildRightTime(onSurfaceVariant),
+                ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: Text(
-              formatDuration(controller.player.state.duration),
-              style: TextStyle(color: onSurfaceVariant.withValues(alpha: widget.opacity)),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

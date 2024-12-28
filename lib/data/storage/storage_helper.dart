@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
@@ -41,6 +43,7 @@ class StorageHelper {
 
   /// Set cookies to be used with the in app web view.
   Future<void> _setCookies(String url, String cookieString) async {
+    if (!Platform.isAndroid) return;
     var cookieManager = web_view.CookieManager.instance();
     for (var cookie in cookieString.split(';')) {
       var splitIndex = cookie.indexOf('=');

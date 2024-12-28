@@ -154,15 +154,12 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
           ? Container()
           : Align(
               alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: 50,
-                child: VideoProgressBar(
+              child: VideoProgressBar(
                   key: ObjectKey(controllerItem),
                   controller: controllerItem.controller,
                   opacity: opacity,
-                ),
               ),
-            ),
+          ),
     );
   }
 

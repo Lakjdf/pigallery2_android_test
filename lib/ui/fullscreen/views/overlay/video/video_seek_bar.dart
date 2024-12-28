@@ -4,6 +4,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 class VideoSeekBar extends StatefulWidget {
   const VideoSeekBar(
     this.videoController, {
+    required this.height,
     required this.colors,
     this.onDragEnd,
     this.onDragStart,
@@ -13,6 +14,7 @@ class VideoSeekBar extends StatefulWidget {
   });
 
   final VideoController videoController;
+  final double height;
   final VideoProgressBarColors colors;
   final Function()? onDragStart;
   final Function()? onDragEnd;
@@ -49,18 +51,25 @@ class _VideoProgressBarState extends State<VideoSeekBar> {
   }
 
   Widget _buildProgressBar() {
-    return Center(
-      child: Container(
-        height: MediaQuery.of(context).size.height / 2,
-        width: MediaQuery.of(context).size.width,
-        color: Colors.transparent,
-        child: CustomPaint(
-          painter: _ProgressBarPainter(
-            _getValue(),
-            widget.colors,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // todo draw thumbnail
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            height: widget.height,
+            width: MediaQuery.of(context).size.width,
+            color: Colors.transparent,
+            child: CustomPaint(
+              painter: _ProgressBarPainter(
+                _getValue(),
+                widget.colors,
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -101,8 +110,7 @@ class _VideoProgressBarState extends State<VideoSeekBar> {
   }
 
   void seekToPosition(Duration position) {
-    videoController.player.seek(position)
-        .then((_) => _onSeekComplete(position));
+    videoController.player.seek(position).then((_) => _onSeekComplete(position));
   }
 
   void _onSeekComplete(Duration position) {
@@ -158,59 +166,50 @@ class _ProgressBarPainter extends CustomPainter {
 
   VideoProgress value;
   VideoProgressBarColors colors;
+  final double height = 2;
 
   @override
   bool shouldRepaint(CustomPainter painter) {
     return true;
   }
 
+  double _getPlayedPartEnd(Size size) {
+    if (value.duration.inMilliseconds == 0) return 0;
+    double progress = value.position.inMilliseconds / value.duration.inMilliseconds;
+    return progress > 1 ? size.width : progress * size.width;
+  }
+
+  double _getBufferedPartEnd(Size size) {
+    if (value.duration.inMilliseconds == 0) return 0;
+    double progress = value.buffered.inMilliseconds / value.duration.inMilliseconds;
+    return progress > 1 ? size.width : progress * size.width;
+  }
+
+  void _paintBar(Canvas canvas, double width, Paint paint, double yPos) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromPoints(
+          Offset(0, yPos),
+          Offset(width, yPos + height),
+        ),
+        const Radius.circular(4),
+      ),
+      paint,
+    );
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    const height = 2.0;
+    final double centerY = size.height / 2 - height / 2;
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromPoints(
-          Offset(0.0, size.height / 2),
-          Offset(size.width, size.height / 2 + height),
-        ),
-        const Radius.circular(4.0),
-      ),
-      colors.backgroundPaint,
-    );
-    double playedPartPercent = value.position.inMilliseconds / value.duration.inMilliseconds;
-    if (playedPartPercent.isNaN) {
-      playedPartPercent = 0;
-    }
-    final double playedPart = playedPartPercent > 1 ? size.width : playedPartPercent * size.width;
-    double start = 0;
-    double bufferedPartPercent = value.buffered.inMilliseconds / value.duration.inMilliseconds;
-    if (bufferedPartPercent.isNaN) {
-      bufferedPartPercent = 0;
-    }
-    double end = bufferedPartPercent * size.width;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromPoints(
-          Offset(start, size.height / 2),
-          Offset(end, size.height / 2 + height),
-        ),
-        const Radius.circular(4.0),
-      ),
-      colors.bufferedPaint,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromPoints(
-          Offset(0.0, size.height / 2),
-          Offset(playedPart, size.height / 2 + height),
-        ),
-        const Radius.circular(4.0),
-      ),
-      colors.playedPaint,
-    );
+    double playedPartEnd = _getPlayedPartEnd(size);
+    double bufferedPartEnd = _getBufferedPartEnd(size);
+
+    _paintBar(canvas, size.width, colors.backgroundPaint, centerY);
+    _paintBar(canvas, bufferedPartEnd, colors.bufferedPaint, centerY);
+    _paintBar(canvas, playedPartEnd, colors.playedPaint, centerY);
     canvas.drawCircle(
-      Offset(playedPart, size.height / 2 + height / 2),
+      Offset(playedPartEnd, centerY + height / 2),
       height * 3,
       colors.handlePaint,
     );
