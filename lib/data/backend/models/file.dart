@@ -8,7 +8,7 @@ class BackendFile {
   final String _parentPath;
 
   /// Relative API path. Does not include server url.
-  String get apiPath => p.join(_parentPath, name);
+  String get apiPath => p.join(_parentPath, name).replaceAll("./", "");
 
   BackendFile({required this.name, required this.id, required String parentPath}) : _parentPath = parentPath;
 

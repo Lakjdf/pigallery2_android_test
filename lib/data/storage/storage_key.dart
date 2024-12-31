@@ -15,7 +15,8 @@ enum StorageKey<T> {
   gridAspectRatio<double>(1),
   gridCrossAxisCountPortrait<int>(3),
   gridCrossAxisCountLandscape<int>(5),
-  allowBadCertificates<bool>(false);
+  allowBadCertificates<bool>(false),
+  showVideoSeekPreview<bool>(false);
 
   String get key => name;
   final T defaultValue;

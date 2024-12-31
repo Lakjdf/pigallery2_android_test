@@ -15,6 +15,14 @@ class PiGallery2CacheManager {
       fileService: HttpFileService(),
     ),
   );
+
+  static CacheManager spriteThumbnails = CustomImageCacheManager(
+    Config(
+      "spriteThumbnails",
+      maxNrOfCacheObjects: 20,
+      fileService: HttpFileService(),
+    ),
+  );
 }
 
 class CustomImageCacheManager extends CacheManager with ImageCacheManager {

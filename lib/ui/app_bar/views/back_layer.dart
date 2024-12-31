@@ -176,6 +176,22 @@ class BackLayer extends StatelessWidget {
                   ],
                 ),
               ),
+              ListTile(
+                title: const Text("Preview while seeking videos"),
+                subtitle: const Text("Requires PiGallery2 extension to be installed"),
+                leading: Icon(Icons.swipe, color: theme.colorScheme.onSurfaceVariant),
+                trailing: Selector<GlobalSettingsModel, bool>(
+                  selector: (context, model) => model.showVideoSeekPreview,
+                  builder: (BuildContext context, showVideoSeekPreview, Widget? child) {
+                    return Switch(
+                      value: showVideoSeekPreview,
+                      onChanged: (value) {
+                        model.showVideoSeekPreview = value;
+                      },
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),

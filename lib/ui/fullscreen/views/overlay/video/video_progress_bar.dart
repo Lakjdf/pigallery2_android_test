@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_seek_bar.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/seeking/video_seek_bar.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_progress_bar_text.dart';
 
-class VideoProgressBar extends StatefulWidget {
+class VideoProgressBar extends StatelessWidget {
+  final VideoController controller;
+  final double opacity;
+  final double height;
+
   const VideoProgressBar({
     super.key,
     required this.controller,
@@ -10,66 +15,16 @@ class VideoProgressBar extends StatefulWidget {
     this.height = 50,
   });
 
-  final VideoController controller;
-  final double opacity;
-  final double height;
-
-  @override
-  State createState() => _VideoProgressBarState();
-}
-
-class _VideoProgressBarState extends State<VideoProgressBar> {
-  VideoController get controller => widget.controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller.player.stream.position.listen((event) {
-      if (!mounted) return;
-      setState(() {});
-    });
-  }
-
-  String formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String twoDigitHours = twoDigits(duration.inHours);
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-
-    final List<String> tokens = [];
-    if (twoDigitHours != "00") {
-      tokens.add(twoDigitHours);
-    }
-    tokens.add(twoDigitMinutes);
-    tokens.add(twoDigitSeconds);
-
-    return tokens.join(':');
-  }
-
-  Widget _buildLeftTime(Color color) {
-    return Text(
-      formatDuration(controller.player.state.position),
-      style: TextStyle(color: color.withValues(alpha: widget.opacity)),
-    );
-  }
-
-  Widget _buildRightTime(Color color) {
-    return Text(
-      formatDuration(controller.player.state.duration),
-      style: TextStyle(color: color.withValues(alpha: widget.opacity)),
-    );
-  }
-
   Widget _buildProgressBar(Color color) {
     return VideoSeekBar(
       controller,
-      height: widget.height,
-      onDragUpdate: () => setState(() {}),
+      key: ObjectKey(controller),
+      height: height,
       colors: VideoProgressBarColors(
-        handleColor: color.withValues(alpha: widget.opacity),
-        playedColor: color.withValues(alpha: widget.opacity),
-        bufferedColor: color.withValues(alpha: .5 * widget.opacity),
-        backgroundColor: color.withValues(alpha: .2 * widget.opacity),
+        handleColor: color.withValues(alpha: opacity),
+        playedColor: color.withValues(alpha: opacity),
+        bufferedColor: color.withValues(alpha: .5 * opacity),
+        backgroundColor: color.withValues(alpha: .2 * opacity),
       ),
     );
   }
@@ -82,7 +37,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
       children: [
         Container(
           color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-          height: widget.height,
+          height: height,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -90,10 +45,14 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizedBox(
-                height: widget.height,
+                height: height,
                 child: Align(
                   alignment: Alignment.center,
-                  child: _buildLeftTime(onSurfaceVariant),
+                  child: VideoProgressBarText(
+                    initialValue: controller.player.state.position,
+                    stream: controller.player.stream.position,
+                    opacity: opacity,
+                  ),
                 ),
               ),
               Flexible(
@@ -103,10 +62,14 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                 ),
               ),
               SizedBox(
-                height: widget.height,
+                height: height,
                 child: Align(
                   alignment: Alignment.center,
-                  child: _buildRightTime(onSurfaceVariant),
+                  child: VideoProgressBarText(
+                    initialValue: controller.player.state.duration,
+                    stream: controller.player.stream.duration,
+                    opacity: opacity,
+                  ),
                 ),
               ),
             ],

@@ -148,6 +148,16 @@ class GlobalSettingsModel extends SafeChangeNotifier {
     }
   }
 
+  bool get showVideoSeekPreview => _showVideoSeekPreview;
+
+  set showVideoSeekPreview(bool value) {
+    if (value != _showVideoSeekPreview) {
+      _showVideoSeekPreview = value;
+      _storage.set(StorageKey.showVideoSeekPreview, value);
+      notifyListeners();
+    }
+  }
+
   bool _useMaterial3;
   bool _showTopPicks;
   int _topPicksDaysLength;
@@ -158,6 +168,7 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   int _gridSpacing;
   int _gridCrossAxisCountPortrait;
   int _gridCrossAxisCountLandscape;
+  bool _showVideoSeekPreview;
   final SharedPrefsStorage _storage;
 
   GlobalSettingsModel(this._storage)
@@ -170,7 +181,8 @@ class GlobalSettingsModel extends SafeChangeNotifier {
         _gridAspectRatio = _storage.get(StorageKey.gridAspectRatio),
         _gridSpacing = _storage.get(StorageKey.gridSpacing),
         _gridCrossAxisCountPortrait = _storage.get(StorageKey.gridCrossAxisCountPortrait),
-        _gridCrossAxisCountLandscape = _storage.get(StorageKey.gridCrossAxisCountLandscape) {
+        _gridCrossAxisCountLandscape = _storage.get(StorageKey.gridCrossAxisCountLandscape),
+        _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview) {
     if (_appInFullScreen) {
       enableFullScreen();
     }

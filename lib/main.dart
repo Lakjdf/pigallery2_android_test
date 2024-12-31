@@ -17,6 +17,7 @@ import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
+import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/util/path.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
@@ -41,7 +42,8 @@ class MyWidgetsBinding extends WidgetsFlutterBinding {
 void setupLogging() {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.loggerName}: ${record.message}');
+    final errorMessage = record.error?.let((it) => ': $it\n${record.stackTrace}') ?? '';
+    print('${record.level.name}: ${record.loggerName}: ${record.message}$errorMessage');
   });
 }
 

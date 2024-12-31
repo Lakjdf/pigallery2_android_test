@@ -7,12 +7,7 @@ List<BackendDirectory> allDirectoriesFromJson(List<Map<String, dynamic>> jsonDat
 class BackendDirectoryPath extends BackendFile {
   BackendDirectoryPath({required super.id, required super.name, required String path}) : super(parentPath: path);
 
-  static String _parsePath(Map<String, dynamic> json) {
-    String path = json['path'];
-    return path.replaceAll("./", "");
-  }
-
-  BackendDirectoryPath.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, _parsePath(json));
+  BackendDirectoryPath.fromJson(Map<String, dynamic> json, String parentPath) : super.fromJson(json, json['path']);
 }
 
 class BackendDirectoryCover extends BackendFile {

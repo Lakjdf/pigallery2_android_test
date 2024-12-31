@@ -17,6 +17,8 @@ class PiGallery2Api {
 
   static String getThumbnailPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath/thumbnail";
 
+  static String getSpritesPath(String serverUrl, String relativePath) => "${_getBaseEndpoint(serverUrl)}/extension/sprites/$relativePath";
+
   String _getLoginEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/user/login";
 
   String _getSearchEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/search/";

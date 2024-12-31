@@ -50,6 +50,11 @@ class PiGallery2ApiAuthWrapper implements ApiService {
     });
   }
 
+  @override
+  String getSpritesApiPath(Media item) {
+    return PiGallery2Api.getSpritesPath(_getServerUrlOrThrow(), item.relativeApiPath);
+  }
+
   Future<T?> _requestWithAuth<T>(Future<ApiResponse<T>> Function(String, SessionData?) request) async {
     String url = _getServerUrlOrThrow();
     ApiResponse<T> response = await request(url, _storageHelper.getSessionData(url));

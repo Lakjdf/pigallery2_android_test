@@ -1,14 +1,19 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
+import 'package:pigallery2_android/data/storage/web_vtt_parser.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/domain/models/sprite_thumbnail_data.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/util/path.dart';
 import 'package:http/http.dart' as http;
 
 class MediaRepositoryImpl implements MediaRepository {
+  final Logger _logger = Logger((MediaRepository).toString());
   final ApiService _api;
 
   MediaRepositoryImpl(this._api);
@@ -62,6 +67,19 @@ class MediaRepositoryImpl implements MediaRepository {
       }
     }
     return null;
+  }
+
+  @override
+  Future<SplayTreeMap<Duration, SpriteRegion>?> getSpriteThumbnails(Media item) async {
+    String path = '${_api.getSpritesApiPath(item)}.vtt';
+    try {
+      assert(item.isVideo);
+      File vttFile = await PiGallery2CacheManager.spriteThumbnails.getSingleFile(path, headers: _api.headers);
+      return WebVttParser.parse(vttFile, path.substring(0, path.lastIndexOf("/")));
+    } catch (error, stackTrace) {
+      _logger.warning('Failed to get sprite thumbnails for ${item.id}', error, stackTrace);
+      return Future.value(null);
+    }
   }
 
   @override

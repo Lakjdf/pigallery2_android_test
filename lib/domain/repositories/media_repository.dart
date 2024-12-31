@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/domain/models/sprite_thumbnail_data.dart';
 
 /// Responsible for downloading [Media] items.
 abstract interface class MediaRepository {
@@ -15,6 +17,8 @@ abstract interface class MediaRepository {
   String getMediaApiPath(Media item);
 
   String? getThumbnailApiPath(Item item);
+
+  Future<SplayTreeMap<Duration, SpriteRegion>?> getSpriteThumbnails(Media item);
 
   Map<String, String> get headers;
 }

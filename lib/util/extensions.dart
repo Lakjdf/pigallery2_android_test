@@ -29,3 +29,21 @@ extension StringExtension on String {
 
   String? ifEmpty(String? defaultValue) => isNotEmpty ? this : defaultValue;
 }
+
+extension DurationExtension on Duration {
+  String format() {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitHours = twoDigits(inHours);
+    String twoDigitMinutes = twoDigits(inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(inSeconds.remainder(60));
+
+    final List<String> tokens = [];
+    if (twoDigitHours != "00") {
+      tokens.add(twoDigitHours);
+    }
+    tokens.add(twoDigitMinutes);
+    tokens.add(twoDigitSeconds);
+
+    return tokens.join(':');
+  }
+}

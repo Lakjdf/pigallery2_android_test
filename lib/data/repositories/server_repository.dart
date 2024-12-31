@@ -27,21 +27,21 @@ class ServerRepositoryImpl implements ServerRepository {
   @override
   Future<bool> addServer(String url, String? username, String? password, SessionData? sessionData) async {
     List<String> currentServerUrls = serverUrls.toList();
-    if (currentServerUrls.addDistinct(url)) {
-      await _storage.set(StorageKey.serverUrls, currentServerUrls);
-      if (username != null && password != null) {
-        await _credentialStorage.storeCredentials(url, username, password);
-      }
-      if (sessionData != null) {
-        await _storageHelper.storeSessionData(url, sessionData);
-        sessionData = null;
-      }
-      if (currentServerUrls.length == 1) {
-        await selectServer(url);
-      }
-      return true;
+    if (!currentServerUrls.addDistinct(url)) {
+      return false; // already exists
     }
-    return false;
+    await _storage.set(StorageKey.serverUrls, currentServerUrls);
+    if (username != null && password != null) {
+      await _credentialStorage.storeCredentials(url, username, password);
+    }
+    if (sessionData != null) {
+      await _storageHelper.storeSessionData(url, sessionData);
+      sessionData = null;
+    }
+    if (currentServerUrls.length == 1) {
+      await selectServer(url);
+    }
+    return true;
   }
 
   @override

@@ -21,6 +21,7 @@ class PhotoViewWidget extends StatelessWidget {
       key: ValueKey(url),
       cacheManager: PiGallery2CacheManager.fullRes,
       imageUrl: url,
+      fit: BoxFit.contain,
       httpHeaders: context.read<MediaRepository>().headers,
       fadeInDuration: const Duration(milliseconds: 1),
       fadeOutDuration: const Duration(milliseconds: 1),

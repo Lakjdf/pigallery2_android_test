@@ -15,4 +15,6 @@ abstract interface class ApiService {
   String getMediaApiPath(Media item);
 
   String? getThumbnailApiPath(Item item);
+
+  String getSpritesApiPath(Media item);
 }
