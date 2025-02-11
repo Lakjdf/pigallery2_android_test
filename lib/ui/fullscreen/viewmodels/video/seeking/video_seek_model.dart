@@ -14,7 +14,7 @@ class VideoSeekModel extends SafeChangeNotifier {
   VideoController? _videoController;
   final VideoSeekPreviewModel _previewModel;
   bool _seekInProgress = false;
-  bool _wasPlaying = false;
+  bool? _wasPlaying;
 
   /// The position of the ongoing seek.
   VideoSeekPosition? get ongoingSeekPosition => _ongoingSeekPosition;
@@ -54,9 +54,10 @@ class VideoSeekModel extends SafeChangeNotifier {
     if (_previewModel.isAvailable) {
       _ongoingSeekPosition?.let((it) => _seekToPosition(it.videoPosition));
     }
-    if (_wasPlaying) {
+    if (_wasPlaying == true) {
       _videoController?.player.play();
     }
+    _wasPlaying = null;
     _ongoingDragPosition = null;
   }
 
@@ -64,7 +65,7 @@ class VideoSeekModel extends SafeChangeNotifier {
     // allow only one seek at a time
     if (_seekInProgress) return;
     _seekInProgress = true;
-    _wasPlaying = _videoController?.player.state.playing ?? true;
+    _wasPlaying ??= (_videoController?.player.state.playing ?? true);
     _videoController?.player.seek(position).then((_) async => await _onSeekComplete(position));
   }
 
