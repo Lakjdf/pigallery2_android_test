@@ -56,6 +56,24 @@ class TopPicksQuery extends SearchQuery {
       };
 }
 
+class RecentlyAddedQuery extends SearchQuery {
+  @override
+  int type = 60;
+  int daysLength;
+  @override
+  String get title => "";
+
+  RecentlyAddedQuery({this.daysLength = 3});
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'type': type,
+    'daysLength': daysLength,
+    'frequency': 13, // years_ago
+    'agoNumber': 0,
+  };
+}
+
 class AndSearchQuery extends SearchQuery {
   @override
   int type = 1;

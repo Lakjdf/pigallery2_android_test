@@ -51,7 +51,6 @@ class TopPicksModel extends SafeChangeNotifier {
 
   Map<int, List<Media>> _groupMedia(List<Media> media) {
     Map<int, List<Media>> mediaByYear = groupBy(media, (it) => _yearFromUnixTimestamp(it.metadata.date));
-    mediaByYear.removeWhere((key, value) => key == DateTime.now().year);
     return mediaByYear;
   }
 

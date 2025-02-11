@@ -94,7 +94,7 @@ class TopPicksInnerView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Map<int, List<Media>> mediaByYear = context.select<TopPicksModel, Map<int, List<Media>>>((it) => it.content);
-    List<int> sortedYears = mediaByYear.keys.sorted((a, b) => a.compareTo(b));
+    List<int> sortedYears = mediaByYear.keys.sorted((a, b) => b.compareTo(a));
     return _buildListView(
       mediaByYear.length,
       (context, pos) {

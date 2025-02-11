@@ -15,7 +15,10 @@ class PiGallery2Api {
 
   static String getMediaPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath";
 
-  static String getThumbnailPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath/thumbnail";
+  /// Thumbnail size as configured in the PiGallery2 settings
+  static final int _thumbnailSize = 320;
+
+  static String getThumbnailPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath/$_thumbnailSize";
 
   static String getSpritesPath(String serverUrl, String relativePath) => "${_getBaseEndpoint(serverUrl)}/extension/sprites/$relativePath";
 
@@ -92,19 +95,19 @@ class PiGallery2Api {
     return await _runCatching(() => _getDirectories(serverUrl, path ?? "", sessionData));
   }
 
-  Future<ApiResponse<BackendDirectory>> _search(String serverUrl, SearchQuery query, SessionData? sessionData) async {
+  Future<ApiResponse<SearchResult>> _search(String serverUrl, SearchQuery query, SessionData? sessionData) async {
     Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + jsonEncode(query));
 
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
     Map<String, dynamic> result = json.decode(response.body);
     if (result["error"] == null) {
-      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result'], query.title).toDirectory());
+      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result'], query.title));
     } else {
       return ApiResponse(error: result["error"].toString(), code: response.statusCode);
     }
   }
 
-  Future<ApiResponse<BackendDirectory>> search({
+  Future<ApiResponse<SearchResult>> search({
     required String serverUrl,
     required SearchQuery query,
     SessionData? sessionData,

@@ -20,6 +20,11 @@ class SearchResult {
     );
   }
 
+  SearchResult.combine(Iterable<SearchResult> results)
+      : name = results.first.name,
+        media = results.expand((it) => it.media).toSet().toList(),
+        directories = results.expand((it) => it.directories).toSet().toList();
+
   static String _findParentPath(Map<String, dynamic> json, int reference) {
     Map<String, dynamic> directory = List.from(json['map']['directories'])[reference];
     return p.join(directory['path'], directory['name']);
