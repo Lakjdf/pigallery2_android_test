@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:logging/logging.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
@@ -20,7 +21,7 @@ class MediaRepositoryImpl implements MediaRepository {
 
   Future<File> _getFile(Media item) async {
     String path = _api.getMediaApiPath(item);
-    String filename = path.split('/').last;
+    String filename = path.replaceAll("/bestfit", "").split('/').last;
     return File('${await Downloads.getPath()}/${filename.split('.').first}-${item.id}.${filename.split('.').last}');
   }
 
@@ -36,6 +37,8 @@ class MediaRepositoryImpl implements MediaRepository {
     return http.Client().send(request);
   }
 
+  // downloading manually since flutter_cache_manager does not support cancellation of downloads:
+  // https://github.com/Baseflow/flutter_cache_manager/issues/208
   Stream<double> _download(Media item) async* {
     final file = await _getFile(item);
     http.StreamedResponse response = await _request(item);
@@ -45,9 +48,18 @@ class MediaRepositoryImpl implements MediaRepository {
     await for (final buffer in response.stream) {
       sink.add(buffer);
       received += buffer.length;
-      yield received/total;
+      yield received / total;
     }
     await sink.close();
+    // for some reason, this does not work:
+    await PiGallery2CacheManager.fullRes.store.putFile(
+      CacheObject(
+        _api.getMediaApiPath(item),
+        key: _api.getMediaApiPath(item),
+        relativePath: file.path.substring(file.path.lastIndexOf("/")),
+        validTill: DateTime.now().add(Duration(days: 30)),
+      ),
+    );
   }
 
   @override
@@ -58,7 +70,6 @@ class MediaRepositoryImpl implements MediaRepository {
   @override
   Future<String?> getFilePath(Media item) async {
     File? localFile = await _getExistingFile(item);
-    // todo download directly using cache manager as well
     localFile ??= (await PiGallery2CacheManager.fullRes.getFileFromCache(_api.getMediaApiPath(item)))?.file;
     if (localFile != null) {
       http.StreamedResponse remoteResponse = await _request(item);
@@ -90,5 +101,4 @@ class MediaRepositoryImpl implements MediaRepository {
 
   @override
   Map<String, String> get headers => _api.headers;
-
 }

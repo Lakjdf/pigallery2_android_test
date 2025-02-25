@@ -82,7 +82,6 @@ class ServerSelection extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 24),
       ],
     );
   }

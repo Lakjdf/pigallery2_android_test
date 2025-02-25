@@ -12,4 +12,6 @@ abstract interface class ServerRepository {
   Future<void> selectServer(String url);
 
   Future<ConnectionTestResult> testConnection(String url, String? username, String? password);
+
+  Future<void> startIndexingJob();
 }

@@ -11,6 +11,7 @@ import 'package:pigallery2_android/data/backend/pigallery2_api.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_helper.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/util/strings.dart';
 
@@ -20,8 +21,8 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   late final PiGallery2Api _api;
   late final StorageHelper _storageHelper;
 
-  PiGallery2ApiAuthWrapper(this._storage, this._credentialStorage) {
-    _api = PiGallery2Api();
+  PiGallery2ApiAuthWrapper(this._storage, this._credentialStorage, GlobalSettingsModel settingsModel) {
+    _api = PiGallery2Api(settingsModel);
     _storageHelper = StorageHelper(_storage);
   }
 
@@ -40,20 +41,23 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   /// Full API path to [item].
   @override
   String getMediaApiPath(Media item) {
-    return PiGallery2Api.getMediaPath(_getServerUrlOrThrow(), item.relativeApiPath);
+    if (item.isVideo) {
+      return _api.getVideoPath(_getServerUrlOrThrow(), item.relativeApiPath);
+    }
+    return _api.getImagePath(_getServerUrlOrThrow(), item.relativeApiPath);
   }
 
   /// Full API path to the thumbnail of [item].
   @override
   String? getThumbnailApiPath(Item item) {
     return item.relativeThumbnailPath?.let((it) {
-      return PiGallery2Api.getThumbnailPath(_getServerUrlOrThrow(), it);
+      return _api.getThumbnailPath(_getServerUrlOrThrow(), it);
     });
   }
 
   @override
   String getSpritesApiPath(Media item) {
-    return PiGallery2Api.getSpritesPath(_getServerUrlOrThrow(), item.relativeApiPath);
+    return _api.getSpritesPath(_getServerUrlOrThrow(), item.relativeApiPath);
   }
 
   Future<T?> _requestWithAuth<T>(Future<ApiResponse<T>> Function(String, SessionData?) request) async {
@@ -87,6 +91,12 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   @override
   Future<SearchResult?> search(SearchQuery query) async {
     return _requestWithAuth((String url, SessionData? sessionData) => _api.search(serverUrl: url, query: query, sessionData: sessionData));
+  }
+
+  @override
+  Future<void> startIndexingJob() {
+    String url = _getServerUrlOrThrow();
+    return _api.startIndexingJob(url, _storageHelper.getSessionData(url));
   }
 
   @override

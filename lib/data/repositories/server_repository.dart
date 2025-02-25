@@ -63,4 +63,9 @@ class ServerRepositoryImpl implements ServerRepository {
   Future<ConnectionTestResult> testConnection(String url, String? username, String? password) {
     return _api.testConnection(url, username, password);
   }
+
+  @override
+  Future<void> startIndexingJob() {
+    return _api.startIndexingJob();
+  }
 }

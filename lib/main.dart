@@ -18,7 +18,6 @@ import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/util/extensions.dart';
-import 'package:pigallery2_android/util/path.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
@@ -57,7 +56,6 @@ void main() async {
   if (allowBadCertificate) {
     HttpOverrides.global = MyHttpOverrides();
   }
-  Downloads.clear();
   setupLogging();
   runApp(MyApp(storage));
 }
@@ -66,13 +64,12 @@ class MyApp extends StatelessWidget {
   final SharedPrefsStorage _storage;
   late final CredentialStorage _credentialStorage;
   late final ApiService _apiService;
+  late final GlobalSettingsModel _settingsModel;
 
   MyApp(this._storage, {super.key}) {
     _credentialStorage = CredentialStorage();
-    _apiService = PiGallery2ApiAuthWrapper(
-      _storage,
-      _credentialStorage,
-    );
+    _settingsModel = GlobalSettingsModel(_storage);
+    _apiService = PiGallery2ApiAuthWrapper(_storage, _credentialStorage, _settingsModel);
   }
 
   @override
@@ -117,9 +114,7 @@ class MyApp extends StatelessWidget {
           }),
         ),
         ChangeNotifierProvider<GlobalSettingsModel>(
-          create: ((context) {
-            return GlobalSettingsModel(_storage);
-          }),
+          create: ((context) => _settingsModel),
         ),
         ChangeNotifierProxyProvider<GlobalSettingsModel, TopPicksModel>(
           create: ((context) {
@@ -148,6 +143,12 @@ class MyApp extends StatelessWidget {
                   thumbVisibility: WidgetStateProperty.all(true),
                   thumbColor: WidgetStateProperty.all(colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
                 ),
+                pageTransitionsTheme: const PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+                  },
+                ),
+                tabBarTheme: CustomThemeData.tabBarTheme(colorScheme),
               );
             }
             return MaterialApp(

@@ -2,88 +2,88 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class PiGallery2ImageCache implements ImageCache {
-  final ImageCache _thumbCache = ImageCache();
-  final ImageCache _fullResCache = ImageCache();
+  static final ImageCache thumbCache = ImageCache();
+  static final ImageCache fullResCache = ImageCache();
 
   bool _isThumb(Object key) {
-    return key is CachedNetworkImageProvider && key.url.endsWith("thumbnail");
+    return key is CachedNetworkImageProvider && key.cacheKey?.endsWith("(thumbnail)") == true;
   }
 
   @override
-  int get maximumSize => _thumbCache.maximumSize + _fullResCache.maximumSize;
+  int get maximumSize => thumbCache.maximumSize + fullResCache.maximumSize;
 
   @override
-  int get maximumSizeBytes => _thumbCache.maximumSizeBytes + _fullResCache.maximumSizeBytes;
+  int get maximumSizeBytes => thumbCache.maximumSizeBytes + fullResCache.maximumSizeBytes;
 
   @override
   set maximumSize(int value) {
-    _thumbCache.maximumSize = value;
-    _fullResCache.maximumSize = value;
+    thumbCache.maximumSize = value;
+    fullResCache.maximumSize = value;
   }
 
   @override
   set maximumSizeBytes(int value) {
-    _thumbCache.maximumSizeBytes = value;
-    _fullResCache.maximumSizeBytes = value;
+    thumbCache.maximumSizeBytes = value;
+    fullResCache.maximumSizeBytes = value;
   }
 
   @override
   void clear() {
-    _thumbCache.clear();
-    _fullResCache.clear();
+    thumbCache.clear();
+    fullResCache.clear();
   }
 
   @override
   void clearLiveImages() {
-    _thumbCache.clearLiveImages();
-    _fullResCache.clearLiveImages();
+    thumbCache.clearLiveImages();
+    fullResCache.clearLiveImages();
   }
 
   @override
   bool containsKey(Object key) {
     if (_isThumb(key)) {
-      return _thumbCache.containsKey(key);
+      return thumbCache.containsKey(key);
     } else {
-      return _fullResCache.containsKey(key);
+      return fullResCache.containsKey(key);
     }
   }
 
   @override
-  int get currentSize => _thumbCache.currentSize + _fullResCache.currentSize;
+  int get currentSize => thumbCache.currentSize + fullResCache.currentSize;
 
   @override
-  int get currentSizeBytes => _thumbCache.currentSizeBytes + _fullResCache.currentSizeBytes;
+  int get currentSizeBytes => thumbCache.currentSizeBytes + fullResCache.currentSizeBytes;
 
   @override
   bool evict(Object key, {bool includeLive = true}) {
     if (_isThumb(key)) {
-      return _thumbCache.evict(key, includeLive: includeLive);
+      return thumbCache.evict(key, includeLive: includeLive);
     } else {
-      return _fullResCache.evict(key, includeLive: includeLive);
+      return fullResCache.evict(key, includeLive: includeLive);
     }
   }
 
   @override
-  int get liveImageCount => _thumbCache.liveImageCount + _fullResCache.liveImageCount;
+  int get liveImageCount => thumbCache.liveImageCount + fullResCache.liveImageCount;
 
   @override
-  int get pendingImageCount => _thumbCache.pendingImageCount + _fullResCache.liveImageCount;
+  int get pendingImageCount => thumbCache.pendingImageCount + fullResCache.liveImageCount;
 
   @override
   ImageStreamCompleter? putIfAbsent(Object key, ImageStreamCompleter Function() loader, {ImageErrorListener? onError}) {
     if (_isThumb(key)) {
-      return _thumbCache.putIfAbsent(key, loader, onError: onError);
+      return thumbCache.putIfAbsent(key, loader, onError: onError);
     } else {
-      return _fullResCache.putIfAbsent(key, loader, onError: onError);
+      return fullResCache.putIfAbsent(key, loader, onError: onError);
     }
   }
 
   @override
   ImageCacheStatus statusForKey(Object key) {
     if (_isThumb(key)) {
-      return _thumbCache.statusForKey(key);
+      return thumbCache.statusForKey(key);
     } else {
-      return _fullResCache.statusForKey(key);
+      return fullResCache.statusForKey(key);
     }
   }
 }

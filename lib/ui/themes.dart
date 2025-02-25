@@ -63,6 +63,43 @@ class CustomThemeData {
           }
         }),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        },
+      ),
+      tabBarTheme: tabBarTheme(colorScheme),
+    );
+  }
+
+  static tabBarTheme(ColorScheme colorScheme) {
+    return TabBarTheme(
+      labelColor: colorScheme.onSurfaceVariant,
+      unselectedLabelColor: colorScheme.onSurfaceVariant,
+      // default values
+      overlayColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          if (states.contains(WidgetState.pressed)) {
+            return colorScheme.primary.withAlpha(25);
+          }
+          if (states.contains(WidgetState.hovered)) {
+            return colorScheme.primary.withAlpha(20);
+          }
+          if (states.contains(WidgetState.focused)) {
+            return colorScheme.primary.withAlpha(25);
+          }
+        }
+        if (states.contains(WidgetState.pressed)) {
+          return colorScheme.primary.withAlpha(25);
+        }
+        if (states.contains(WidgetState.hovered)) {
+          return colorScheme.onSurface.withAlpha(20);
+        }
+        if (states.contains(WidgetState.focused)) {
+          return colorScheme.onSurface.withAlpha(25);
+        }
+        return colorScheme.primary;
+      }),
     );
   }
 

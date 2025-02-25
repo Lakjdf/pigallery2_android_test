@@ -9,6 +9,8 @@ abstract interface class ApiService {
 
   Future<SearchResult?> search(SearchQuery query);
 
+  Future<void> startIndexingJob();
+
   Future<ConnectionTestResult> testConnection(String url, String? username, String? password);
 
   Map<String, String> get headers;

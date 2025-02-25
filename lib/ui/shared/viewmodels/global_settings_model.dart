@@ -158,6 +158,36 @@ class GlobalSettingsModel extends SafeChangeNotifier {
     }
   }
 
+  String get apiBasePath => _apiBasePath;
+
+  set apiBasePath(String value) {
+    if (value != _apiBasePath) {
+      _apiBasePath = value;
+      _storage.set(StorageKey.apiBasePath, value);
+      notifyListeners();
+    }
+  }
+
+  String get apiThumbnailPath => _apiThumbnailPath;
+
+  set apiThumbnailPath(String value) {
+    if (value != _apiThumbnailPath) {
+      _apiThumbnailPath = value;
+      _storage.set(StorageKey.apiThumbnailPath, value);
+      notifyListeners();
+    }
+  }
+
+  String get apiVideoPath => _apiVideoPath;
+
+  set apiVideoPath(String value) {
+    if (value != _apiVideoPath) {
+      _apiVideoPath = value;
+      _storage.set(StorageKey.apiVideoPath, value);
+      notifyListeners();
+    }
+  }
+
   bool _useMaterial3;
   bool _showTopPicks;
   int _topPicksDaysLength;
@@ -169,6 +199,9 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   int _gridCrossAxisCountPortrait;
   int _gridCrossAxisCountLandscape;
   bool _showVideoSeekPreview;
+  String _apiBasePath;
+  String _apiThumbnailPath;
+  String _apiVideoPath;
   final SharedPrefsStorage _storage;
 
   GlobalSettingsModel(this._storage)
@@ -182,7 +215,10 @@ class GlobalSettingsModel extends SafeChangeNotifier {
         _gridSpacing = _storage.get(StorageKey.gridSpacing),
         _gridCrossAxisCountPortrait = _storage.get(StorageKey.gridCrossAxisCountPortrait),
         _gridCrossAxisCountLandscape = _storage.get(StorageKey.gridCrossAxisCountLandscape),
-        _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview) {
+        _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview),
+        _apiBasePath = _storage.get(StorageKey.apiBasePath),
+        _apiThumbnailPath = _storage.get(StorageKey.apiThumbnailPath),
+        _apiVideoPath = _storage.get(StorageKey.apiVideoPath) {
     if (_appInFullScreen) {
       enableFullScreen();
     }

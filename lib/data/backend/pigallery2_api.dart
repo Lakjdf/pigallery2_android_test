@@ -7,26 +7,32 @@ import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/backend/models/directory.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
+import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 
 class PiGallery2Api {
-  static String _getBaseEndpoint(String serverUrl) => '$serverUrl/pgapi';
+  String _getBaseEndpoint(String serverUrl) => '$serverUrl${_settingsModel.apiBasePath}';
 
-  static String getDirectoriesEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/gallery/content/";
+  String getDirectoriesEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/gallery/content/";
 
-  static String getMediaPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath";
+  String getImagePath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath";
 
-  /// Thumbnail size as configured in the PiGallery2 settings
-  static final int _thumbnailSize = 320;
+  String getVideoPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath${_settingsModel.apiVideoPath}";
 
-  static String getThumbnailPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath/$_thumbnailSize";
+  String getThumbnailPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath${_settingsModel.apiThumbnailPath}";
 
-  static String getSpritesPath(String serverUrl, String relativePath) => "${_getBaseEndpoint(serverUrl)}/extension/sprites/$relativePath";
+  String getSpritesPath(String serverUrl, String relativePath) => "${_getBaseEndpoint(serverUrl)}/extension/sprites/$relativePath";
 
   String _getLoginEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/user/login";
 
   String _getSearchEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/search/";
 
+  String _getStartJobEndpoint(String serverUrl, String jobId) => "${_getBaseEndpoint(serverUrl)}/admin/jobs/scheduled/$jobId/start";
+
   final _client = http.Client();
+
+  final GlobalSettingsModel _settingsModel;
+
+  PiGallery2Api(this._settingsModel);
 
   /// Removes all non-relevant cookies
   String _parseCookies(String cookie) {
@@ -113,5 +119,10 @@ class PiGallery2Api {
     SessionData? sessionData,
   }) async {
     return await _runCatching(() => _search(serverUrl, query, sessionData));
+  }
+  
+  Future<void> startIndexingJob(String serverUrl, SessionData? sessionData) async {
+    Uri uri = Uri.parse(_getStartJobEndpoint(serverUrl, "Indexing"));
+    await _client.post(uri, headers: getHeaders(sessionData));
   }
 }

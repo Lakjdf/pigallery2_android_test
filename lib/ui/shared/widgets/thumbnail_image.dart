@@ -22,6 +22,7 @@ class ThumbnailImage extends StatelessWidget {
     return CachedNetworkImage(
       key: ValueKey(apiPath),
       imageUrl: apiPath,
+      cacheKey: "$apiPath(thumbnail)",
       cacheManager: PiGallery2CacheManager.thumbs,
       httpHeaders: repository.headers,
       imageBuilder: imageBuilder,
@@ -36,8 +37,11 @@ class ThumbnailImage extends StatelessWidget {
         return const ErrorImage();
       },
       fit: fit,
-      maxWidthDiskCache: 240,
-      maxHeightDiskCache: 240,
+      // thumbnails resolution is already small enough; don't scale them down further
+      // maxWidthDiskCache: 240,
+      // maxHeightDiskCache: 240,
+      // memCacheHeight: 240,
+      // memCacheWidth: 240,
     );
   }
 }

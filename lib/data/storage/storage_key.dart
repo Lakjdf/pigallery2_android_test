@@ -16,7 +16,10 @@ enum StorageKey<T> {
   gridCrossAxisCountPortrait<int>(3),
   gridCrossAxisCountLandscape<int>(5),
   allowBadCertificates<bool>(false),
-  showVideoSeekPreview<bool>(false);
+  showVideoSeekPreview<bool>(false),
+  apiBasePath<String>("/pgapi"),
+  apiThumbnailPath<String>("/320"),
+  apiVideoPath<String>("");
 
   String get key => name;
   final T defaultValue;

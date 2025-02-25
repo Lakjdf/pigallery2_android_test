@@ -59,25 +59,25 @@ dependency_overrides:
       ref: 54904e499a06d0364a2b3f4ca9789e5f829f1879
       path: flutter_cache_manager
 
-# not working - might upgrade media-kit in the future
-#dependency_overrides:
-#  photo_view:
-#    git:
-#      url: https://github.com/Lakjdf/photo_view.git
+  photo_view:
+    git:
+      url: https://github.com/Lakjdf/photo_view.git
+
+# might upgrade media-kit in the future - currently there are too many issues
 #  media_kit:
 #    git:
 #      url: https://github.com/media-kit/media-kit.git
-#      ref: 59b987e3c311dca450786f36b1881340c49476d8
+##      ref: 59b987e3c311dca450786f36b1881340c49476d8
 #      path: media_kit
 #  media_kit_video:
 #    git:
 #      url: https://github.com/media-kit/media-kit.git
-#      ref: 59b987e3c311dca450786f36b1881340c49476d8
+##      ref: 59b987e3c311dca450786f36b1881340c49476d8
 #      path: media_kit_video
 #  media_kit_libs_android_video:
 #    git:
 #      url: https://github.com/media-kit/media-kit.git
-#      ref: 59b987e3c311dca450786f36b1881340c49476d8
+##      ref: 59b987e3c311dca450786f36b1881340c49476d8
 #      path: libs/android/media_kit_libs_android_video
 #  js: ^0.7.1
 
