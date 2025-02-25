@@ -16,7 +16,8 @@ Currently supported features:
 
 There's no metadata displayed at the moment.
 
-Only tested with PiGallery2 v1.9.5 & v2.0.0.
+Should work with PiGallery2 v1.9.5 & v2.0.0 (and newer).
+Check Settings > Compatibility if images are not displayed or videos are not playing.
 
 ## Packages used
 

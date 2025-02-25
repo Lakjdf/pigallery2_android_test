@@ -36,7 +36,7 @@ class HomeView extends StatelessWidget {
     // With it enabled, touch inputs are not registered for ~0.5s after the animation is finished.
     return PopScope(
       canPop: true,
-      onPopInvoked: ((bool didPop) {
+      onPopInvokedWithResult: ((bool didPop, _) {
         if (!didPop) return;
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         model.popStack();

@@ -18,13 +18,15 @@ class _WebsiteViewState extends State<WebsiteView> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    NavigatorState navigator = Navigator.of(context);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, _) async {
+        if (didPop) return;
         if (await _controller?.canGoBack() != true) {
-          return true;
+          return navigator.pop();
         } else {
           await _controller?.goBack();
-          return false;
         }
       },
       child: Scaffold(
