@@ -16,8 +16,9 @@ Currently supported features:
 
 There's no metadata displayed at the moment.
 
-Should work with PiGallery2 v1.9.5 & v2.0.0 (and newer).
-Check Settings > Compatibility if images are not displayed or videos are not playing.
+Should work with PiGallery2 v1.9.5 & v2.0.0 (and newer).\
+Check Settings > Compatibility if images are not displayed or videos are not playing.\
+For example for PiGallery2 v2.0.0, you need to update the API path for thumbnails to `/thumbnail` or `/thumbnail/<size>`, where `<size>` is the configured size of the generated thumbnails (defaults to 240 for v2.0.0).
 
 ## Packages used
 
