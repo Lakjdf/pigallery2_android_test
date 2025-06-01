@@ -11,8 +11,10 @@ class ThumbnailImage extends StatelessWidget {
   final Item item;
   final BoxFit fit;
   final ImageWidgetBuilder? imageBuilder;
+  final double? width;
+  final double? height;
 
-  const ThumbnailImage(this.item, {super.key, this.fit = BoxFit.contain, this.imageBuilder});
+  const ThumbnailImage(this.item, {super.key, this.fit = BoxFit.contain, this.imageBuilder, this.width, this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,8 @@ class ThumbnailImage extends StatelessWidget {
         return const ErrorImage();
       },
       fit: fit,
+      height: height,
+      width: width,
       // thumbnails resolution is already small enough; don't scale them down further
       // maxWidthDiskCache: 240,
       // maxHeightDiskCache: 240,

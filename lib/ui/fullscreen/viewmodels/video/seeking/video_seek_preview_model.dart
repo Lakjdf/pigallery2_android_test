@@ -4,12 +4,13 @@ import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/models/sprite_thumbnail_data.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 /// Model for previews while seeking in a video.
 class VideoSeekPreviewModel extends SafeChangeNotifier {
   final MediaRepository _mediaRepository;
-  final bool _enabled;
+  bool _enabled;
   SplayTreeMap<Duration, SpriteRegion>? _previews;
   Media _currentItem;
 
@@ -21,12 +22,18 @@ class VideoSeekPreviewModel extends SafeChangeNotifier {
   /// Whether previews are available to be displayed.
   bool get isAvailable => _currentPreview != null;
 
-  VideoSeekPreviewModel(FullscreenModel fullscreenModel, this._mediaRepository, bool enabled)
+  VideoSeekPreviewModel(FullscreenModel fullscreenModel, this._mediaRepository, GlobalSettingsModel settingsModel)
       : _currentItem = fullscreenModel.currentItem,
-        _enabled = enabled {
+        _enabled = settingsModel.showVideoSeekPreview {
     fullscreenModel.addListener(() {
       if (_currentItem != fullscreenModel.currentItem) {
         _currentItem = fullscreenModel.currentItem;
+        _onCurrentItemChanged();
+      }
+    });
+    settingsModel.addListener(() {
+      if (_enabled != settingsModel.showVideoSeekPreview) {
+        _enabled = settingsModel.showVideoSeekPreview;
         _onCurrentItemChanged();
       }
     });
@@ -36,6 +43,7 @@ class VideoSeekPreviewModel extends SafeChangeNotifier {
   /// Load sprites of thumbnails once the displayed item changes.
   void _onCurrentItemChanged() {
     _currentPreview = null;
+    _previews = null;
     if (!_enabled || !_currentItem.isVideo) {
       return;
     }

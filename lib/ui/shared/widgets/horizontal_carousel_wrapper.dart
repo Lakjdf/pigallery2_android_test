@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 typedef ExtendedIndexedWidgetBuilder = Widget Function(BuildContext context, int index);
 
@@ -36,12 +37,16 @@ class _HorizontalCarouselWrapperState extends State<HorizontalCarouselWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return PageView.builder(
-      controller: _pageController,
-      itemCount: widget.itemCount,
-      itemBuilder: widget.builder,
-      onPageChanged: widget.onPageChanged,
-      physics: const FasterPageViewScrollPhysics(),
+    return SimpleKeyboardListener(
+      leftPressed: () => _pageController.previousPage(duration: Duration(milliseconds: 600), curve: Curves.ease),
+      rightPressed: () => _pageController.nextPage(duration: Duration(milliseconds: 600), curve: Curves.ease),
+      child: PageView.builder(
+          controller: _pageController,
+          itemCount: widget.itemCount,
+          itemBuilder: widget.builder,
+          onPageChanged: widget.onPageChanged,
+          physics: const FasterPageViewScrollPhysics(),
+      ),
     );
   }
 }
@@ -62,4 +67,54 @@ class FasterPageViewScrollPhysics extends ScrollPhysics {
     stiffness: 100,
     damping: 0.8,
   );
+}
+
+/// Adds basic compatibility for desktop target
+class SimpleKeyboardListener extends StatefulWidget {
+  const SimpleKeyboardListener({
+    super.key,
+    required this.leftPressed,
+    required this.rightPressed,
+    required this.child,
+  });
+
+  final VoidCallback leftPressed;
+  final VoidCallback rightPressed;
+  final Widget child;
+
+  @override
+  State<SimpleKeyboardListener> createState() => _SimpleKeyboardListenerState();
+}
+
+class _SimpleKeyboardListenerState extends State<SimpleKeyboardListener> {
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_keyboardCallback);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_keyboardCallback);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
+
+  bool _keyboardCallback(KeyEvent keyEvent) {
+    if (keyEvent is! KeyDownEvent) return false;
+
+    if (keyEvent.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      widget.leftPressed();
+      return true;
+    }
+    if (keyEvent.logicalKey == LogicalKeyboardKey.arrowRight) {
+      widget.rightPressed();
+      return true;
+    }
+    return false;
+  }
 }

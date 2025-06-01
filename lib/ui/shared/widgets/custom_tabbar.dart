@@ -11,9 +11,11 @@ class TabData {
 
 class CustomTabBarWidget extends TabBar {
   final List<TabData> tabData;
+  final String identifier;
 
   CustomTabBarWidget({
     super.key,
+    required this.identifier,
     required this.tabData,
     super.isScrollable,
   }) : super(tabs: []);
@@ -25,7 +27,8 @@ class CustomTabBarWidget extends TabBar {
 class _CustomTabBarWidgetState extends State<CustomTabBarWidget> with TickerProviderStateMixin {
   late TabController _tabController;
 
-  static int activeTab = 0;
+  static Map<String, int> activeTabs = {};
+  int get activeTab => activeTabs[widget.identifier] ?? 0;
 
   @override
   void initState() {
@@ -40,7 +43,7 @@ class _CustomTabBarWidgetState extends State<CustomTabBarWidget> with TickerProv
       vsync: this,
     )..addListener(() {
         setState(() {
-          activeTab = _tabController.index;
+          activeTabs[widget.identifier] = _tabController.index;
         });
       });
   }

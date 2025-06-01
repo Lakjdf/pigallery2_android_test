@@ -1,3 +1,4 @@
+import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
 
 enum StorageKey<T> {
@@ -19,6 +20,8 @@ enum StorageKey<T> {
   showVideoSeekPreview<bool>(false),
   apiBasePath<String>("/pgapi"),
   apiThumbnailPath<String>("/320"),
+  mediaBackgroundMode<MediaBackgroundMode>(MediaBackgroundMode.ambient),
+  mediaBackgroundBlur<int>(45),
   apiVideoPath<String>("");
 
   String get key => name;

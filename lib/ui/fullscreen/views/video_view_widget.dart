@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
+import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
+import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
@@ -82,8 +85,12 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
 
   Widget buildVideo(BuildContext context, VideoController videoController) {
     Size screenSize = MediaQuery.of(context).size;
-    double imageHeight = MediaQuery.of(context).size.width * (widget.item.dimension.height / widget.item.dimension.width);
-
+    Size childSize;
+    if (screenSize.aspectRatio > widget.item.aspectRatio) {
+      childSize = Size(screenSize.height * widget.item.aspectRatio, screenSize.height);
+    } else {
+      childSize = Size(screenSize.width, screenSize.width / widget.item.aspectRatio);
+    }
     return Center(
       child: VisibilityDetector(
         key: ValueKey("${widget.item.id}: $screenSize"),
@@ -95,8 +102,8 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
           fit: BoxFit.contain,
           aspectRatio: widget.item.aspectRatio,
           controls: NoVideoControls,
-          width: screenSize.width,
-          height: imageHeight,
+          width: childSize.width,
+          height: childSize.height,
           alignment: Alignment.center,
           pauseUponEnteringBackgroundMode: true,
           resumeUponEnteringForegroundMode: true,
@@ -105,27 +112,88 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     );
   }
 
+  Widget buildVideoView(BuildContext context, VideoController videoController) {
+    return Stack(
+      children: [
+        VideoViewWidgetBackground(item: widget.item, videoController: videoController),
+        buildVideo(context, videoController),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controllerItem = context.select<VideoModel, VideoControllerItem?>((model) => model.getVideoControllerItem(widget.item.id));
     if (controllerItem == null) {
       return buildPlaceholder();
-    } else {
-      listenForError(controllerItem);
-      if (error) {
-        return const ErrorImage();
-      } else {
-        return FutureBuilder(
-          future: controllerItem.controller.waitUntilFirstFrameRendered,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return buildPlaceholder();
-            } else {
-              return buildVideo(context, controllerItem.controller);
-            }
-          },
-        );
-      }
     }
+    listenForError(controllerItem);
+    if (error) {
+      return const ErrorImage();
+    }
+    return FutureBuilder(
+      future: controllerItem.controller.waitUntilFirstFrameRendered,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return buildPlaceholder();
+        } else {
+          return buildVideoView(context, controllerItem.controller);
+        }
+      },
+    );
+  }
+}
+
+class VideoViewWidgetBackground extends StatelessWidget {
+  final models.Media item;
+  final VideoController videoController;
+
+  const VideoViewWidgetBackground({super.key, required this.item, required this.videoController});
+
+  Widget buildVideo(BuildContext context, VideoController videoController) {
+    Size screenSize = MediaQuery.of(context).size;
+    Size childSize;
+    if (screenSize.aspectRatio > item.aspectRatio) {
+      childSize = Size(screenSize.height * item.aspectRatio, screenSize.height);
+    } else {
+      childSize = Size(screenSize.width, screenSize.width / item.aspectRatio);
+    }
+    return Center(
+      child: Video(
+        key: ValueKey("${item.id}: $screenSize background"),
+        controller: videoController,
+        fit: BoxFit.contain,
+        aspectRatio: item.aspectRatio,
+        controls: NoVideoControls,
+        width: childSize.width,
+        height: childSize.height,
+        alignment: Alignment.center,
+        pauseUponEnteringBackgroundMode: true,
+        resumeUponEnteringForegroundMode: true,
+      ),
+    );
+  }
+
+  Widget buildAmbientBackground(BuildContext context) {
+    return Selector<GlobalSettingsModel, int>(
+      selector: (context, model) => model.mediaBackgroundBlur,
+      builder: (context, blur, child) => ImageFiltered(
+        imageFilter: ImageFilter.blur(
+          sigmaX: blur.toDouble(),
+          sigmaY: blur.toDouble(),
+          tileMode: TileMode.decal,
+        ),
+        child: buildVideo(context, videoController),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool isAmbientMode = context.select<GlobalSettingsModel, bool>((it) => it.mediaBackgroundMode == MediaBackgroundMode.ambient);
+    if (isAmbientMode) {
+      return buildAmbientBackground(context);
+    }
+    return SizedBox.shrink();
   }
 }

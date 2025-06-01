@@ -1,13 +1,23 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/download_widget.dart';
-import 'package:pigallery2_android/ui/fullscreen/views/overlay/motion_photo_widget.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/overlay/floating_action_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_controls.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_progress_bar.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_zoom_detector.dart';
+import 'package:pigallery2_android/ui/shared/widgets/selector_guard.dart';
 import 'package:provider/provider.dart';
+
+import 'media_info_bottom_sheet.dart';
+import 'media_settings_bottom_sheet.dart';
 
 class FullscreenOverlay extends StatefulWidget {
   final Widget child;
@@ -27,18 +37,19 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     parent: _controller,
     curve: Curves.easeIn,
   );
-  bool controlsVisible = false;
+  bool controlsVisible = true;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _controller.forward();
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.dismissed) {
+      if (status == AnimationStatus.dismissed && controlsVisible) {
         setState(() {
           controlsVisible = false;
         });
-      } else if (status == AnimationStatus.completed) {
+      } else if (!controlsVisible) {
         setState(() {
           controlsVisible = true;
         });
@@ -67,99 +78,181 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     }
   }
 
-  Widget buildAspectRatioToggle(BuildContext context, double controlsOpacity) {
-    return IconButton(
-      padding: const EdgeInsets.all(0),
-      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
-      constraints: const BoxConstraints(),
-      icon: const Icon(Icons.aspect_ratio),
-      onPressed: () {
-        VideoModel videoModel = context.read<VideoModel>();
-        VideoControllerItem? controllerItem = videoModel.videoControllerItem;
-        if (controllerItem == null || controllerItem.hasError) return;
-        double aspectRatio = controllerItem.controller.rect.value!.width / controllerItem.controller.rect.value!.height;
-        double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
-        double currentScale = videoModel.videoScale;
-        double newScale = 1;
-        if (currentScale == 1) {
-          if (aspectRatio > screenAspectRatio) {
-            newScale = aspectRatio / screenAspectRatio;
-          } else {
-            newScale = screenAspectRatio / aspectRatio;
-          }
-        }
-        videoModel.videoScale = newScale;
-      },
-    );
+  void rotateScreen(BuildContext context) {
+    if (MediaQuery.of(context).orientation == Orientation.portrait) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
   }
 
-  Widget buildControlsTop(BuildContext context, double controlsOpacity) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Selector<FullscreenModel, Media>(
-        selector: (context, model) => model.currentItem,
-        builder: (context, item, child) => Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            IconButton(
-              padding: const EdgeInsets.all(0),
-              constraints: const BoxConstraints(),
-              onPressed: () {
-                _controller.value = 0.0;
-                Navigator.maybePop(context, item);
-              },
-              icon: Icon(
-                Icons.close,
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                overflow: TextOverflow.fade,
-                maxLines: 1,
-                softWrap: false,
-                item.name,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
-                        ) ??
-                    TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: controlsOpacity),
-                    ),
-              ),
-            ),
-            item.isVideo
-                ? Container()
-                : Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: MotionPhotoWidget(item, controlsOpacity),
-                  ),
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: DownloadWidget(
-                controlsOpacity,
-                key: ObjectKey(item),
-              ),
-            ),
-            item.isImage ? Container() : buildAspectRatioToggle(context, controlsOpacity),
-          ],
+  Widget buildVideoSeekBar(BuildContext context, double opacity) {
+    return SelectorGuard<VideoModel, VideoControllerItem>(
+      selector: (model) => model.videoControllerItem,
+      condition: (item) => !item.hasError,
+      then: (context, item) => Align(
+        alignment: Alignment.bottomCenter,
+        child: VideoProgressBar(
+          key: ObjectKey(item),
+          controller: item.controller,
+          opacity: opacity,
         ),
       ),
     );
   }
 
-  Widget buildVideoSeekBar(BuildContext context, double opacity) {
-    return Selector<VideoModel, VideoControllerItem?>(
-      selector: (context, model) => model.videoControllerItem,
-      builder: (context, controllerItem, child) => controllerItem == null || controllerItem.hasError
-          ? Container()
-          : Align(
-              alignment: Alignment.bottomCenter,
-              child: VideoProgressBar(
-                  key: ObjectKey(controllerItem),
-                  controller: controllerItem.controller,
-                  opacity: opacity,
-              ),
+  Widget buildTopBar(BuildContext context, Media item) {
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.metadata.date.toInt() * 1000);
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Text(
+              item.name,
+              overflow: TextOverflow.fade,
+              maxLines: 1,
+              softWrap: false,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
           ),
+          SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                DateFormat("dd/MM/yyyy").format(dateTime),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+              Text(
+                DateFormat("HH:mm:ss").format(dateTime),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget bigIconButton(IconData icon, VoidCallback onTap) {
+    return Expanded(
+      child: InkResponse(
+        onTap: onTap,
+        highlightColor: Colors.transparent,
+        child: SizedBox(
+          height: kToolbarHeight,
+          child: Icon(icon, size: 26, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
+      ),
+    );
+  }
+
+  Widget buildBottomBar(BuildContext context, Media item) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaY: 5, sigmaX: 5, tileMode: TileMode.clamp),
+          child: BottomAppBar(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
+            // color: Colors.transparent,
+            height: 72,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                DownloadWidget(),
+                bigIconButton(Icons.color_lens_outlined, () {
+                  showModalBottomSheet(
+                    context: context,
+                    barrierColor: Colors.transparent,
+                    builder: (context) => MediaSettingsBottomSheet(),
+                  );
+                }),
+                bigIconButton(Icons.info_outline, () {
+                  showModalBottomSheet(
+                    context: context,
+                    barrierColor: Colors.transparent,
+                    builder: (context) => MediaInfoBottomSheet(item),
+                  );
+                }),
+                bigIconButton(Icons.screen_rotation, () => rotateScreen(context)),
+                bigIconButton(Icons.close, () {
+                  _controller.value = 0.0;
+                  Navigator.maybePop(context, item);
+                }),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildFloatingHideOverlayWidget(BuildContext context, Media item) {
+    if (MediaQuery.of(context).orientation == Orientation.portrait) return SizedBox.shrink();
+    return Selector<FullscreenModel, bool>(
+      selector: (context, model) => model.hideDetailedOverlay,
+      builder: (context, bool hideDetailedOverlay, child) {
+        return FloatingActionWidget(
+          icon: hideDetailedOverlay ? Icons.zoom_out_map_outlined : Icons.zoom_in_map_outlined,
+          onPressed: () {
+            context.read<FullscreenModel>().hideDetailedOverlay = !hideDetailedOverlay;
+          },
+        );
+      },
+    );
+  }
+
+  Widget buildFloatingMotionPhotoWidget(BuildContext context, Media item) {
+    return SelectorGuard<PhotoModel, bool>(
+      selector: (model) => model.stateOf(item).isMotionPhoto,
+      then: (model, _) {
+        return FloatingActionWidget(
+          icon: Icons.motion_photos_paused,
+          tooltip: "Long press the image to see the motion photo",
+        );
+      },
+    );
+  }
+
+  Widget buildOverlayBars(BuildContext context) {
+    return Selector<FullscreenModel, ({Media item, bool hideDetailedOverlay})>(
+      selector: (context, model) => (item: model.currentItem, hideDetailedOverlay: model.hideDetailedOverlay),
+      builder: (context, ({Media item, bool hideDetailedOverlay}) data, child) {
+        bool showDetailedOverlay = MediaQuery.of(context).orientation == Orientation.portrait || !data.item.isVideo || !data.hideDetailedOverlay;
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (showDetailedOverlay)
+              ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaY: 5, sigmaX: 5, tileMode: TileMode.clamp),
+                  child: SizedBox(
+                    height: kToolbarHeight,
+                    child: buildTopBar(context, data.item),
+                  ),
+                ),
+              ),
+            Spacer(),
+            if (data.item.isVideo) buildFloatingHideOverlayWidget(context, data.item),
+            if (data.item.isImage) buildFloatingMotionPhotoWidget(context, data.item),
+            if (data.item.isVideo) buildVideoSeekBar(context, 1.0),
+            if (showDetailedOverlay) buildBottomBar(context, data.item),
+          ],
+        );
+      },
     );
   }
 
@@ -170,37 +263,40 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
         Selector<VideoModel, double>(
           selector: (context, model) => model.videoScale,
           builder: (context, scale, child) {
-            return Transform.scale(
-              scale: scale,
-              child: widget.child,
+            return SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: Transform.scale(
+                transformHitTests: true,
+                scale: scale,
+                child: widget.child,
+              ),
             );
           },
         ),
         Selector<VideoModel, VideoControllerItem?>(
           selector: (context, model) => model.videoControllerItem,
-          builder: (context, controller, child) => controller == null ? GestureDetector(onTap: handleTap) : VideoControls(key: ObjectKey(controller), controller, handleTap),
+          builder: (context, controller, child) => controller == null
+              ? GestureDetector(onTap: handleTap)
+              : VideoZoomDetector(
+                  videoControllerItem: controller,
+                  child: VideoControls(
+                    key: ObjectKey(controller),
+                    controller,
+                    handleTap,
+                  ),
+                ),
         ),
         IgnorePointer(
           ignoring: !controlsVisible,
           child: FadeTransition(
             opacity: _animation,
-            child: Stack(
-              children: [
-                Selector<FullscreenModel, double>(
-                  selector: (context, model) => model.opacity,
-                  builder: (context, controlsOpacity, child) {
-                    return Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4 * controlsOpacity),
-                      height: 40,
-                      child: buildControlsTop(context, controlsOpacity),
-                    );
-                  },
-                ),
-                Selector<FullscreenModel, ({Media item, double opacity})>(
-                  selector: (context, model) => (item: model.currentItem, opacity: model.opacity),
-                  builder: (context, ({Media item, double opacity}) data, child) => !data.item.isVideo ? Container() : buildVideoSeekBar(context, data.opacity),
-                ),
-              ],
+            child: Selector<FullscreenModel, double>(
+              selector: (context, model) => model.opacity,
+              builder: (context, opacity, child) => Opacity(
+                opacity: opacity,
+                child: buildOverlayBars(context),
+              ),
             ),
           ),
         ),

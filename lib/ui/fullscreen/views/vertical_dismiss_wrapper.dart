@@ -6,10 +6,12 @@ class VerticalDismissWrapper extends StatefulWidget {
   const VerticalDismissWrapper({
     super.key,
     required this.child,
+    required this.background,
     this.onOpacityChanged,
   });
 
   final Widget child;
+  final Widget? background;
   final Function(double)? onOpacityChanged;
 
   @override
@@ -26,6 +28,12 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
 
   late Duration animationDuration;
 
+  /// Ignore drag if 2+ pointers were used to start the drag
+  bool ignoreDrag = false;
+
+  /// Current count of pointers touching the screen
+  int pointerCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -33,12 +41,18 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
   }
 
   void _startVerticalDrag(details) {
+    if (pointerCount > 1) return;
     setState(() {
       initialPositionY = details.globalPosition.dy;
     });
   }
 
   void _whileVerticalDrag(details) {
+    // ignore 2 pointer drag only in initial position
+    if (pointerCount > 1 && positionYDelta == 0 || ignoreDrag) {
+      ignoreDrag = true;
+      return;
+    }
     setState(() {
       currentPositionY = details.globalPosition.dy;
       positionYDelta = currentPositionY! - initialPositionY!;
@@ -60,6 +74,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
   }
 
   _endVerticalDrag(DragEndDetails details) {
+    ignoreDrag = false;
     if (positionYDelta > disposeThreshold || positionYDelta < -disposeThreshold) {
       Navigator.of(context).maybePop(Provider.of<FullscreenModel>(context, listen: false).currentItem);
     } else {
@@ -82,17 +97,22 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
   Widget build(BuildContext context) {
     return Selector<FullscreenModel, double>(
       selector: (context, model) => model.heroAnimationProgress,
-      builder: (context, animationProgress, child) => GestureDetector(
-        onVerticalDragStart: (details) => _startVerticalDrag(details),
-        onVerticalDragUpdate: (details) => _whileVerticalDrag(details),
-        onVerticalDragEnd: (details) => _endVerticalDrag(details),
-        child: Container(
-          color: Colors.black.withValues(alpha: opacity * animationProgress),
-          constraints: BoxConstraints.expand(
-            height: MediaQuery.of(context).size.height,
-          ),
+      builder: (context, animationProgress, child) => Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (PointerDownEvent event) => pointerCount++,
+        onPointerUp: (PointerUpEvent event) => pointerCount--,
+        child: GestureDetector(
+          onVerticalDragStart: (details) => _startVerticalDrag(details),
+          onVerticalDragUpdate: (details) => _whileVerticalDrag(details),
+          onVerticalDragEnd: (details) => _endVerticalDrag(details),
+          behavior: HitTestBehavior.translucent,
           child: Stack(
-            children: <Widget>[
+            fit: StackFit.expand,
+            children: [
+              Opacity(
+                opacity: opacity * animationProgress,
+                child: ClipRect(child: widget.background),
+              ),
               AnimatedPositioned(
                 duration: animationDuration,
                 curve: Curves.fastOutSlowIn,

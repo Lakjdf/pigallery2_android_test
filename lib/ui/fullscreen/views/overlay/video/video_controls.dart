@@ -191,9 +191,9 @@ class _VideoControlsState extends State<VideoControls> {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTapUp: ((details) {
+      onTapUp: (details) {
         newInputPosition = getInputPosition(context, details);
-      }),
+      },
       onTap: () {
         // Reset tapCount if too much time has passed or a different input has been made.
         bool sameInput = newInputPosition != null && currentInputPosition != null && newInputPosition == currentInputPosition;
@@ -237,13 +237,14 @@ class _VideoControlsState extends State<VideoControls> {
               child: controller.player.state.buffering && !controller.hasError
                   ? SpinKitRipple(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      size: 0.5 * (MediaQuery.of(context).orientation == Orientation.landscape ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width),
+                      size: 0.5 *
+                          (MediaQuery.of(context).orientation == Orientation.landscape
+                              ? MediaQuery.of(context).size.height
+                              : MediaQuery.of(context).size.width),
                     )
                   : null,
             ),
-            Container(
-              color: Colors.transparent,
-            ),
+            Container(color: Colors.transparent),
           ],
         ),
       ),

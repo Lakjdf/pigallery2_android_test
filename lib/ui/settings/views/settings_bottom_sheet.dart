@@ -102,24 +102,6 @@ class SettingsBottomSheet extends StatelessWidget {
                 memorySize: () => PiGallery2ImageCache.thumbCache.currentSizeBytes,
                 onClear: Downloads.clearThumbnails,
               ),
-              Selector<GlobalSettingsModel, bool>(
-                selector: (context, model) => model.showVideoSeekPreview,
-                builder: (BuildContext context, showVideoSeekPreview, Widget? child) {
-                  return ListTile(
-                    title: const Text("Preview while seeking videos"),
-                    subtitle: const Text("Requires PiGallery2 extension to be installed"),
-                    onTap: () {
-                      Provider.of<GlobalSettingsModel>(context, listen: false).showVideoSeekPreview = !showVideoSeekPreview;
-                    },
-                    trailing: IgnorePointer(
-                      child: Switch(
-                        value: showVideoSeekPreview,
-                        onChanged: (_) {},
-                      ),
-                    ),
-                  );
-                },
-              ),
             ],
           ),
         ),
@@ -136,6 +118,7 @@ class SettingsBottomSheet extends StatelessWidget {
         children: [
           BottomSheetHandle(),
           CustomTabBarWidget(
+            identifier: "Global",
             tabData: getTabs(context),
             isScrollable: true,
           ),

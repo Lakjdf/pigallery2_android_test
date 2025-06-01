@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
+import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 /// Wrapper around [SharedPrefsStorage] to enable Widgets to listen for changes.
@@ -188,6 +189,24 @@ class GlobalSettingsModel extends SafeChangeNotifier {
     }
   }
 
+  int get mediaBackgroundBlur => _mediaBackgroundBlur;
+
+  set mediaBackgroundBlur(int value) {
+    if (value != _mediaBackgroundBlur) {
+      _mediaBackgroundBlur = value;
+      _storage.set(StorageKey.mediaBackgroundBlur, value);
+      notifyListeners();
+    }
+  }
+
+  MediaBackgroundMode get mediaBackgroundMode => _mediaBackgroundMode;
+
+  set mediaBackgroundMode(MediaBackgroundMode option) {
+    _mediaBackgroundMode = option;
+    _storage.set(StorageKey.mediaBackgroundMode, option);
+    notifyListeners();
+  }
+
   bool _useMaterial3;
   bool _showTopPicks;
   int _topPicksDaysLength;
@@ -202,6 +221,8 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   String _apiBasePath;
   String _apiThumbnailPath;
   String _apiVideoPath;
+  int _mediaBackgroundBlur;
+  MediaBackgroundMode _mediaBackgroundMode;
   final SharedPrefsStorage _storage;
 
   GlobalSettingsModel(this._storage)
@@ -218,6 +239,8 @@ class GlobalSettingsModel extends SafeChangeNotifier {
         _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview),
         _apiBasePath = _storage.get(StorageKey.apiBasePath),
         _apiThumbnailPath = _storage.get(StorageKey.apiThumbnailPath),
+        _mediaBackgroundBlur = _storage.get(StorageKey.mediaBackgroundBlur),
+        _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode),
         _apiVideoPath = _storage.get(StorageKey.apiVideoPath) {
     if (_appInFullScreen) {
       enableFullScreen();

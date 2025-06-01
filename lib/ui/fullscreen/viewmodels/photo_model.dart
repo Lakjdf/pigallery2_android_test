@@ -17,8 +17,19 @@ import 'package:quiver/collection.dart';
 
 class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel {
   bool _longPressPending = false;
+  bool _backgroundActive = true;
   final MediaRepository _mediaRepository;
   final LruMap<int, PhotoModelState> _state = LruMap(maximumSize: 3);
+
+  bool get backgroundActive => _backgroundActive;
+
+
+  set backgroundActive(bool value) {
+    if (value != _backgroundActive) {
+      _backgroundActive = value;
+      notifyListeners();
+    }
+  }
 
   PhotoModelState _createState(models.Media item) {
     PhotoModelState state = PhotoModelState(_mediaRepository.getMediaApiPath(item));
@@ -43,10 +54,8 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     (player.platform as NativePlayer).setProperty("video-rotate", "no").then((_) {
       player.setPlaylistMode(PlaylistMode.loop);
       Media.memory(bytes).then((Playable playable) => player.open(playable));
-      state.videoController = VideoController(
-        player,
-        configuration: VideoControllerConfigFactory.createConfiguration()
-      )..waitUntilFirstFrameRendered.then((value) => notifyListeners());
+      state.videoController = VideoController(player, configuration: VideoControllerConfigFactory.createConfiguration())
+        ..waitUntilFirstFrameRendered.then((value) => notifyListeners());
     });
   }
 
@@ -105,6 +114,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   @override
   set currentItem(FullscreenItem item) {
     _longPressPending = false;
+    _backgroundActive = true;
   }
 
   @override

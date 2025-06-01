@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_background_widget.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/fullscreen_overlay.dart';
@@ -55,6 +57,7 @@ class _FullscreenViewState extends State<FullscreenView> {
         }
         return hero.child;
       },
+      transitionOnUserGestures: true,
       tag: item.id.toString(),
       child: item.isVideo
           ? VideoViewWidget(
@@ -93,6 +96,12 @@ class _FullscreenViewState extends State<FullscreenView> {
           model.disableFullScreen();
         }
         Navigator.pop(context);
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
       }),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -104,9 +113,12 @@ class _FullscreenViewState extends State<FullscreenView> {
             builder: ((context, index) {
               return PhotoViewGestureDetectorScope(
                 axis: Axis.horizontal,
-                child: VerticalDismissWrapper(
-                  onOpacityChanged: (val) => context.read<FullscreenModel>().opacity = val,
-                  child: buildItemWithHero(context, media[index]),
+                child: ClipRect(
+                  child: VerticalDismissWrapper(
+                    onOpacityChanged: (val) => context.read<FullscreenModel>().opacity = val,
+                    background: FullscreenBackgroundWidget(item: media[index]),
+                    child: buildItemWithHero(context, media[index]),
+                  ),
                 ),
               );
             }),

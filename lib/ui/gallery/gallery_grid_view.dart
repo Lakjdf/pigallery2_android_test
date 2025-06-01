@@ -131,7 +131,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
               ),
               ChangeNotifierProvider(
                 create: ((context) {
-                  return VideoSeekPreviewModel(context.read(), context.read(), context.read<GlobalSettingsModel>().showVideoSeekPreview,);
+                  return VideoSeekPreviewModel(context.read(), context.read(), context.read());
                 }),
               ),
               ChangeNotifierProvider(
