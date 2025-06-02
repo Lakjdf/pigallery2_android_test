@@ -19,7 +19,7 @@ class CustomThemeData {
       highlightColor: Colors.transparent,
       focusColor: focusColor,
       canvasColor: colorScheme.primary,
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: colorScheme.primary,
       ),
       cardColor: colorScheme.primary,
@@ -74,8 +74,8 @@ class CustomThemeData {
     );
   }
 
-  static tabBarTheme(ColorScheme colorScheme) {
-    return TabBarTheme(
+  static TabBarThemeData tabBarTheme(ColorScheme colorScheme) {
+    return TabBarThemeData(
       labelColor: colorScheme.onSurfaceVariant,
       unselectedLabelColor: colorScheme.onSurfaceVariant,
       // default values

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:mutex/mutex.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
@@ -14,6 +16,7 @@ import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dar
 import 'package:media_kit_video/media_kit_video.dart';
 
 class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel {
+  final Logger _logger = Logger("VideoModel");
   late final VideoModelControllerState _state;
 
   late final VideoModelRefs _refs;
@@ -73,17 +76,13 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
       return existingItem;
     }
 
-    Player player = Player(configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024, logLevel: MPVLogLevel.trace))..setVolume(0);
-    // https://github.com/media-kit/media-kit/issues/776#issuecomment-2072158673
-    (player.platform as dynamic).setProperty('cache', 'no'); // --cache=<yes|no|auto>
-    (player.platform as dynamic).setProperty('cache-secs', '0'); // --cache-secs=<seconds> with cache but why not.
-    (player.platform as dynamic).setProperty('demuxer-seekable-cache', 'no'); // --demuxer-seekable-cache=<yes|no|auto> Redundant with cache but why not.
-    (player.platform as dynamic).setProperty('demuxer-max-back-bytes', '0'); // --demuxer-max-back-bytes=<bytesize>
-    (player.platform as dynamic).setProperty('demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer==<yes|no>
-    VideoController newController = VideoController(
-      player,
-      configuration: VideoControllerConfigFactory.createConfiguration()
-    );
+    Player player = Player(
+      configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024, logLevel: kDebugMode ? MPVLogLevel.debug : MPVLogLevel.warn),
+    )..setVolume(0);
+    player.stream.log.listen((event) {
+      _logger.fine(event.toString());
+    });
+    VideoController newController = VideoController(player, configuration: VideoControllerConfigFactory.createConfiguration());
     VideoControllerItem item = VideoControllerItem(newController);
 
     Media playable = _mediaFromModel(media);
@@ -111,9 +110,11 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   /// Creates a [VideoController] for the given [models.Media].
   /// Returns a [Stream] that emits once the controller is ready to display the first frame.
   Stream<VideoControllerItem> _initializeVideoController(models.Media media, {bool autoPlay = true}) {
-    return Stream.fromFuture(_initVideoControllerSafe(media, autoPlay).then((item) {
-      return item.controller.waitUntilFirstFrameRendered.then((value) => item);
-    }));
+    return Stream.fromFuture(
+      _initVideoControllerSafe(media, autoPlay).then((item) {
+        return item.controller.waitUntilFirstFrameRendered.then((value) => item);
+      }),
+    );
   }
 
   void _preload(models.Media? media) {

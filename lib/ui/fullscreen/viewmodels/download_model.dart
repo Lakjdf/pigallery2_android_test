@@ -52,7 +52,7 @@ class DownloadModel extends SafeChangeNotifier implements PaginatedFullscreenMod
   }
 
   Future<void> _showShareDialog(String filePath) {
-    return Share.shareXFiles([XFile(filePath)]).then((value) => _resetState());
+    return SharePlus.instance.share(ShareParams(files: [XFile(filePath)]));
   }
 
   Future<void> share() async {

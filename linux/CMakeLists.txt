@@ -2,15 +2,12 @@
 cmake_minimum_required(VERSION 3.13)
 project(runner LANGUAGES CXX)
 
-# https://github.com/juliansteenbakker/flutter_secure_storage/issues/829
-add_definitions(-DAPPLICATION_ID="com.lakjdf.pigallery2_android")
-
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "pigallery2_android")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-#set(APPLICATION_ID "com.lakjdf.pigallery2_android")
+set(APPLICATION_ID "com.lakjdf.pigallery2_android")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

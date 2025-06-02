@@ -105,7 +105,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.transparent,
-        pageBuilder: (BuildContext context, _, __) {
+        pageBuilder: (BuildContext context, _, _) {
           return MultiProvider(
             providers: [
               ChangeNotifierProvider(

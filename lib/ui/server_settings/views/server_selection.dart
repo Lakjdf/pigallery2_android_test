@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 class ServerSelection extends StatelessWidget {
   const ServerSelection({super.key});
 
-  askDeleteServer(BuildContext context, String url) {
+  void askDeleteServer(BuildContext context, String url) {
     Widget cancelButton = TextButton(
       child: const Text("Cancel"),
       onPressed: () => Navigator.pop(context),
@@ -35,7 +35,7 @@ class ServerSelection extends StatelessWidget {
     );
   }
 
-  addServerDialog(BuildContext context) {
+  void addServerDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (_) {

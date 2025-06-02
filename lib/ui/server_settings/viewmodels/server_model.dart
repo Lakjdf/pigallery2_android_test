@@ -85,7 +85,7 @@ class ServerModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
-  reset() {
+  void reset() {
     testFailedAuth = false;
     testUrlErrorText = null;
     testSuccessAuth = false;

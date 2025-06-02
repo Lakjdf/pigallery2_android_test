@@ -40,14 +40,14 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
     animationDuration = Duration.zero;
   }
 
-  void _startVerticalDrag(details) {
+  void _startVerticalDrag(DragStartDetails details) {
     if (pointerCount > 1) return;
     setState(() {
       initialPositionY = details.globalPosition.dy;
     });
   }
 
-  void _whileVerticalDrag(details) {
+  void _whileVerticalDrag(DragUpdateDetails details) {
     // ignore 2 pointer drag only in initial position
     if (pointerCount > 1 && positionYDelta == 0 || ignoreDrag) {
       ignoreDrag = true;
@@ -61,7 +61,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
     widget.onOpacityChanged!(opacity);
   }
 
-  setOpacity() {
+  void setOpacity() {
     double tmp = positionYDelta < 0 ? 1 - ((positionYDelta / transparentThreshold) * -1) : 1 - (positionYDelta / transparentThreshold);
 
     if (tmp > 1) {
@@ -73,7 +73,7 @@ class _VerticalDismissWrapperState extends State<VerticalDismissWrapper> {
     }
   }
 
-  _endVerticalDrag(DragEndDetails details) {
+  void _endVerticalDrag(DragEndDetails details) {
     ignoreDrag = false;
     if (positionYDelta > disposeThreshold || positionYDelta < -disposeThreshold) {
       Navigator.of(context).maybePop(Provider.of<FullscreenModel>(context, listen: false).currentItem);
