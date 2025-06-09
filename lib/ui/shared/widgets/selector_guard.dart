@@ -21,7 +21,7 @@ class SelectorGuard<T, R> extends StatelessWidget {
     return Selector<T, R?>(
       selector: (_, value) => selector(value),
       builder: (context, R? result, _) {
-        bool matches = result != null && (condition?.let((it) => it(result)) ?? (result is bool && result));
+        bool matches = result != null && (condition?.let((it) => it(result)) ?? (result is bool && result || result is! bool));
         return matches ? then(context, result) : otherwise?.call(context, result) ?? const SizedBox.shrink();
       },
     );

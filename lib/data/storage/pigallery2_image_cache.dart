@@ -1,12 +1,18 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/ui/shared/widgets/cached_image_provider.dart';
+
+import 'pigallery2_cache_manager.dart';
 
 class PiGallery2ImageCache implements ImageCache {
-  static final ImageCache thumbCache = ImageCache();
-  static final ImageCache fullResCache = ImageCache();
+  static final ImageCache thumbCache = ImageCache()
+    ..maximumSize = 1000
+    ..maximumSizeBytes = 100 * 1024 * 1024; // 100 MB
+  static final ImageCache fullResCache = ImageCache()
+    ..maximumSize = 10
+    ..maximumSizeBytes = 200 * 1024 * 1024; // 200 MB
 
   bool _isThumb(Object key) {
-    return key is CachedNetworkImageProvider && key.cacheKey?.endsWith("(thumbnail)") == true;
+    return key is CachedImageProvider && key.cacheManager == PiGallery2CacheManager.thumbs;
   }
 
   @override

@@ -28,7 +28,6 @@ For example for PiGallery2 v2.0.0, you need to update the API path for thumbnail
 - [shared_preferences](https://pub.dev/packages/shared_preferences) - persist server configurations
 - [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) - store credentials
 - [path_provider](https://pub.dev/packages/path_provider) - retrieve path to temporarily store media
-- [cached_network_image](https://pub.dev/packages/cached_network_image) - cache & download thumbnails & images
 - [flutter_cache_manager](https://pub.dev/packages/flutter_cache_manager) - configure cache & retrieve cached entries
 
 - [collection](https://pub.dev/packages/collection) - natural sorting

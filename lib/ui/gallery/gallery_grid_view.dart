@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/data/storage/pigallery2_image_cache.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/download_model.dart';
@@ -82,10 +83,9 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
 
   void openDirectory(BuildContext context, Directory directory) {
     Provider.of<HomeModel>(context, listen: false).addStack(directory);
-    Navigator.push(
-      context,
+    Navigator.of(context).push(
       MaterialPageRoute(
-        builder: ((context) => HomeView(widget.stackPosition + 1)),
+        builder: ((_) => HomeView(widget.stackPosition + 1)),
       ),
     );
   }
@@ -146,6 +146,8 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       ),
     );
     subscription.cancel();
+    PiGallery2ImageCache.fullResCache.clearLiveImages();
+    PiGallery2ImageCache.fullResCache.clear();
   }
 
   @override

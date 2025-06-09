@@ -17,6 +17,7 @@ import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
+import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
@@ -92,10 +93,13 @@ class MyApp extends StatelessWidget {
             _credentialStorage,
           );
         }),
+        Provider<ImagePreloader>(create: (context) {
+          return ImagePreloader(context.read(), context);
+        }),
         // needs to be defined here already since the photo view
         // is part of the hero animation to the fullscreen view
         ChangeNotifierProvider<PhotoModel>(
-          create: ((context) => PhotoModel(context.read())),
+          create: ((context) => PhotoModel(context.read(), context.read())),
         ),
         ChangeNotifierProvider<VideoModel>(
           create: ((context) => VideoModel(context.read())),

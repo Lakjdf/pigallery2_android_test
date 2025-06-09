@@ -1,6 +1,5 @@
-import 'dart:ui';
+import 'dart:ui' as ui;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:photo_view/photo_view.dart';
@@ -11,11 +10,13 @@ import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model_state.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/ui/shared/widgets/cached_image_provider.dart';
 import 'package:pigallery2_android/ui/shared/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selector_guard.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class PhotoViewWidget extends StatelessWidget {
   final Media item;
@@ -27,22 +28,23 @@ class PhotoViewWidget extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         PhotoViewWidgetBackground(item: item),
-        CachedNetworkImage(
-          key: ValueKey(url),
-          cacheManager: PiGallery2CacheManager.fullRes,
-          imageUrl: url,
-          fit: BoxFit.contain,
+        Image(
+          key: ValueKey(item.id),
+          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+            if (wasSynchronouslyLoaded || frame != null) return child;
+            return ThumbnailImage(
+              key: ObjectKey(item),
+              item,
+              fit: BoxFit.contain,
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+            );
+          },
+          errorBuilder: (context, error, _) => const ErrorImage(),
+          image: CachedImageProvider(url: url, cacheManager: PiGallery2CacheManager.fullRes, headers: context.read<MediaRepository>().headers),
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          httpHeaders: context.read<MediaRepository>().headers,
-          fadeInDuration: const Duration(milliseconds: 1),
-          fadeOutDuration: const Duration(milliseconds: 1),
-          // not working most of the time https://github.com/Baseflow/flutter_cached_network_image/issues/932
-          errorWidget: (context, url, error) => const ErrorImage(),
-          placeholder: (context, url) => ThumbnailImage(
-            key: ObjectKey(item),
-            item,
-          ),
+          fit: BoxFit.cover,
         ),
       ],
     );
@@ -53,10 +55,7 @@ class PhotoViewWidget extends StatelessWidget {
     bool rotateVideoPlayer = item.aspectRatio < 1;
     return RotatedBox(
       quarterTurns: rotateVideoPlayer ? 1 : 0,
-      child: Video(
-        key: ValueKey(url),
-        controller: controller,
-      ),
+      child: Video(key: ValueKey(url), controller: controller),
     );
   }
 
@@ -81,18 +80,26 @@ class PhotoViewWidget extends StatelessWidget {
     }
     return ClipRect(
       clipBehavior: Clip.antiAliasWithSaveLayer,
-      child: GestureDetector(
-        onLongPress: () => context.read<PhotoModel>().handleLongPress(item),
-        onLongPressEnd: (_) => context.read<PhotoModel>().handleLongPressEnd(item),
-        child: PhotoView.customChild(
-          scaleStateChangedCallback: (PhotoViewScaleState state) {
-            context.read<PhotoModel>().backgroundActive = state == PhotoViewScaleState.initial;
-          },
-          key: ValueKey(item.id),
-          backgroundDecoration: const BoxDecoration(color: Colors.transparent),
-          minScale: PhotoViewComputedScale.contained,
-          childSize: childSize,
-          child: buildPhotoViewInner(context),
+      child: VisibilityDetector(
+        key: ValueKey(item.id),
+        onVisibilityChanged: (info) {
+          if (info.visibleFraction == 1) {
+            context.read<PhotoModel>().notifyFullyVisible();
+          }
+        },
+        child: GestureDetector(
+          onLongPress: () => context.read<PhotoModel>().handleLongPress(item),
+          onLongPressEnd: (_) => context.read<PhotoModel>().handleLongPressEnd(item),
+          child: PhotoView.customChild(
+            scaleStateChangedCallback: (PhotoViewScaleState state) {
+              context.read<PhotoModel>().backgroundActive = state == PhotoViewScaleState.initial;
+            },
+            key: ValueKey(item.id),
+            backgroundDecoration: const BoxDecoration(color: Colors.transparent),
+            minScale: PhotoViewComputedScale.contained,
+            childSize: childSize,
+            child: buildPhotoViewInner(context),
+          ),
         ),
       ),
     );
@@ -110,11 +117,7 @@ class PhotoViewWidgetBackground extends StatelessWidget {
     return Selector<GlobalSettingsModel, int>(
       selector: (context, model) => model.mediaBackgroundBlur,
       builder: (context, blur, child) => ImageFiltered(
-        imageFilter: ImageFilter.blur(
-          sigmaX: blur.toDouble(),
-          sigmaY: blur.toDouble(),
-          tileMode: TileMode.decal,
-        ),
+        imageFilter: ui.ImageFilter.blur(sigmaX: blur.toDouble(), sigmaY: blur.toDouble(), tileMode: TileMode.decal),
         // imageFilter: ImageFilter.compose(
         //   outer: ImageFilter.blur(sigmaX: blur.toDouble(), sigmaY: blur.toDouble(), tileMode: TileMode.decal),
         //   inner: ColorFilter.matrix([
@@ -124,13 +127,7 @@ class PhotoViewWidgetBackground extends StatelessWidget {
         //     0, 0, 0, 1, 0, // Alpha
         //   ]),
         // ),
-        child: ThumbnailImage(
-          key: ObjectKey(item),
-          fit: BoxFit.cover,
-          height: imageHeight,
-          width: imageWidth,
-          item,
-        ),
+        child: ThumbnailImage(key: ObjectKey(item), fit: BoxFit.cover, height: imageHeight, width: imageWidth, item),
       ),
     );
   }

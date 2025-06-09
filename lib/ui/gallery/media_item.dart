@@ -20,23 +20,14 @@ class MediaItem extends StatelessWidget {
           child: ThumbnailImage(
             key: ObjectKey(item),
             item,
-            imageBuilder: (context, imageProvider) {
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image(
-                    image: imageProvider,
-                    fit: BoxFit.cover,
-                  ),
-                  if (item.isVideo)
-                    Icon(
-                      Icons.play_arrow,
-                      size: 70,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(175),
-                    )
-                ],
-              );
-            },
+            fit: BoxFit.cover,
+            imageBuilder: (context, image) => Stack(
+              fit: StackFit.expand,
+              children: [
+                ThumbnailImage(key: ObjectKey(item), item, fit: BoxFit.cover),
+                if (item.isVideo) Icon(Icons.play_arrow, size: 70, color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(175)),
+              ],
+            ),
           ),
         ),
       ),

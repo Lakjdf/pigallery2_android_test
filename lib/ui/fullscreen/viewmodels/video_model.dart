@@ -79,9 +79,13 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     Player player = Player(
       configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024, logLevel: kDebugMode ? MPVLogLevel.debug : MPVLogLevel.warn),
     )..setVolume(0);
-    player.stream.log.listen((event) {
-      _logger.fine(event.toString());
-    });
+    // https://github.com/media-kit/media-kit/issues/776#issuecomment-2072158673
+    (player.platform as dynamic).setProperty('cache', 'no'); // --cache=<yes|no|auto>
+    (player.platform as dynamic).setProperty('cache-secs', '0'); // --cache-secs=<seconds> with cache but why not.
+    (player.platform as dynamic).setProperty('demuxer-seekable-cache', 'no'); // --demuxer-seekable-cache=<yes|no|auto> Redundant with cache but why not.
+    (player.platform as dynamic).setProperty('demuxer-max-back-bytes', '0'); // --demuxer-max-back-bytes=<bytesize>
+    (player.platform as dynamic).setProperty('demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer==<yes|no>
+    player.stream.log.listen((event) => _logger.fine(event.toString()));
     VideoController newController = VideoController(player, configuration: VideoControllerConfigFactory.createConfiguration());
     VideoControllerItem item = VideoControllerItem(newController);
 
@@ -118,7 +122,7 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   }
 
   void _preload(models.Media? media) {
-    if (media != null && media.isVideo == true) {
+    if (media != null && media.isVideo) {
       _initializeVideoController(media, autoPlay: false);
     }
   }

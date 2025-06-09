@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class BackendMediaDimension {
   int width;
   int height;
@@ -13,8 +15,8 @@ class BackendMediaDimension {
 
   factory BackendMediaDimension.fromList(List<dynamic> list) {
     return BackendMediaDimension(
-      width: list[0],
-      height: list[1],
+      width: max(1,list[0]),
+      height: max(1, list[1]),
     );
   }
 }

@@ -4,6 +4,7 @@ class PiGallery2CacheManager {
   static CacheManager thumbs = CustomImageCacheManager(
     Config(
       "thumbs",
+      maxNrOfCacheObjects: 1000,
       fileService: HttpFileService(),
     ),
   );

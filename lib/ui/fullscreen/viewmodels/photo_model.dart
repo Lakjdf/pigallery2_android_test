@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:motion_photos/motion_photos.dart';
@@ -12,17 +14,20 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dar
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model_state.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_config_factory.dart';
+import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 import 'package:quiver/collection.dart';
 
 class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel {
+  final Logger _logger = Logger("PhotoModel");
   bool _longPressPending = false;
   bool _backgroundActive = true;
   final MediaRepository _mediaRepository;
+  final ImagePreloader _imagePreloader;
   final LruMap<int, PhotoModelState> _state = LruMap(maximumSize: 3);
+  void Function()? _pendingPreload;
 
   bool get backgroundActive => _backgroundActive;
-
 
   set backgroundActive(bool value) {
     if (value != _backgroundActive) {
@@ -44,7 +49,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     return state;
   }
 
-  PhotoModel(this._mediaRepository);
+  PhotoModel(this._mediaRepository, this._imagePreloader);
 
   void _initMotionVideoController(PhotoModelState state, models.Media item, Uint8List bytes) {
     // needs to be recreated since the controller is disposed when the video player is removed from the widget tree
@@ -59,37 +64,35 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     });
   }
 
-  Future<Uint8List?> _loadMotionVideo(String localPath) async {
-    MotionPhotos photo = MotionPhotos(localPath);
+  Future<Uint8List?> _loadMotionVideo(Uint8List bytes) async {
     return await Isolate.run(() async {
-      var videoIndex = await photo.getMotionVideoIndex();
-      if (videoIndex != null) {
-        return await photo.getMotionVideo(index: videoIndex);
-      }
-      return null;
+      return MotionPhotos(bytes).getMotionVideo();
     }).catchError((error) {
       return null;
     });
   }
 
-  void _loadImage(PhotoModelState state, models.Media item) {
-    Stream<FileResponse> stream = PiGallery2CacheManager.fullRes.getFileStream(
-      state.url,
-      headers: _mediaRepository.headers,
-      withProgress: false,
-    );
-    stream.listen((FileResponse event) {
-      if (event is FileInfo) {
-        _loadMotionVideo(event.file.path).then((bytes) {
-          state.video = bytes;
-          notifyListeners();
-          if (_longPressPending) {
-            // handle long press once the image has been downloaded to the cache
-            handleLongPress(item);
-          }
-        });
-      }
-    });
+  Future<void> _loadImage(PhotoModelState state, models.Media item) async {
+    await _imagePreloader.preloadImage(state.url);
+    notifyListeners();
+    FileInfo? fileInfo = await PiGallery2CacheManager.fullRes.getFileFromMemory(state.url);
+    if (fileInfo == null) {
+      _logger.warning("Image was not cached in memory: ${state.url}");
+      return;
+    }
+    var bytes = fileInfo.file.readAsBytesSync();
+    state.video = await _loadMotionVideo(bytes);
+    notifyListeners();
+    if (_longPressPending) {
+      // handle long press once the image has been downloaded to the cache
+      handleLongPress(item);
+    }
+  }
+
+  void _preload(models.Media? media) async {
+    if (media != null && media.isImage) {
+      stateOf(media);
+    }
   }
 
   void handleLongPress(models.Media item) async {
@@ -111,10 +114,19 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     notifyListeners();
   }
 
+  void notifyFullyVisible() {
+    _pendingPreload?.call();
+    _pendingPreload = null;
+  }
+
   @override
   set currentItem(FullscreenItem item) {
     _longPressPending = false;
     _backgroundActive = true;
+    _pendingPreload = () {
+      _preload(item.next?.item);
+      _preload(item.previous?.item);
+    };
   }
 
   @override

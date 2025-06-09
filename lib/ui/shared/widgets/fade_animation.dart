@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class FadeAnimation extends StatefulWidget {
-  const FadeAnimation({super.key, this.child, required this.duration, this.curve = Curves.linear});
+  const FadeAnimation({super.key, this.child, required this.duration, this.curve = Curves.easeOutQuart, this.reverse = true,});
 
   final Widget? child;
   final Duration duration;
   final Curve curve;
+  final bool reverse;
 
   @override
   State createState() => _FadeAnimationState();
@@ -18,13 +19,17 @@ class _FadeAnimationState extends State<FadeAnimation> with SingleTickerProvider
   );
   late final Animation<double> _animation = CurvedAnimation(
     parent: _controller,
-    curve: Curves.easeOutQuart,
+    curve: widget.curve,
   );
 
   @override
   void initState() {
     super.initState();
-    _controller.reverse(from: 1);
+    if (widget.reverse) {
+      _controller.reverse(from: 1);
+    } else {
+      _controller.forward(from: 0);
+    }
   }
 
   @override
@@ -36,7 +41,11 @@ class _FadeAnimationState extends State<FadeAnimation> with SingleTickerProvider
   @override
   void didUpdateWidget(FadeAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _controller.reverse(from: 1);
+    if (widget.reverse) {
+      _controller.reverse(from: 1);
+    } else {
+      _controller.forward(from: 0);
+    }
   }
 
   @override

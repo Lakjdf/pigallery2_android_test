@@ -18,13 +18,12 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^9.2.4
   path_provider: ^2.1.5
-  cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
 
   collection: ^1.19.1
   quiver: ^3.2.2
   path: ^1.9.1
-  async: ^2.12.0
+  async: ^2.13.0
   intl: ^0.20.2
   logging: ^1.3.0
   mutex: ^3.1.0
@@ -32,7 +31,9 @@ dependencies:
 
   dynamic_color: ^1.7.0
   share_plus: ^11.0.0
-  motion_photos: ^1.0.0
+  motion_photos:
+    git:
+      url: https://github.com/Lakjdf/motion_photos.git
 
   photo_view:
     git:

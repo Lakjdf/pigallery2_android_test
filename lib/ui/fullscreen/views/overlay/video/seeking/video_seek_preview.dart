@@ -1,5 +1,4 @@
 import 'dart:ui' as ui;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/sprite_thumbnail_data.dart';
@@ -7,6 +6,7 @@ import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_position.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_preview_model.dart';
+import 'package:pigallery2_android/ui/shared/widgets/cached_image_provider.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:provider/provider.dart';
 
@@ -91,21 +91,17 @@ class VideoSeekThumbImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MediaRepository repository = context.read<MediaRepository>();
-
-    return CachedNetworkImage(
-      key: ValueKey(spriteRegion.imagePath),
-      imageUrl: spriteRegion.imagePath,
-      imageBuilder: (context, imageProvider) {
-        return ImageRectPreloader(imageProvider, spriteRegion.cropRect);
-      },
-      cacheManager: PiGallery2CacheManager.spriteThumbnails,
-      httpHeaders: repository.headers,
-      fadeInDuration: const Duration(milliseconds: 1),
-      fadeOutDuration: const Duration(milliseconds: 1),
+    return SizedBox(
       width: size.width,
       height: size.height,
-      fit: BoxFit.contain,
+      child: ImageRectPreloader(
+        CachedImageProvider(
+          url: spriteRegion.imagePath,
+          cacheManager: PiGallery2CacheManager.spriteThumbnails,
+          headers: context.read<MediaRepository>().headers,
+        ),
+        spriteRegion.cropRect,
+      ),
     );
   }
 }
@@ -123,18 +119,25 @@ class ImageRectPreloader extends StatefulWidget {
 
 class _ImageRectPreloaderState extends State<ImageRectPreloader> {
   ui.Image? _image;
+  late ImageStreamListener _listener;
+  late ImageStream _stream;
 
   @override
   void initState() {
     super.initState();
-    widget.imageProvider.resolve(ImageConfiguration()).addListener(
-      ImageStreamListener((ImageInfo imageInfo, bool synchronousCall) {
-        final image = imageInfo.image;
-        setState(() {
-          _image = image as ui.Image?;
-        });
-      }),
-    );
+    _listener = ImageStreamListener((ImageInfo imageInfo, bool synchronousCall) {
+      final image = imageInfo.image;
+      setState(() {
+        _image = image as ui.Image?;
+      });
+    });
+    _stream = widget.imageProvider.resolve(ImageConfiguration.empty)..addListener(_listener);
+  }
+
+  @override
+  void dispose() {
+    _stream.removeListener(_listener);
+    super.dispose();
   }
 
   @override
