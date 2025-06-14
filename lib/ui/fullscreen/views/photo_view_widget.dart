@@ -18,23 +18,46 @@ import 'package:pigallery2_android/util/extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-class PhotoViewWidget extends StatelessWidget {
+class PhotoViewWidget extends StatefulWidget {
   final Media item;
 
   const PhotoViewWidget(this.item, {super.key});
+
+  @override
+  State<PhotoViewWidget> createState() => _PhotoViewWidgetState();
+}
+
+class _PhotoViewWidgetState extends State<PhotoViewWidget> {
+  final PhotoViewController _controller = PhotoViewController();
+
+  _PhotoViewWidgetState();
+
+  @override
+  void initState() {
+    super.initState();
+    PhotoModel model = context.read();
+    _controller.outputStateStream.listen((val) {
+      if (val.scale == 1.0) {
+        model.backgroundActive = true;
+      }
+      else {
+        model.backgroundActive = false;
+      }
+    });
+  }
 
   Widget buildImage(BuildContext context, String url) {
     return Stack(
       alignment: Alignment.center,
       children: [
-        PhotoViewWidgetBackground(item: item),
+        PhotoViewWidgetBackground(item: widget.item),
         Image(
-          key: ValueKey(item.id),
+          key: ValueKey(widget.item.id),
           frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
             if (wasSynchronouslyLoaded || frame != null) return child;
             return ThumbnailImage(
-              key: ObjectKey(item),
-              item,
+              key: ObjectKey(widget.item),
+              widget.item,
               fit: BoxFit.contain,
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
@@ -52,7 +75,7 @@ class PhotoViewWidget extends StatelessWidget {
 
   Widget buildMotionPhoto(String url, VideoController controller) {
     // need to rotate the player due to some issue with mpv rotating portrait videos.
-    bool rotateVideoPlayer = item.aspectRatio < 1;
+    bool rotateVideoPlayer = widget.item.aspectRatio < 1;
     return RotatedBox(
       quarterTurns: rotateVideoPlayer ? 1 : 0,
       child: Video(key: ValueKey(url), controller: controller),
@@ -60,9 +83,9 @@ class PhotoViewWidget extends StatelessWidget {
   }
 
   Widget buildPhotoViewInner(BuildContext context) {
-    PhotoModelState state = context.read<PhotoModel>().stateOf(item);
+    PhotoModelState state = context.read<PhotoModel>().stateOf(widget.item);
     return SelectorGuard<PhotoModel, VideoController>(
-      selector: (model) => model.stateOf(item).videoController,
+      selector: (model) => model.stateOf(widget.item).videoController,
       condition: (videoController) => videoController.isInitialized,
       then: (context, videoController) => buildMotionPhoto(state.url, videoController),
       otherwise: (context, _) => buildImage(context, state.url),
@@ -73,28 +96,26 @@ class PhotoViewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     Size childSize;
-    if (screenSize.aspectRatio > item.aspectRatio) {
-      childSize = Size(screenSize.height * item.aspectRatio, screenSize.height);
+    if (screenSize.aspectRatio > widget.item.aspectRatio) {
+      childSize = Size(screenSize.height * widget.item.aspectRatio, screenSize.height);
     } else {
-      childSize = Size(screenSize.width, screenSize.width / item.aspectRatio);
+      childSize = Size(screenSize.width, screenSize.width / widget.item.aspectRatio);
     }
     return ClipRect(
       clipBehavior: Clip.antiAliasWithSaveLayer,
       child: VisibilityDetector(
-        key: ValueKey(item.id),
+        key: ValueKey(widget.item.id),
         onVisibilityChanged: (info) {
           if (info.visibleFraction == 1) {
             context.read<PhotoModel>().notifyFullyVisible();
           }
         },
         child: GestureDetector(
-          onLongPress: () => context.read<PhotoModel>().handleLongPress(item),
-          onLongPressEnd: (_) => context.read<PhotoModel>().handleLongPressEnd(item),
+          onLongPress: () => context.read<PhotoModel>().handleLongPress(widget.item),
+          onLongPressEnd: (_) => context.read<PhotoModel>().handleLongPressEnd(widget.item),
           child: PhotoView.customChild(
-            scaleStateChangedCallback: (PhotoViewScaleState state) {
-              context.read<PhotoModel>().backgroundActive = state == PhotoViewScaleState.initial;
-            },
-            key: ValueKey(item.id),
+            controller: _controller,
+            key: ValueKey(widget.item.id),
             backgroundDecoration: const BoxDecoration(color: Colors.transparent),
             minScale: PhotoViewComputedScale.contained,
             childSize: childSize,
