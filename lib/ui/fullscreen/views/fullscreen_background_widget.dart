@@ -37,7 +37,7 @@ class FullscreenBackgroundWidget extends StatelessWidget {
               ),
               child: Center(
                 child: Video(
-                  key: ValueKey("${item.id}: $screenSize background"),
+                  key: ValueKey("${item.id}: ${screenSize.hashCode} background"),
                   controller: videoController,
                   fit: BoxFit.cover,
                   aspectRatio: item.aspectRatio,

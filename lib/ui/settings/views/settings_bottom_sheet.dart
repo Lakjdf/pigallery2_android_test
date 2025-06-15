@@ -64,7 +64,7 @@ class SettingsBottomSheet extends StatelessWidget {
                 selector: (_, model) => model.apiVideoPath,
                 builder: (BuildContext context, String value, Widget? child) => EditTextListTile(
                   title: "API Video path",
-                  description: "Empty by default\nUse /bestfit if Videos don't play",
+                  description: "Empty for full resolution.\nUse /bestfit if Videos don't play",
                   initialValue: settingsModel.apiVideoPath,
                   onSave: (value) => settingsModel.apiVideoPath = value,
                 ),

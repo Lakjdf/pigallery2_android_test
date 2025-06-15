@@ -91,11 +91,11 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     }
     return Center(
       child: VisibilityDetector(
-        key: ValueKey("${widget.item.id}: $screenSize"),
+        key: ValueKey("${widget.item.id}: ${screenSize.hashCode}"),
         onVisibilityChanged: (info) => onVisibilityChanged(info.visibleFraction, videoController),
         child: Video(
-          key: ValueKey("${widget.item.id}: $screenSize"),
           // has to include the screenSize; won't update on orientation changes otherwise
+          key: ValueKey("${widget.item.id}: ${screenSize.hashCode}"),
           controller: videoController,
           fit: BoxFit.contain,
           aspectRatio: widget.item.aspectRatio,
@@ -114,11 +114,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     return Stack(
       children: [
         VideoViewWidgetBackground(item: widget.item, videoController: videoController),
-        Selector<VideoModel, double>(
-          selector: (context, model) => model.videoScale,
-          builder: (context, scale, child) =>
-              Transform.scale(transformHitTests: true, scale: scale, child: buildVideo(context, videoController)),
-        ),
+        buildVideo(context, videoController),
       ],
     );
   }
@@ -141,7 +137,14 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
         if (snapshot.connectionState != ConnectionState.done) {
           return buildPlaceholder();
         } else {
-          return buildVideoView(context, controllerItem.controller);
+          return Selector<VideoModel, double>(
+            selector: (context, model) => model.videoScale,
+            builder: (context, scale, child) => Transform.scale(
+              transformHitTests: true,
+              scale: scale,
+              child: buildVideoView(context, controllerItem.controller),
+            ),
+          );
         }
       },
     );
@@ -164,7 +167,7 @@ class VideoViewWidgetBackground extends StatelessWidget {
     }
     return Center(
       child: Video(
-        key: ValueKey("${item.id}: $screenSize background"),
+        key: ValueKey("${item.id}: ${screenSize.hashCode} background"),
         controller: videoController,
         fit: BoxFit.contain,
         aspectRatio: item.aspectRatio,

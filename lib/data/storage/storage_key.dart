@@ -13,15 +13,15 @@ enum StorageKey<T> {
   gridRoundedCorners<int>(6),
   gridSpacing<int>(6),
   gridAspectRatio<double>(1),
-  gridCrossAxisCountPortrait<int>(3),
-  gridCrossAxisCountLandscape<int>(5),
+  gridCrossAxisCountPortrait<int>(4),
+  gridCrossAxisCountLandscape<int>(6),
   allowBadCertificates<bool>(false),
   showVideoSeekPreview<bool>(false),
   apiBasePath<String>("/pgapi"),
   apiThumbnailPath<String>("/320"),
   mediaBackgroundMode<MediaBackgroundMode>(MediaBackgroundMode.ambient),
   mediaBackgroundBlur<int>(45),
-  apiVideoPath<String>("");
+  apiVideoPath<String>("/bestfit");
 
   String get key => name;
   final T defaultValue;

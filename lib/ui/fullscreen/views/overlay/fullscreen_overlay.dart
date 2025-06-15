@@ -61,6 +61,9 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
         });
       }
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateOrientation();
+    });
   }
 
   @override
@@ -276,7 +279,6 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    updateOrientation();
     return Stack(
       children: [
         widget.child,

@@ -41,8 +41,10 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   }
 
   set videoScale(double val) {
-    _videoScale = val;
-    notifyListeners();
+    if (val != _videoScale) {
+      _videoScale = val;
+      notifyListeners();
+    }
   }
 
   double get videoScale => _videoScale;
