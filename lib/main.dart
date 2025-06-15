@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
@@ -27,10 +28,13 @@ import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/home/views/home_view.dart';
 import 'package:provider/provider.dart';
 
+import 'util/system_ui.dart';
+
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
 
@@ -58,6 +62,7 @@ void main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   setupLogging();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(MyApp(storage));
 }
 
@@ -77,33 +82,35 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<SharedPrefsStorage>(create: (context) {
-          return _storage;
-        }),
-        Provider<ItemRepository>(create: (context) {
-          return ItemRepositoryImpl(_apiService);
-        }),
-        Provider<MediaRepository>(create: (context) {
-          return MediaRepositoryImpl(_apiService);
-        }),
-        Provider<ServerRepository>(create: (context) {
-          return ServerRepositoryImpl(
-            _apiService,
-            _storage,
-            _credentialStorage,
-          );
-        }),
-        Provider<ImagePreloader>(create: (context) {
-          return ImagePreloader(context.read(), context);
-        }),
+        Provider<SharedPrefsStorage>(
+          create: (context) {
+            return _storage;
+          },
+        ),
+        Provider<ItemRepository>(
+          create: (context) {
+            return ItemRepositoryImpl(_apiService);
+          },
+        ),
+        Provider<MediaRepository>(
+          create: (context) {
+            return MediaRepositoryImpl(_apiService);
+          },
+        ),
+        Provider<ServerRepository>(
+          create: (context) {
+            return ServerRepositoryImpl(_apiService, _storage, _credentialStorage);
+          },
+        ),
+        Provider<ImagePreloader>(
+          create: (context) {
+            return ImagePreloader(context.read(), context);
+          },
+        ),
         // needs to be defined here already since the photo view
         // is part of the hero animation to the fullscreen view
-        ChangeNotifierProvider<PhotoModel>(
-          create: ((context) => PhotoModel(context.read(), context.read())),
-        ),
-        ChangeNotifierProvider<VideoModel>(
-          create: ((context) => VideoModel(context.read())),
-        ),
+        ChangeNotifierProvider<PhotoModel>(create: ((context) => PhotoModel(context.read(), context.read()))),
+        ChangeNotifierProvider<VideoModel>(create: ((context) => VideoModel(context.read()))),
         ChangeNotifierProvider<ServerModel>(
           create: ((context) {
             return ServerModel(Provider.of<ServerRepository>(context, listen: false));
@@ -111,15 +118,10 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<HomeModel>(
           create: ((context) {
-            return HomeModel(
-              Provider.of<ItemRepository>(context, listen: false),
-              _storage,
-            );
+            return HomeModel(Provider.of<ItemRepository>(context, listen: false), _storage);
           }),
         ),
-        ChangeNotifierProvider<GlobalSettingsModel>(
-          create: ((context) => _settingsModel),
-        ),
+        ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),
         ChangeNotifierProxyProvider<GlobalSettingsModel, TopPicksModel>(
           create: ((context) {
             return TopPicksModel(Provider.of<ItemRepository>(context, listen: false), _storage);
@@ -148,13 +150,14 @@ class MyApp extends StatelessWidget {
                   thumbColor: WidgetStateProperty.all(colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
                 ),
                 pageTransitionsTheme: const PageTransitionsTheme(
-                  builders: {
-                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-                  },
+                  builders: {TargetPlatform.android: PredictiveBackPageTransitionsBuilder()},
                 ),
                 tabBarTheme: CustomThemeData.tabBarTheme(colorScheme),
               );
             }
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              SystemUi.setDefaultSystemBarColors(context);
+            });
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'PiGallery2',

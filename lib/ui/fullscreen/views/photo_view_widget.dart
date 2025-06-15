@@ -37,7 +37,8 @@ class _PhotoViewWidgetState extends State<PhotoViewWidget> {
     super.initState();
     PhotoModel model = context.read();
     _controller.outputStateStream.listen((val) {
-      if (val.scale == 1.0) {
+      double? scale = val.scale;
+      if (scale != null && (scale - 1).abs() < 1e-6) {
         model.backgroundActive = true;
       }
       else {

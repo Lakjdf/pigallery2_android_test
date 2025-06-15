@@ -14,6 +14,8 @@ import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_contr
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_progress_bar.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_zoom_detector.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selector_guard.dart';
+import 'package:pigallery2_android/ui/themes.dart';
+import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
 import 'media_info_bottom_sheet.dart';
@@ -21,8 +23,9 @@ import 'media_settings_bottom_sheet.dart';
 
 class FullscreenOverlay extends StatefulWidget {
   final Widget child;
+  final EdgeInsets viewPadding;
 
-  const FullscreenOverlay({required this.child, super.key});
+  const FullscreenOverlay({required this.child, required this.viewPadding, super.key});
 
   @override
   State<FullscreenOverlay> createState() => _FullscreenOverlayState();
@@ -33,15 +36,18 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     duration: const Duration(milliseconds: 200),
     vsync: this,
   );
-  late final Animation<double> _animation = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.easeIn,
-  );
+  late final Animation<double> _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
   bool controlsVisible = true;
+
+  late double statusBarHeight;
+
+  late double navigationBarHeight;
 
   @override
   void initState() {
     super.initState();
+    statusBarHeight = widget.viewPadding.top;
+    navigationBarHeight = widget.viewPadding.bottom;
     WidgetsBinding.instance.addObserver(this);
     _controller.forward();
     _controller.addStatusListener((status) {
@@ -64,31 +70,41 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     super.dispose();
   }
 
+  Orientation? _lastOrientation;
+
   @override
   void didChangeMetrics() {
-    /// Reset scale on orientation change
-    Provider.of<VideoModel>(context, listen: false).videoScale = 1.0;
+    updateOrientation();
+  }
+
+  /// Reset scale on orientation change
+  void updateOrientation() {
+    final currentOrientation = MediaQuery.of(context).orientation;
+    if (_lastOrientation == null) {
+      _lastOrientation = currentOrientation;
+      return;
+    }
+    if (currentOrientation != _lastOrientation) {
+      _lastOrientation = currentOrientation;
+      Provider.of<VideoModel>(context, listen: false).videoScale = 1.0;
+    }
   }
 
   void handleTap() {
     if (_animation.value == 1.0) {
-      _controller.animateBack(0.0);
+      _controller.animateBack(0, curve: Curves.easeInQuart);
+      SystemUi.hideSystemBars();
     } else {
+      SystemUi.showSystemBars();
       _controller.forward();
     }
   }
 
   void rotateScreen(BuildContext context) {
     if (MediaQuery.of(context).orientation == Orientation.portrait) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ]);
+      SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
     } else {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     }
   }
 
@@ -98,48 +114,54 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
       condition: (item) => !item.hasError,
       then: (context, item) => Align(
         alignment: Alignment.bottomCenter,
-        child: VideoProgressBar(
-          key: ObjectKey(item),
-          controller: item.controller,
-          opacity: opacity,
-        ),
+        child: VideoProgressBar(key: ObjectKey(item), controller: item.controller, opacity: opacity),
       ),
     );
   }
 
   Widget buildTopBar(BuildContext context, Media item) {
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.metadata.date.toInt() * 1000);
-    return AppBar(
-      automaticallyImplyLeading: false,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
-      title: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Text(
-              item.name,
-              overflow: TextOverflow.fade,
-              maxLines: 1,
-              softWrap: false,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+    return Container(
+      height: toolbarHeight + statusBarHeight,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
+        height: toolbarHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                item.name,
+                overflow: TextOverflow.fade,
+                maxLines: 1,
+                softWrap: false,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
             ),
-          ),
-          SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                DateFormat("dd/MM/yyyy").format(dateTime),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-              ),
-              Text(
-                DateFormat("HH:mm:ss").format(dateTime),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-              ),
-            ],
-          )
-        ],
+            SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  DateFormat("dd/MM/yyyy").format(dateTime),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+                Text(
+                  DateFormat("HH:mm:ss").format(dateTime),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -158,41 +180,37 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   }
 
   Widget buildBottomBar(BuildContext context, Media item) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaY: 5, sigmaX: 5, tileMode: TileMode.clamp),
-          child: BottomAppBar(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
-            // color: Colors.transparent,
-            height: 72,
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                DownloadWidget(),
-                bigIconButton(Icons.color_lens_outlined, () {
-                  showModalBottomSheet(
-                    context: context,
-                    barrierColor: Colors.transparent,
-                    builder: (context) => MediaSettingsBottomSheet(),
-                  );
-                }),
-                bigIconButton(Icons.info_outline, () {
-                  showModalBottomSheet(
-                    context: context,
-                    barrierColor: Colors.transparent,
-                    builder: (context) => MediaInfoBottomSheet(item),
-                  );
-                }),
-                bigIconButton(Icons.screen_rotation, () => rotateScreen(context)),
-                bigIconButton(Icons.close, () {
-                  _controller.value = 0.0;
-                  Navigator.maybePop(context, item);
-                }),
-              ],
-            ),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaY: 5, sigmaX: 5, tileMode: TileMode.clamp),
+        child: Container(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
+          padding: EdgeInsets.only(bottom: navigationBarHeight),
+          height: kBottomNavigationBarHeight + navigationBarHeight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              DownloadWidget(),
+              bigIconButton(Icons.color_lens_outlined, () {
+                showModalBottomSheet(
+                  context: context,
+                  barrierColor: Colors.transparent,
+                  builder: (context) => MediaSettingsBottomSheet(),
+                );
+              }),
+              bigIconButton(Icons.info_outline, () {
+                showModalBottomSheet(
+                  context: context,
+                  barrierColor: Colors.transparent,
+                  builder: (context) => MediaInfoBottomSheet(item),
+                );
+              }),
+              bigIconButton(Icons.screen_rotation, () => rotateScreen(context)),
+              bigIconButton(Icons.close, () {
+                _controller.value = 0.0;
+                Navigator.maybePop(context, item);
+              }),
+            ],
           ),
         ),
       ),
@@ -230,7 +248,10 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     return Selector<FullscreenModel, ({Media item, bool hideDetailedOverlay})>(
       selector: (context, model) => (item: model.currentItem, hideDetailedOverlay: model.hideDetailedOverlay),
       builder: (context, ({Media item, bool hideDetailedOverlay}) data, child) {
-        bool showDetailedOverlay = MediaQuery.of(context).orientation == Orientation.portrait || !data.item.isVideo || !data.hideDetailedOverlay;
+        bool showDetailedOverlay =
+            MediaQuery.of(context).orientation == Orientation.portrait ||
+            !data.item.isVideo ||
+            !data.hideDetailedOverlay;
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -239,10 +260,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaY: 5, sigmaX: 5, tileMode: TileMode.clamp),
-                  child: SizedBox(
-                    height: kToolbarHeight,
-                    child: buildTopBar(context, data.item),
-                  ),
+                  child: buildTopBar(context, data.item),
                 ),
               ),
             Spacer(),
@@ -258,33 +276,17 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
+    updateOrientation();
     return Stack(
       children: [
-        Selector<VideoModel, double>(
-          selector: (context, model) => model.videoScale,
-          builder: (context, scale, child) {
-            return SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: Transform.scale(
-                transformHitTests: true,
-                scale: scale,
-                child: widget.child,
-              ),
-            );
-          },
-        ),
+        widget.child,
         Selector<VideoModel, VideoControllerItem?>(
           selector: (context, model) => model.videoControllerItem,
           builder: (context, controller, child) => controller == null
               ? GestureDetector(onTap: handleTap)
               : VideoZoomDetector(
                   videoControllerItem: controller,
-                  child: VideoControls(
-                    key: ObjectKey(controller),
-                    controller,
-                    handleTap,
-                  ),
+                  child: VideoControls(key: ObjectKey(controller), controller, handleTap),
                 ),
         ),
         IgnorePointer(
@@ -293,10 +295,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
             opacity: _animation,
             child: Selector<FullscreenModel, double>(
               selector: (context, model) => model.opacity,
-              builder: (context, opacity, child) => Opacity(
-                opacity: opacity,
-                child: buildOverlayBars(context),
-              ),
+              builder: (context, opacity, child) => Opacity(opacity: opacity, child: buildOverlayBars(context)),
             ),
           ),
         ),

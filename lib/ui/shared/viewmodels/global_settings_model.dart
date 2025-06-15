@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
@@ -46,32 +45,6 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   }
 
   void storeTopPicksDaysLength() => _storage.set(StorageKey.topPicksDaysLength, _topPicksDaysLength);
-
-  /// Enter full screen. Disregards [appInFullScreen].
-  void enableFullScreen() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  }
-
-  /// Leave full screen. Disregards [appInFullScreen].
-  void disableFullScreen() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
-  }
-
-  /// Whether the application is in full screen mode.
-  /// Fullscreen mode will always be entered when entering [FullScreenView] disregarding this setting.
-  bool get appInFullScreen => _appInFullScreen;
-
-  /// Toggle value of [appInFullScreen].
-  void toggleAppInFullScreen() {
-    _appInFullScreen = !_appInFullScreen;
-    _storage.set(StorageKey.appInFullScreen, _appInFullScreen);
-    notifyListeners();
-    if (_appInFullScreen) {
-      enableFullScreen();
-    } else {
-      disableFullScreen();
-    }
-  }
 
   bool get showDirectoryItemCount => _showDirectoryItemCount;
 
@@ -210,7 +183,6 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   bool _useMaterial3;
   bool _showTopPicks;
   int _topPicksDaysLength;
-  bool _appInFullScreen;
   bool _showDirectoryItemCount;
   int _gridRoundedCorners;
   double _gridAspectRatio;
@@ -226,24 +198,19 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   final SharedPrefsStorage _storage;
 
   GlobalSettingsModel(this._storage)
-      : _appInFullScreen = _storage.get(StorageKey.appInFullScreen),
-        _useMaterial3 = _storage.get(StorageKey.useMaterial3),
-        _showTopPicks = _storage.get(StorageKey.showTopPicks),
-        _topPicksDaysLength = _storage.get(StorageKey.topPicksDaysLength),
-        _showDirectoryItemCount = _storage.get(StorageKey.showDirectoryItemCount),
-        _gridRoundedCorners = _storage.get(StorageKey.gridRoundedCorners),
-        _gridAspectRatio = _storage.get(StorageKey.gridAspectRatio),
-        _gridSpacing = _storage.get(StorageKey.gridSpacing),
-        _gridCrossAxisCountPortrait = _storage.get(StorageKey.gridCrossAxisCountPortrait),
-        _gridCrossAxisCountLandscape = _storage.get(StorageKey.gridCrossAxisCountLandscape),
-        _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview),
-        _apiBasePath = _storage.get(StorageKey.apiBasePath),
-        _apiThumbnailPath = _storage.get(StorageKey.apiThumbnailPath),
-        _mediaBackgroundBlur = _storage.get(StorageKey.mediaBackgroundBlur),
-        _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode),
-        _apiVideoPath = _storage.get(StorageKey.apiVideoPath) {
-    if (_appInFullScreen) {
-      enableFullScreen();
-    }
-  }
+    : _useMaterial3 = _storage.get(StorageKey.useMaterial3),
+      _showTopPicks = _storage.get(StorageKey.showTopPicks),
+      _topPicksDaysLength = _storage.get(StorageKey.topPicksDaysLength),
+      _showDirectoryItemCount = _storage.get(StorageKey.showDirectoryItemCount),
+      _gridRoundedCorners = _storage.get(StorageKey.gridRoundedCorners),
+      _gridAspectRatio = _storage.get(StorageKey.gridAspectRatio),
+      _gridSpacing = _storage.get(StorageKey.gridSpacing),
+      _gridCrossAxisCountPortrait = _storage.get(StorageKey.gridCrossAxisCountPortrait),
+      _gridCrossAxisCountLandscape = _storage.get(StorageKey.gridCrossAxisCountLandscape),
+      _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview),
+      _apiBasePath = _storage.get(StorageKey.apiBasePath),
+      _apiThumbnailPath = _storage.get(StorageKey.apiThumbnailPath),
+      _mediaBackgroundBlur = _storage.get(StorageKey.mediaBackgroundBlur),
+      _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode),
+      _apiVideoPath = _storage.get(StorageKey.apiVideoPath);
 }

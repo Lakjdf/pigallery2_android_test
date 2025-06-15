@@ -7,7 +7,6 @@ enum StorageKey<T> {
   useMaterial3<bool>(true),
   showTopPicks<bool>(true),
   topPicksDaysLength<int>(1),
-  appInFullScreen<bool>(false),
   sortOption<SortOption>(SortOption.name),
   sortAscending<bool>(true),
   showDirectoryItemCount<bool>(false),

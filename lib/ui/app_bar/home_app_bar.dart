@@ -7,11 +7,11 @@ import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/app_bar/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/app_bar/views/website_view.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
-import 'package:pigallery2_android/ui/app_bar/actions/fullscreen_toggle_button.dart';
 import 'package:pigallery2_android/util/extensions.dart';
+import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
-class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+class HomeAppBar extends StatelessWidget {
   final int stackPosition;
   final VoidCallback showServerSettings;
 
@@ -30,10 +30,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
           var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
+          return SlideTransition(position: animation.drive(tween), child: child);
         },
       ),
     );
@@ -43,7 +40,9 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     List<Widget> actions = [];
     bool isServerConfigured = context.select<HomeModel, bool>((it) => it.isServerConfigured);
     bool isSearching = context.select<HomeModel, bool>((it) => it.stateOf(stackPosition).isSearching);
-    bool areDirectoriesDisplayed = context.select<HomeModel, bool>((it) => it.stateOf(stackPosition).directories.isNotEmpty);
+    bool areDirectoriesDisplayed = context.select<HomeModel, bool>(
+      (it) => it.stateOf(stackPosition).directories.isNotEmpty,
+    );
     if (isServerConfigured && !isSearching) {
       actions.add(
         IconButton(
@@ -58,12 +57,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       );
     }
     if (stackPosition == 0) {
-      actions.add(
-        IconButton(
-          onPressed: showServerSettings,
-          icon: const Icon(Icons.settings),
-        ),
-      );
+      actions.add(IconButton(onPressed: showServerSettings, icon: const Icon(Icons.settings)));
     }
     if (stackPosition == 0 && isServerConfigured) {
       actions.add(
@@ -82,7 +76,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (isServerConfigured && !isSearching && areDirectoriesDisplayed) {
       actions.add(const FlattenDirButton());
     }
-    actions.addAll([const FullscreenToggleAction(), const SortOptionWidget()]);
+    actions.addAll([const SortOptionWidget()]);
     return actions;
   }
 
@@ -90,14 +84,38 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     String? directoryName = context.select<HomeModel, String?>((it) => it.stateOf(stackPosition).title);
-    return AppBar(
-      iconTheme: theme.iconTheme,
-      titleTextStyle: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-      title: Text(directoryName == "." ? "" : directoryName ?? ""), // don't show name of root dir '.'
-      actions: _buildActions(context),
+    final statusBarHeight = SystemUi.getPadding().top;
+
+    // not using AppBar since it doesn't properly keep top padding when status bar is hidden
+    return Container(
+      padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
+      color: theme.appBarTheme.backgroundColor,
+      child: IconButtonTheme(
+        data: IconButtonThemeData(
+          style: theme.iconButtonTheme.style?.copyWith(padding: WidgetStateProperty.all(EdgeInsets.zero)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (stackPosition > 0)
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                padding: EdgeInsets.zero,
+              ),
+            SizedBox(width: 6),
+            Text(
+              directoryName == "." ? "" : directoryName ?? "",
+              overflow: TextOverflow.fade,
+              maxLines: 1,
+              softWrap: false,
+              style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            Spacer(),
+            Row(crossAxisAlignment: CrossAxisAlignment.center, children: _buildActions(context)),
+          ],
+        ),
+      ),
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

@@ -57,9 +57,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     return Stack(
       key: ValueKey(widget.item.id),
       fit: StackFit.passthrough,
-      children: [
-        ThumbnailImage(key: ObjectKey(widget.item), widget.item),
-      ],
+      children: [ThumbnailImage(key: ObjectKey(widget.item), widget.item)],
     );
   }
 
@@ -116,14 +114,20 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     return Stack(
       children: [
         VideoViewWidgetBackground(item: widget.item, videoController: videoController),
-        buildVideo(context, videoController),
+        Selector<VideoModel, double>(
+          selector: (context, model) => model.videoScale,
+          builder: (context, scale, child) =>
+              Transform.scale(transformHitTests: true, scale: scale, child: buildVideo(context, videoController)),
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final controllerItem = context.select<VideoModel, VideoControllerItem?>((model) => model.getVideoControllerItem(widget.item.id));
+    final controllerItem = context.select<VideoModel, VideoControllerItem?>(
+      (model) => model.getVideoControllerItem(widget.item.id),
+    );
     if (controllerItem == null) {
       return buildPlaceholder();
     }
@@ -178,11 +182,7 @@ class VideoViewWidgetBackground extends StatelessWidget {
     return Selector<GlobalSettingsModel, int>(
       selector: (context, model) => model.mediaBackgroundBlur,
       builder: (context, blur, child) => ImageFiltered(
-        imageFilter: ImageFilter.blur(
-          sigmaX: blur.toDouble(),
-          sigmaY: blur.toDouble(),
-          tileMode: TileMode.decal,
-        ),
+        imageFilter: ImageFilter.blur(sigmaX: blur.toDouble(), sigmaY: blur.toDouble(), tileMode: TileMode.decal),
         child: buildVideo(context, videoController),
       ),
     );
@@ -190,7 +190,9 @@ class VideoViewWidgetBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isAmbientMode = context.select<GlobalSettingsModel, bool>((it) => it.mediaBackgroundMode == MediaBackgroundMode.ambient);
+    bool isAmbientMode = context.select<GlobalSettingsModel, bool>(
+      (it) => it.mediaBackgroundMode == MediaBackgroundMode.ambient,
+    );
     if (isAmbientMode) {
       return buildAmbientBackground(context);
     }

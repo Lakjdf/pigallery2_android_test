@@ -1,16 +1,18 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_background_widget.dart';
-import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/fullscreen_overlay.dart';
 import 'package:pigallery2_android/ui/shared/widgets/horizontal_carousel_wrapper.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/photo_view_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/vertical_dismiss_wrapper.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/video_view_widget.dart';
+import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
 class FullscreenView extends StatefulWidget {
@@ -24,7 +26,7 @@ class FullscreenView extends StatefulWidget {
 
 class _FullscreenViewState extends State<FullscreenView> {
   Widget buildItemWithHero(BuildContext context, Media item) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    double screenWidth = PlatformDispatcher.instance.views.first.physicalSize.width;
     double heightDiff = screenWidth * (item.dimension.height / item.dimension.width) - screenWidth;
     return Hero(
       // always use thumbnail for hero animation
@@ -75,7 +77,7 @@ class _FullscreenViewState extends State<FullscreenView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<GlobalSettingsModel>().enableFullScreen();
+      SystemUi.setFullscreenSystemBarColors(context);
     });
   }
 
@@ -91,10 +93,8 @@ class _FullscreenViewState extends State<FullscreenView> {
       canPop: false,
       onPopInvokedWithResult: ((bool didPop, _) {
         if (didPop) return;
-        GlobalSettingsModel model = context.read<GlobalSettingsModel>();
-        if (!model.appInFullScreen) {
-          model.disableFullScreen();
-        }
+        SystemUi.setDefaultSystemBarColors(context);
+        SystemUi.showSystemBars();
         Navigator.pop(context);
         SystemChrome.setPreferredOrientations([
           DeviceOrientation.portraitUp,
@@ -106,6 +106,8 @@ class _FullscreenViewState extends State<FullscreenView> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: FullscreenOverlay(
+          key: ValueKey(widget.item.id),
+          viewPadding: SystemUi.getPadding(),
           child: HorizontalCarouselWrapper(
             onPageChanged: (idx) => fullscreenModel.currentPage = idx,
             initialIndex: media.indexOf(widget.item),

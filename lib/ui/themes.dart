@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const double toolbarHeight = 42;
+
 class CustomThemeData {
   static final Color _darkFocusColor = Colors.white.withValues(alpha: 0.12);
 
@@ -13,6 +15,7 @@ class CustomThemeData {
       primaryColor: colorScheme.primary,
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.primary,
+        toolbarHeight: toolbarHeight
       ),
       iconTheme: IconThemeData(color: colorScheme.onPrimary),
       scaffoldBackgroundColor: colorScheme.surface,

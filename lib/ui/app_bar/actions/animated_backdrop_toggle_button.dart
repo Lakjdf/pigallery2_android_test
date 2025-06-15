@@ -9,6 +9,7 @@ class AnimatedBackdropToggleButton extends StatelessWidget {
     return RotationTransition(
       turns: Tween(begin: 0.0, end: 0.5).animate(Backdrop.of(context).animationController.view),
       child: IconButton(
+        padding: EdgeInsets.zero,
         icon: const Icon(Icons.expand_less),
         onPressed: Backdrop.of(context).fling,
       ),

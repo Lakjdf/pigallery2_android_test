@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
-import 'package:pigallery2_android/ui/app_bar/actions/fullscreen_toggle_button.dart';
+import 'package:pigallery2_android/ui/themes.dart';
 import 'package:provider/provider.dart';
 
 class GallerySearchDelegate extends SearchDelegate<String> {
@@ -18,6 +18,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
         titleTextStyle: theme.textTheme.titleLarge,
         toolbarTextStyle: theme.textTheme.bodyMedium,
         iconTheme: theme.iconTheme,
+        toolbarHeight: toolbarHeight
       ),
       inputDecorationTheme: searchFieldDecorationTheme ??
           InputDecorationTheme(
@@ -36,7 +37,6 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      const FullscreenToggleAction(),
       const SortOptionWidget(),
     ];
   }
