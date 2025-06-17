@@ -73,7 +73,8 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
         // image is above visible
         double offset = imageTop - error;
         _scrollController.animateTo(offset, duration: const Duration(milliseconds: 400), curve: Curves.ease);
-      } else if (imageTop + imageHeight + error > _scrollController.position.pixels + _scrollController.position.extentInside) {
+      } else if (imageTop + imageHeight + error >
+          _scrollController.position.pixels + _scrollController.position.extentInside) {
         // image is below visible
         double offset = imageTop + imageHeight + error - _scrollController.position.extentInside;
         _scrollController.animateTo(offset, duration: const Duration(milliseconds: 400), curve: Curves.ease);
@@ -84,8 +85,13 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   void openDirectory(BuildContext context, Directory directory) {
     Provider.of<HomeModel>(context, listen: false).addStack(directory);
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: ((_) => HomeView(widget.stackPosition + 1)),
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 200),
+        reverseTransitionDuration: const Duration(milliseconds: 100),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        pageBuilder: ((_, _, _) => HomeView(widget.stackPosition + 1)),
       ),
     );
   }
@@ -110,10 +116,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
             providers: [
               ChangeNotifierProvider(
                 create: ((context) {
-                  return DownloadModel(
-                    Provider.of<MediaRepository>(context, listen: false),
-                    media,
-                  );
+                  return DownloadModel(Provider.of<MediaRepository>(context, listen: false), media);
                 }),
               ),
               ChangeNotifierProvider(
@@ -138,7 +141,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                 create: ((context) {
                   return VideoSeekModel(context.read(), context.read());
                 }),
-              )
+              ),
             ],
             child: FullscreenView(media),
           );
