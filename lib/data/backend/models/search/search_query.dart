@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:pigallery2_android/util/extensions.dart';
 
 sealed class SearchQuery {
   abstract int type;
@@ -17,7 +18,7 @@ abstract class TextSearchQuery extends SearchQuery {
   @override
   Map<String, dynamic> toJson() => {
         'type': type,
-        'text': text,
+        'text': text.encodeUri(),
       };
 }
 

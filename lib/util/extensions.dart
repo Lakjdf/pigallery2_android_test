@@ -30,6 +30,17 @@ extension StringExtension on String {
   String toCapitalized() => length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
 
   String? ifEmpty(String? defaultValue) => isNotEmpty ? this : defaultValue;
+
+  /// Encode the uri to match the expected encoding of PiGallery2.
+  String encodeUri() {
+    return Uri.encodeFull(this)
+        .replaceAll('#', '%23')
+        .replaceAll('\$', '%24')
+        .replaceAll('\'', '%27')
+        .replaceAll(r'(', '%28')
+        .replaceAll(')', '%29')
+        .replaceAll('?', '%3F');
+  }
 }
 
 extension DurationExtension on Duration {
