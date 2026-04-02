@@ -102,18 +102,20 @@ class SettingsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(24, 6, 24, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          BottomSheetHandle(),
-          CustomTabBarWidget(
-            identifier: "Global",
-            tabData: getTabs(context),
-            isScrollable: true,
-          ),
-        ],
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24, 6, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BottomSheetHandle(),
+            CustomTabBarWidget(
+              identifier: "Global",
+              tabData: getTabs(context),
+              isScrollable: true,
+            ),
+          ],
+        ),
       ),
     );
   }

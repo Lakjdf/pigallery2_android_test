@@ -58,13 +58,19 @@ class GlassNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _GlassNavBarContent(icons: tabIcons),
-        if (actions.isNotEmpty) SizedBox(width: 16),
-        if (actions.isNotEmpty) _GlassNavBarSimple(icons: actions, onTap: onTap!),
-      ],
+    return SafeArea(
+      bottom: true,
+      top: false,
+      left: false,
+      right: false,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _GlassNavBarContent(icons: tabIcons),
+          if (actions.isNotEmpty) SizedBox(width: 16),
+          if (actions.isNotEmpty) _GlassNavBarSimple(icons: actions, onTap: onTap!),
+        ],
+      ),
     );
   }
 }

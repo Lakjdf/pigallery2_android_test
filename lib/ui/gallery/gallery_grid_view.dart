@@ -18,6 +18,7 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_view.dart';
 import 'package:pigallery2_android/ui/gallery/directory_item.dart';
 import 'package:pigallery2_android/ui/gallery/media_item.dart';
+import 'package:pigallery2_android/ui/home/views/glass_nav_bar.dart';
 import 'package:provider/provider.dart';
 
 class GalleryViewGridView extends StatefulWidget {
@@ -165,6 +166,15 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       builder: (context, orientation) => GalleryErrorScreen(
         child: RefreshWrapper(
           child: GridView.builder(
+            padding: EdgeInsets.fromLTRB(
+              MediaQuery.paddingOf(context).left,
+              MediaQuery.paddingOf(context).top,
+              MediaQuery.paddingOf(context).right,
+              MediaQuery.paddingOf(context).bottom +
+                  GlassNavBarTheme.barHeight +
+                  GlassNavBarTheme.bottomPadding +
+                  16, // extra padding to clear the nav bar properly
+            ),
             key: PageStorageKey(widget.stackPosition),
             controller: _scrollController,
             itemCount: items.length,

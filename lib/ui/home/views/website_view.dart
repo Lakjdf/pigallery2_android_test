@@ -7,6 +7,7 @@ import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/web_view_model.dart';
 import 'package:pigallery2_android/ui/home/views/error_screen.dart';
+import 'package:pigallery2_android/ui/home/views/glass_nav_bar.dart';
 import 'package:pigallery2_android/util/strings.dart';
 import 'package:provider/provider.dart';
 
@@ -23,7 +24,14 @@ class WebsiteView extends StatelessWidget {
     }
     return PopScope(
       canPop: false,
-      child: InAppWebView(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.paddingOf(context).bottom +
+              GlassNavBarTheme.barHeight +
+              GlassNavBarTheme.bottomPadding +
+              16, // extra padding to clear the nav bar properly
+        ),
+        child: InAppWebView(
         key: ValueKey(serverUrl),
         onWebViewCreated: (controller) {
           tabNavigatorModel.unregisterWebViewBackHandler();
@@ -58,6 +66,7 @@ class WebsiteView extends StatelessWidget {
             return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.CANCEL);
           }
         },
+      ),
       ),
     );
   }
