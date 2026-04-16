@@ -17,11 +17,16 @@ class ServerRepositoryImpl implements ServerRepository {
   ServerSettings get _serverSettings => _storage.get(StorageKey.serverSettings);
 
   @override
-  Iterable<String> get serverUrls => _serverSettings.servers.map((it) => it.url);
+  Iterable<Server> get servers => _serverSettings.servers;
 
   @override
   String? get serverUrl {
-    return _serverSettings.servers.firstWhereOrNull((it) => it.url == _serverSettings.selectedServer)?.url;
+    return _serverSettings.servers.firstWhereOrNull((it) => it.id == _serverSettings.selectedServer)?.url;
+  }
+
+  @override
+  String? get serverId {
+    return _serverSettings.servers.firstWhereOrNull((it) => it.id == _serverSettings.selectedServer)?.id;
   }
 
   @override
@@ -29,55 +34,52 @@ class ServerRepositoryImpl implements ServerRepository {
     if (_serverSettings.servers.isEmpty) {
       return _serverSettings.defaultApiSettings;
     }
-    return _serverSettings.servers.firstWhere((it) => it.url == _serverSettings.selectedServer).apiSettings;
+    return _serverSettings.servers.firstWhere((it) => it.id == _serverSettings.selectedServer).apiSettings;
   }
 
   @override
-  Future<bool> addServer(String url, String? username, String? password, SessionData? sessionData) async {
+  Future<void> addServer(String url, String? username, String? password, SessionData? sessionData) async {
+    final String id = Server.idFor(url, username);
     List<Server> servers = _serverSettings.servers.toList();
-    if (servers.any((it) => it.url == url)) {
-      return false; // already exists
-    }
-    servers.add(Server(url: url, apiSettings: _serverSettings.defaultApiSettings));
+    if (servers.any((it) => it.id == id)) return;
+    servers.add(Server(id: id, url: url, username: username, apiSettings: _serverSettings.defaultApiSettings));
     ServerSettings settings = _serverSettings.copyWith(
       servers: servers,
-      selectedServer: servers.length == 1 ? url : _serverSettings.selectedServer,
+      selectedServer: servers.length == 1 ? id : _serverSettings.selectedServer,
     );
     await _storage.set(StorageKey.serverSettings, settings);
 
     if (username != null && password != null) {
-      await _credentialStorage.storeCredentials(url, username, password);
+      await _credentialStorage.storeCredentials(id, username, password);
     }
     if (sessionData != null) {
-      await _sessionStorage.storeSessionData(sessionData);
-      sessionData = null;
+      await _sessionStorage.storeSessionData(sessionData.copyWith(id: id));
     }
-    return true;
   }
 
   @override
-  Future<void> deleteServer(String url) async {
-    List<Server> updatedServers = _serverSettings.servers.whereNot((it) => it.url == url).toList();
+  Future<void> deleteServer(String id) async {
+    List<Server> updatedServers = _serverSettings.servers.whereNot((it) => it.id == id).toList();
     String? selectedServer = _serverSettings.selectedServer;
-    if (selectedServer == url && updatedServers.isNotEmpty) {
-      selectedServer = updatedServers.first.url;
+    if (selectedServer == id && updatedServers.isNotEmpty) {
+      selectedServer = updatedServers.first.id;
     }
     ServerSettings updatedSettings = _serverSettings.copyWith(
       servers: updatedServers,
       selectedServer: selectedServer,
     );
     await _storage.set(StorageKey.serverSettings, updatedSettings);
-    await _credentialStorage.deleteCredentials(url);
-    await _sessionStorage.deleteSessionData(url);
+    await _credentialStorage.deleteCredentials(id);
+    await _sessionStorage.deleteSessionData(id);
   }
 
   @override
-  Future<void> selectServer(String url) async {
-    await _storage.set(StorageKey.serverSettings, _serverSettings.copyWith(selectedServer: url));
+  Future<void> selectServer(String id) async {
+    await _storage.set(StorageKey.serverSettings, _serverSettings.copyWith(selectedServer: id));
   }
 
   @override
-  Future<void> updateApiSettings(ApiSettings apiSettings) async {
+  Future<void> updateApiSettings(String serverId, ApiSettings apiSettings) async {
     ApiSettings? defaultApiSettings;
     if (_serverSettings.servers.length <= 1) {
       defaultApiSettings = apiSettings;
@@ -85,7 +87,7 @@ class ServerRepositoryImpl implements ServerRepository {
     ServerSettings updatedServerSettings = _serverSettings.copyWith(
       defaultApiSettings: defaultApiSettings,
       servers: _serverSettings.servers.map((it) {
-        if (it.url == serverUrl) {
+        if (it.id == serverId) {
           return it.copyWith(apiSettings: apiSettings);
         }
         return it;

@@ -20,7 +20,8 @@ class PiGallery2Api {
 
   String getDirectoriesEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/gallery/content/";
 
-  String getImagePath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath";
+  String getImagePath(String serverUrl, String relativePath) =>
+      "${getDirectoriesEndpoint(serverUrl)}$relativePath${_serverRepository.apiSettings.imagePath}";
 
   String getVideoPath(String serverUrl, String relativePath) =>
       "${getDirectoriesEndpoint(serverUrl)}$relativePath${_serverRepository.apiSettings.videoPath}";
@@ -90,6 +91,7 @@ class PiGallery2Api {
       return ApiResponse(
         code: 200,
         result: SessionData(
+          id: serverUrl,
           url: serverUrl,
           cookies: _parseCookies(response.headers['set-cookie']!),
           csrfToken: bodyResult.containsKey('csrfToken') ? bodyResult['csrfToken'] : null,

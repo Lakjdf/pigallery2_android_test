@@ -1,38 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/settings/views/server_selection/add_server_dialog.dart';
+import 'package:pigallery2_android/ui/settings/views/server_selection/edit_server_dialog.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selectable_card.dart';
 import 'package:provider/provider.dart';
 
 class ServerSelection extends StatelessWidget {
   const ServerSelection({super.key});
 
-  void askDeleteServer(BuildContext context, String url) {
-    Widget cancelButton = TextButton(
-      child: const Text("Cancel"),
-      onPressed: () => Navigator.pop(context),
-    );
-    Widget continueButton = TextButton(
-      child: const Text("Remove"),
-      onPressed: () {
-        Provider.of<ServerModel>(context, listen: false).deleteServer(url);
-        Navigator.pop(context);
-      },
-    );
-    AlertDialog alert = AlertDialog(
-      title: const Text("Remove Confirmation"),
-      content: Text("Would you like to remove the server $url?"),
-      actions: [
-        cancelButton,
-        continueButton,
-      ],
-    );
+  void _showEditDialog(BuildContext context, Server server) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
+      builder: (_) => EditServerDialog(server: server),
     );
   }
 
@@ -46,16 +27,28 @@ class ServerSelection extends StatelessWidget {
     );
   }
 
-  List<Widget> buildListItems(BuildContext context, String? selectedServer) {
-    return context.select<ServerModel, Iterable<String>>((it) => it.serverUrls).map(
-      (url) {
+  List<Widget> buildListItems(BuildContext context, String? selectedServerId) {
+    return context.select<ServerModel, Iterable<Server>>((it) => it.servers).map(
+      (server) {
         return SelectableCard(
-          isSelected: url == selectedServer,
-          onSelected: () => context.read<ServerModel>().selectServer(url),
-          title: Text(url),
+          isSelected: server.id == selectedServerId,
+          onSelected: () => context.read<ServerModel>().selectServer(server.id),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(server.url),
+              Text(
+                server.username ?? "No credentials",
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
+          ),
           trailing: IconButton(
-            onPressed: () => askDeleteServer(context, url),
-            icon: const Icon(Icons.delete),
+            onPressed: () => _showEditDialog(context, server),
+            icon: const Icon(Icons.tune),
           ),
         );
       },
@@ -66,7 +59,7 @@ class ServerSelection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ...buildListItems(context, context.select<ServerModel, String?>((it) => it.serverUrl)),
+        ...buildListItems(context, context.select<ServerModel, String?>((it) => it.serverId)),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,

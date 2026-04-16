@@ -22,7 +22,7 @@ class SessionStorage {
   }
 
   Future<void> storeSessionData(SessionData data) async {
-    int index = _cache.indexWhere((it) => it.url == data.url);
+    int index = _cache.indexWhere((it) => it.id == data.id);
     if (index == -1) {
       _cache.add(data);
     } else {
@@ -33,12 +33,12 @@ class SessionStorage {
     await _setCookies(data.url, data.cookies);
   }
 
-  SessionData? getSessionData(String url) {
-    return _cache.firstWhereOrNull((it) => it.url == url);
+  SessionData? getSessionData(String id) {
+    return _cache.firstWhereOrNull((it) => it.id == id);
   }
 
-  Future<void> deleteSessionData(String url) async {
-    _cache.removeWhere((it) => it.url == url);
+  Future<void> deleteSessionData(String id) async {
+    _cache.removeWhere((it) => it.id == id);
     await _storage.write(key: sessionDataKey, value: StoredSessionData(sessionData: _cache).toRawJson());
   }
 

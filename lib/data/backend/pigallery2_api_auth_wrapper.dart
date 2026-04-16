@@ -29,7 +29,7 @@ class PiGallery2ApiAuthWrapper implements ApiService {
 
   @override
   Map<String, String> get headers {
-    SessionData? sessionData = _serverRepository.serverUrl?.let((it) => _sessionStorage.getSessionData(it));
+    SessionData? sessionData = _serverRepository.serverId?.let((it) => _sessionStorage.getSessionData(it));
     return _api.getHeaders(sessionData);
   }
 
@@ -39,6 +39,15 @@ class PiGallery2ApiAuthWrapper implements ApiService {
       throw Exception(Strings.errorNoServerConfigured);
     } else {
       return url;
+    }
+  }
+
+  String _getServerIdOrThrow() {
+    String? id = _serverRepository.serverId;
+    if (id == null) {
+      throw Exception(Strings.errorNoServerConfigured);
+    } else {
+      return id;
     }
   }
 
@@ -66,17 +75,18 @@ class PiGallery2ApiAuthWrapper implements ApiService {
 
   Future<T?> _requestWithAuth<T>(Future<ApiResponse<T>> Function(String, SessionData?) request) async {
     String url = _getServerUrlOrThrow();
-    ApiResponse<T> response = await request(url, _sessionStorage.getSessionData(url));
+    String id = _getServerIdOrThrow();
+    ApiResponse<T> response = await request(url, _sessionStorage.getSessionData(id));
 
     if (response.code == 401) {
       /// retry with stored credentials
-      LoginCredentials? credentials = await _credentialStorage.getServerCredentials(url);
+      LoginCredentials? credentials = await _credentialStorage.getServerCredentials(id);
       if (credentials != null) {
         SessionData? sessionData = (await _api.login(url, credentials)).result;
         if (sessionData != null) {
           response = await request(url, sessionData);
           if (response.code == 200 && response.error == null) {
-            await _sessionStorage.storeSessionData(sessionData);
+            await _sessionStorage.storeSessionData(sessionData.copyWith(id: id));
           }
         }
       }
@@ -118,7 +128,7 @@ class PiGallery2ApiAuthWrapper implements ApiService {
     );
     return result ?? [];
   }
-  
+
   @override
   Future<void> createAlbum(CreateAlbumDto album) async {
     await _requestWithAuth(
@@ -126,7 +136,7 @@ class PiGallery2ApiAuthWrapper implements ApiService {
           _api.createAlbum(serverUrl: url, album: album, sessionData: sessionData),
     );
   }
-  
+
   @override
   Future<void> deleteAlbum(int id) async {
     await _requestWithAuth(
@@ -138,7 +148,8 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   @override
   Future<void> startIndexingJob() {
     String url = _getServerUrlOrThrow();
-    return _api.startIndexingJob(url, _sessionStorage.getSessionData(url));
+    String id = _getServerIdOrThrow();
+    return _api.startIndexingJob(url, _sessionStorage.getSessionData(id));
   }
 
   @override

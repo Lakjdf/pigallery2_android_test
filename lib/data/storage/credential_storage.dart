@@ -5,26 +5,26 @@ class CredentialStorage {
   final FlutterSecureStorage _storage;
   CredentialStorage(this._storage);
 
-  String _getUsernameKey(String url) => "$url-username";
+  String _getUsernameKey(String id) => "$id-username";
 
-  String _getPasswordKey(String url) => "$url-password";
+  String _getPasswordKey(String id) => "$id-password";
 
-  Future<LoginCredentials?> getServerCredentials(String url) async {
-    String? username = await _storage.read(key: _getUsernameKey(url));
-    String? password = await _storage.read(key: _getPasswordKey(url));
+  Future<LoginCredentials?> getServerCredentials(String id) async {
+    String? username = await _storage.read(key: _getUsernameKey(id));
+    String? password = await _storage.read(key: _getPasswordKey(id));
     if (username != null && password != null) {
       return LoginCredentials(username, password);
     }
     return null;
   }
 
-  Future<void> storeCredentials(String url, String username, String password) async {
-    await _storage.write(key: _getUsernameKey(url), value: username);
-    await _storage.write(key: _getPasswordKey(url), value: password);
+  Future<void> storeCredentials(String id, String username, String password) async {
+    await _storage.write(key: _getUsernameKey(id), value: username);
+    await _storage.write(key: _getPasswordKey(id), value: password);
   }
 
-  Future<void> deleteCredentials(String url) async {
-    await _storage.delete(key: _getUsernameKey(url));
-    await _storage.delete(key: _getPasswordKey(url));
+  Future<void> deleteCredentials(String id) async {
+    await _storage.delete(key: _getUsernameKey(id));
+    await _storage.delete(key: _getPasswordKey(id));
   }
 }

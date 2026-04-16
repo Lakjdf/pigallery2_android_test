@@ -1,3 +1,4 @@
+import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
@@ -9,44 +10,28 @@ class ServerModel extends SafeChangeNotifier {
 
   String? get serverUrl => _serverRepository.serverUrl;
 
-  Iterable<String> get serverUrls => _serverRepository.serverUrls;
+  String? get serverId => _serverRepository.serverId;
+
+  Iterable<Server> get servers => _serverRepository.servers;
 
   Future<void> addServer(String url, String? username, String? password, SessionData? sessionData) async {
-    bool added = await _serverRepository.addServer(url, username, password, sessionData);
-    if (added) {
-      notifyListeners();
-    }
-  }
-
-  Future<void> deleteServer(String url) async {
-    await _serverRepository.deleteServer(url);
+    await _serverRepository.addServer(url, username, password, sessionData);
     notifyListeners();
   }
 
-  Future<void> selectServer(String url) async {
-    await _serverRepository.selectServer(url);
+  Future<void> deleteServer(String id) async {
+    await _serverRepository.deleteServer(id);
     notifyListeners();
   }
 
-  String get apiThumbnailPath => _serverRepository.apiSettings.thumbnailPath;
-
-  set apiThumbnailPath(String value) {
-    if (value != apiThumbnailPath) {
-      _serverRepository.updateApiSettings(
-        _serverRepository.apiSettings.copyWith(thumbnailPath: value),
-      );
-      notifyListeners();
-    }
+  Future<void> selectServer(String id) async {
+    await _serverRepository.selectServer(id);
+    notifyListeners();
   }
 
-  String get apiVideoPath => _serverRepository.apiSettings.videoPath;
-
-  set apiVideoPath(String value) {
-    if (value != apiVideoPath) {
-      _serverRepository.updateApiSettings(
-        _serverRepository.apiSettings.copyWith(videoPath: value),
-      );
-      notifyListeners();
-    }
+  Future<void> updateApiSettings(String serverId, ApiSettings settings) async {
+    await _serverRepository.updateApiSettings(serverId, settings);
+    notifyListeners();
   }
+
 }

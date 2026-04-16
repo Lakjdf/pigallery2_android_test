@@ -1,22 +1,26 @@
 import 'dart:convert';
 
 class SessionData {
+    final String id;
     final String url;
     final String cookies;
     final String? csrfToken;
 
     SessionData({
+        required this.id,
         required this.url,
         required this.cookies,
         required this.csrfToken,
     });
 
     SessionData copyWith({
+        String? id,
         String? url,
         String? cookies,
         String? csrfToken,
-    }) => 
+    }) =>
         SessionData(
+            id: id ?? this.id,
             url: url ?? this.url,
             cookies: cookies ?? this.cookies,
             csrfToken: csrfToken ?? this.csrfToken,
@@ -27,12 +31,15 @@ class SessionData {
     String toRawJson() => json.encode(toJson());
 
     factory SessionData.fromJson(Map<String, dynamic> json) => SessionData(
+        // Migration: old entries without "id" use url as id
+        id: json["id"] ?? json["url"],
         url: json["url"],
         cookies: json["cookies"],
         csrfToken: json["csrfToken"],
     );
 
     Map<String, dynamic> toJson() => {
+        "id": id,
         "url": url,
         "cookies": cookies,
         "csrfToken": csrfToken,
@@ -48,7 +55,7 @@ class StoredSessionData {
 
     StoredSessionData copyWith({
         List<SessionData>? sessionData,
-    }) => 
+    }) =>
         StoredSessionData(
             sessionData: sessionData ?? this.sessionData,
         );

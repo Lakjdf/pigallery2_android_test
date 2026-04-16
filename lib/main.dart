@@ -65,6 +65,7 @@ void setupLogging() {
   }
   Logger.root.onRecord.listen((record) {
     final errorMessage = record.error?.let((it) => ': $it\n${record.stackTrace}') ?? '';
+    // ignore: avoid_print
     print('${record.level.name}: ${record.loggerName}: ${record.message}$errorMessage');
   });
 }
@@ -155,7 +156,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<AddServerModel>(
           create: ((context) {
-            return AddServerModel(context.read(), context.read(), context.read());
+            return AddServerModel(context.read(), context.read());
           }),
         ),
         ChangeNotifierProvider<TabStateModel>(

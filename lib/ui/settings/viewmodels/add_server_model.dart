@@ -1,16 +1,15 @@
 import 'package:pigallery2_android/data/backend/api_service.dart';
+import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/backend/models/auth/connection_test_result.dart';
-import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 class AddServerModel extends SafeChangeNotifier {
-  final ServerRepository _serverRepository;
   final ApiService _apiService;
   final ServerModel _serverModel;
 
-  AddServerModel(this._serverRepository, this._apiService, this._serverModel);
+  AddServerModel(this._apiService, this._serverModel);
 
   SessionData? _lastSessionData;
 
@@ -40,7 +39,8 @@ class AddServerModel extends SafeChangeNotifier {
   }
 
   Future<void> testConnection(String url, String? username, String? password) async {
-    if (_serverRepository.serverUrls.contains(url)) {
+    final alreadyExists = _serverModel.servers.any((s) => s.id == Server.idFor(url, username));
+    if (alreadyExists) {
       testUrlErrorText = "Server already exists";
       testFailedAuth = false;
       testSuccessAuth = false;
