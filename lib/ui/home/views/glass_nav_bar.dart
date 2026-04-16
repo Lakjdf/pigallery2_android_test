@@ -13,9 +13,9 @@ class GlassNavBarTheme {
   static const double bottomPadding = 24;
 
   static Color getGlassColor(BuildContext context) =>
-      Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(0);
+      Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100);
 
-  static Color getBorderColor(BuildContext context) => Theme.of(context).colorScheme.onSurface.withAlpha(90);
+  static Color getBorderColor(BuildContext context) => Theme.of(context).colorScheme.onSurface.withAlpha(20);
 
   static Color getRippleColor(BuildContext context) => Theme.of(context).colorScheme.onSurface.withAlpha(60);
 

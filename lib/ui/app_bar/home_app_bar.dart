@@ -159,7 +159,7 @@ class _HomeAppBarInner extends StatelessWidget {
         onPressed: () {
           onBackInvoked(context);
         },
-        icon: const Icon(Icons.arrow_back),
+        icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
         padding: EdgeInsets.zero,
       );
     } else {
