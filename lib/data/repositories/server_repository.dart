@@ -12,9 +12,15 @@ class ServerRepositoryImpl implements ServerRepository {
   final SharedPrefsStorage _storage;
   final SessionStorage _sessionStorage;
 
-  ServerRepositoryImpl(this._storage, this._credentialStorage, this._sessionStorage);
+  ServerSettings _serverSettings;
 
-  ServerSettings get _serverSettings => _storage.get(StorageKey.serverSettings);
+  ServerRepositoryImpl(this._storage, this._credentialStorage, this._sessionStorage)
+    : _serverSettings = _storage.get(StorageKey.serverSettings);
+
+  Future<void> _persist(ServerSettings settings) async {
+    _serverSettings = settings;
+    await _storage.set(StorageKey.serverSettings, settings);
+  }
 
   @override
   Iterable<Server> get servers => _serverSettings.servers;
@@ -43,11 +49,10 @@ class ServerRepositoryImpl implements ServerRepository {
     List<Server> servers = _serverSettings.servers.toList();
     if (servers.any((it) => it.id == id)) return;
     servers.add(Server(id: id, url: url, username: username, apiSettings: _serverSettings.defaultApiSettings));
-    ServerSettings settings = _serverSettings.copyWith(
+    await _persist(_serverSettings.copyWith(
       servers: servers,
       selectedServer: servers.length == 1 ? id : _serverSettings.selectedServer,
-    );
-    await _storage.set(StorageKey.serverSettings, settings);
+    ));
 
     if (username != null && password != null) {
       await _credentialStorage.storeCredentials(id, username, password);
@@ -64,18 +69,17 @@ class ServerRepositoryImpl implements ServerRepository {
     if (selectedServer == id && updatedServers.isNotEmpty) {
       selectedServer = updatedServers.first.id;
     }
-    ServerSettings updatedSettings = _serverSettings.copyWith(
+    await _persist(_serverSettings.copyWith(
       servers: updatedServers,
       selectedServer: selectedServer,
-    );
-    await _storage.set(StorageKey.serverSettings, updatedSettings);
+    ));
     await _credentialStorage.deleteCredentials(id);
     await _sessionStorage.deleteSessionData(id);
   }
 
   @override
   Future<void> selectServer(String id) async {
-    await _storage.set(StorageKey.serverSettings, _serverSettings.copyWith(selectedServer: id));
+    await _persist(_serverSettings.copyWith(selectedServer: id));
   }
 
   @override
@@ -84,7 +88,7 @@ class ServerRepositoryImpl implements ServerRepository {
     if (_serverSettings.servers.length <= 1) {
       defaultApiSettings = apiSettings;
     }
-    ServerSettings updatedServerSettings = _serverSettings.copyWith(
+    await _persist(_serverSettings.copyWith(
       defaultApiSettings: defaultApiSettings,
       servers: _serverSettings.servers.map((it) {
         if (it.id == serverId) {
@@ -92,7 +96,6 @@ class ServerRepositoryImpl implements ServerRepository {
         }
         return it;
       }).toList(),
-    );
-    await _storage.set(StorageKey.serverSettings, updatedServerSettings);
+    ));
   }
 }
