@@ -24,6 +24,7 @@ import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
+import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_scroll_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
@@ -182,6 +183,9 @@ class MyApp extends StatelessWidget {
           create: ((context) {
             return AppBarModel(context.read(), context.read(), context.read());
           }),
+        ),
+        ChangeNotifierProvider<AppBarScrollModel>(
+          create: ((context) => AppBarScrollModel()),
         ),
         ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),
         ChangeNotifierProxyProvider<GlobalSettingsModel, TopPicksModel>(

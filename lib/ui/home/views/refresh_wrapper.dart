@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
+import 'package:pigallery2_android/ui/themes.dart';
+import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -51,7 +53,8 @@ class _RefreshWrapperState extends State<RefreshWrapper> with TickerProviderStat
         },
         builder: (_, _) {
           return Container(
-            alignment: Alignment.center,
+            alignment: Alignment.topCenter,
+            padding: EdgeInsets.only(top: SystemUi.getPadding().top + toolbarHeight + 24),
             child: FadeTransition(
               opacity: _scaleController,
               child: ScaleTransition(

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_image_cache.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
@@ -10,6 +8,7 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_scroll_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_preview_model.dart';
+import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_scroll_model.dart';
 import 'package:pigallery2_android/ui/home/views/error_screen.dart';
 import 'package:pigallery2_android/ui/home/views/refresh_wrapper.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
@@ -19,13 +18,17 @@ import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_view.dart';
 import 'package:pigallery2_android/ui/gallery/directory_item.dart';
 import 'package:pigallery2_android/ui/gallery/media_item.dart';
 import 'package:pigallery2_android/ui/home/views/glass_nav_bar.dart';
+import 'package:pigallery2_android/ui/themes.dart';
+import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
+import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
 class GalleryViewGridView extends StatefulWidget {
   final int stackPosition;
   final List<Item> items;
+  final Widget? leading;
 
-  GalleryViewGridView(this.stackPosition, this.items) : super(key: ValueKey(items));
+  GalleryViewGridView(this.stackPosition, this.items, {this.leading}) : super(key: ValueKey(items));
 
   @override
   State<GalleryViewGridView> createState() => _GalleryViewGridViewState();
@@ -51,7 +54,30 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           });
         }
       }
+      _syncAppBarOffset();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncAppBarOffset());
+  }
+
+  void _syncAppBarOffset() {
+    if (!mounted || !_scrollController.hasClients) return;
+    context.read<AppBarScrollModel>().update(
+      offset: _scrollController.position.pixels,
+      direction: _scrollController.position.userScrollDirection,
+    );
+  }
+
+  /// Total height of slivers above the grid: app bar + status bar + (optionally) top picks.
+  double _getLeadingOffset(BuildContext context) {
+    double offset = SystemUi.getPadding().top + toolbarHeight;
+    if (widget.leading != null) {
+      final showTopPicks = context.read<GlobalSettingsModel>().showTopPicks;
+      final isUpToDateAndEmpty = context.read<TopPicksModel>().isUpToDateAndEmpty;
+      if (showTopPicks && !isUpToDateAndEmpty) {
+        offset += 132; // matches TopPicksContainer height
+      }
+    }
+    return offset;
   }
 
   double _getImageHeight(BuildContext context) {
@@ -70,7 +96,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     return correctedHeight;
   }
 
-  void _scrollToShowedItem(BuildContext context, int currentIndex) {
+  void _scrollToShowedItem(BuildContext context, int gridIndex) {
     if (_scrollController.hasClients) {
       if (!_scrollController.position.hasContentDimensions) return;
       if (_scrollController.position.maxScrollExtent == 0) return; // too few elements to scroll
@@ -79,20 +105,30 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       int crossAxisCount = settingsModel.getGridCrossAxisCount(MediaQuery.of(context).orientation);
       int spacing = settingsModel.gridSpacing;
 
-      int row = currentIndex ~/ crossAxisCount;
+      int row = gridIndex ~/ crossAxisCount;
       double imageHeight = _getImageHeight(context);
-      double imageTop = row * (imageHeight + spacing);
+      double topInset = SystemUi.getPadding().top + toolbarHeight;
+      double bottomInset = GlassNavBarTheme.barHeight +
+          GlassNavBarTheme.bottomPadding +
+          MediaQuery.paddingOf(context).bottom;
+      double imageTop = _getLeadingOffset(context) + row * (imageHeight + spacing);
+      double imageBottom = imageTop + imageHeight;
+
+      double pixels = _scrollController.position.pixels;
+      double extent = _scrollController.position.extentInside;
+      double visibleTop = pixels + topInset;
+      double visibleBottom = pixels + extent - bottomInset;
 
       double error = imageHeight * 0.3; // how much space should be kept to top/bottom of screen
+      double maxScroll = _scrollController.position.maxScrollExtent;
 
-      if (max(imageTop - error, 0) < _scrollController.position.pixels) {
+      if (imageTop - error < visibleTop) {
         // image is above visible
-        double offset = imageTop - error;
+        double offset = (imageTop - error - topInset).clamp(0.0, maxScroll);
         _scrollController.animateTo(offset, duration: const Duration(milliseconds: 400), curve: Curves.ease);
-      } else if (imageTop + imageHeight + error >
-          _scrollController.position.pixels + _scrollController.position.extentInside) {
+      } else if (imageBottom + error > visibleBottom) {
         // image is below visible
-        double offset = imageTop + imageHeight + error - _scrollController.position.extentInside;
+        double offset = (imageBottom + error - extent + bottomInset).clamp(0.0, maxScroll);
         _scrollController.animateTo(offset, duration: const Duration(milliseconds: 400), curve: Curves.ease);
       }
     }
@@ -106,12 +142,13 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   void openFullscreen(BuildContext context, List<Item> items, int totalIndex) async {
     Media media = items[totalIndex] as Media;
     // skip directories since there's no fullscreen view for them
-    int index = totalIndex - items.whereType<Directory>().length;
+    int directoriesCount = items.whereType<Directory>().length;
+    int index = totalIndex - directoriesCount;
 
     FullscreenScrollModel scrollModel = FullscreenScrollModel();
-    final subscription = scrollModel.getCurrentIndex().listen((index) {
+    final subscription = scrollModel.getCurrentIndex().listen((mediaIndex) {
       if (!context.mounted) return;
-      _scrollToShowedItem(context, index);
+      _scrollToShowedItem(context, mediaIndex + directoriesCount);
     });
     await Navigator.of(context, rootNavigator: true).push(
       PageRouteBuilder(
@@ -162,43 +199,52 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   @override
   Widget build(BuildContext context) {
     GlobalSettingsModel model = Provider.of<GlobalSettingsModel>(context);
+    final topInset = SystemUi.getPadding().top + toolbarHeight;
     return OrientationBuilder(
       builder: (context, orientation) => GalleryErrorScreen(
         child: RefreshWrapper(
-          child: GridView.builder(
-            padding: EdgeInsets.fromLTRB(
-              MediaQuery.paddingOf(context).left,
-              MediaQuery.paddingOf(context).top,
-              MediaQuery.paddingOf(context).right,
-              MediaQuery.paddingOf(context).bottom +
-                  GlassNavBarTheme.barHeight +
-                  GlassNavBarTheme.bottomPadding +
-                  16, // extra padding to clear the nav bar properly
-            ),
+          child: CustomScrollView(
             key: PageStorageKey(widget.stackPosition),
             controller: _scrollController,
-            itemCount: items.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: model.getGridCrossAxisCount(orientation),
-              crossAxisSpacing: model.gridSpacing.toDouble(),
-              mainAxisSpacing: model.gridSpacing.toDouble(),
-              childAspectRatio: model.gridAspectRatio,
-            ),
-            itemBuilder: (BuildContext context, int index) {
-              Item item = items[index];
-              return item is Directory
-                  ? DirectoryItem(
-                      dir: item,
-                      borderRadius: model.gridRoundedCorners,
-                      showDirectoryItemCount: model.showDirectoryItemCount,
-                      onTap: () => openDirectory(context, item),
-                    )
-                  : MediaItem(
-                      item: item as Media,
-                      borderRadius: model.gridRoundedCorners,
-                      onTap: () => openFullscreen(context, items, index),
-                    );
-            },
+            slivers: [
+              SliverToBoxAdapter(child: SizedBox(height: topInset)),
+              if (widget.leading != null) SliverToBoxAdapter(child: widget.leading),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  MediaQuery.paddingOf(context).left,
+                  0,
+                  MediaQuery.paddingOf(context).right,
+                  MediaQuery.paddingOf(context).bottom +
+                      GlassNavBarTheme.barHeight +
+                      GlassNavBarTheme.bottomPadding +
+                      16, // extra padding to clear the nav bar properly
+                ),
+                sliver: SliverGrid.builder(
+                  itemCount: items.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: model.getGridCrossAxisCount(orientation),
+                    crossAxisSpacing: model.gridSpacing.toDouble(),
+                    mainAxisSpacing: model.gridSpacing.toDouble(),
+                    childAspectRatio: model.gridAspectRatio,
+                  ),
+                  itemBuilder: (BuildContext context, int index) {
+                    Item item = items[index];
+                    return item is Directory
+                        ? DirectoryItem(
+                            dir: item,
+                            borderRadius: model.gridRoundedCorners,
+                            showDirectoryItemCount: model.showDirectoryItemCount,
+                            onTap: () => openDirectory(context, item),
+                          )
+                        : MediaItem(
+                            item: item as Media,
+                            borderRadius: model.gridRoundedCorners,
+                            onTap: () => openFullscreen(context, items, index),
+                          );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

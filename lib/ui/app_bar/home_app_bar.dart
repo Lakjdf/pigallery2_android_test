@@ -5,6 +5,7 @@ import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/save_album_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
+import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_scroll_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
 import 'package:pigallery2_android/ui/app_bar/search/search_app_bar_title.dart';
@@ -84,12 +85,11 @@ class HomeAppBar extends StatelessWidget {
 
   /// not using AppBar since it doesn't properly keep top padding when status bar is hidden
   Widget buildAppBarContainer(BuildContext context, {required Widget child}) {
-    ThemeData theme = Theme.of(context);
     final statusBarHeight = SystemUi.getPadding().top;
     return Container(
       padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
       height: statusBarHeight + toolbarHeight,
-      color: theme.appBarTheme.backgroundColor,
+      color: Colors.transparent,
       child: child,
     );
   }
@@ -185,7 +185,7 @@ class _HomeAppBarInner extends StatelessWidget {
         state.title == "." ? "" : state.title,
         overflow: TextOverflow.fade,
         softWrap: false,
-        style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        style: theme.textTheme.titleLarge,
       ),
     );
   }
@@ -201,6 +201,7 @@ class _HomeAppBarInner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
+    final showActions = context.select<AppBarScrollModel, bool>((m) => m.showActions);
 
     return IconButtonTheme(
       data: IconButtonThemeData(
@@ -210,7 +211,18 @@ class _HomeAppBarInner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ..._buildLeading(context),
-          Row(crossAxisAlignment: CrossAxisAlignment.center, children: _buildActions(context)),
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            opacity: showActions ? 1.0 : 0.0,
+            child: IgnorePointer(
+              ignoring: !showActions,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: _buildActions(context),
+              ),
+            ),
+          ),
         ],
       ),
     );

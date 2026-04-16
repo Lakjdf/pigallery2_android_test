@@ -4,7 +4,14 @@
         {
             "name": "pigallery2_android_test",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "flutterMode": "debug"
         },
+        {
+            "name": "pigallery2_android_test (profile)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        }
     ]
 }
