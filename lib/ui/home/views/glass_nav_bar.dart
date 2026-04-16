@@ -264,10 +264,10 @@ class _GlassNavBarContentState extends State<_GlassNavBarContent> {
   }
 
   void _handleDragUpdate(double dx) {
-    _currentPointerLocalX = dx;
-    final scrollProgress = _calculateScrollProgressFromPointerX(dx);
-    context.read<TabNavigatorModel>().navigateTo(scrollProgress);
-    setState(() {});
+    // _currentPointerLocalX = dx;
+    // final scrollProgress = _calculateScrollProgressFromPointerX(dx);
+    // context.read<TabNavigatorModel>().navigateTo(scrollProgress);
+    // setState(() {});
   }
 
   @override
