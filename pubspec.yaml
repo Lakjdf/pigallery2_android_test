@@ -45,9 +45,6 @@ dependencies:
   media_kit_libs_android_video: 1.3.8
   media_kit_libs_linux: ^1.2.1
 
-  backdrop:
-    git:
-      url: https://github.com/Lakjdf/backdrop.git
   flutter_inappwebview: ^6.1.5
   visibility_detector: ^0.4.0+2
 

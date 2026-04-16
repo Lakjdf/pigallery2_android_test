@@ -76,7 +76,7 @@ class TopPicksModel extends SafeChangeNotifier {
     String? serverUrl = _serverRepository.serverUrl;
     if (_daysLength == daysLength && _currentServerUrl == serverUrl) {
       // nothing changed
-      // return;
+      return;
     }
     if (!showTopPicks) return; // only fetch if top picks are visible
     _daysLength = daysLength;

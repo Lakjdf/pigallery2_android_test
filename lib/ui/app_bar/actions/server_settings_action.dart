@@ -9,12 +9,20 @@ import 'package:provider/provider.dart';
 void showServerSettings(BuildContext context) {
   ServerRepository serverRepository = context.read();
   String? previousServerUrl = serverRepository.serverUrl;
+  
   showModalBottomSheet<int>(
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
     isScrollControlled: true,
     context: context,
-    builder: (context) => SettingsBottomSheet(),
-    useRootNavigator: true
+    builder: (context) {
+      return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: SettingsBottomSheet(),
+    );
+    },
+    useRootNavigator: true,
   ).whenComplete(() {
     if (!context.mounted) return;
     if (previousServerUrl == serverRepository.serverUrl) return;

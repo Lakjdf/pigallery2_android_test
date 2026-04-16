@@ -1,4 +1,3 @@
-import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/server_settings_action.dart';
@@ -7,7 +6,6 @@ import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/views/glass_nav_bar.dart';
 import 'package:pigallery2_android/ui/home/views/home_view_front.dart';
 import 'package:pigallery2_android/ui/themes.dart';
-import 'package:pigallery2_android/ui/app_bar/views/back_layer.dart';
 import 'package:pigallery2_android/ui/app_bar/home_app_bar.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
@@ -22,12 +20,9 @@ class HomeView extends StatelessWidget {
       onPopInvokedWithResult: ((bool didPop, _) {
         onBackInvoked(context);
       }),
-      child: BackdropScaffold(
+      child: Scaffold(
         primary: false,
-        frontLayerBorderRadius: BorderRadius.zero,
-        keepFrontLayerActive: true,
-        stickyFrontLayer: true,
-        frontLayer: Stack(
+        body: Stack(
           fit: StackFit.expand,
           children: [
             HomeViewFront(),
@@ -73,10 +68,6 @@ class HomeView extends StatelessWidget {
               },
             ),
           ],
-        ),
-        backLayer: Padding(
-          padding: EdgeInsets.zero,
-          child: BackLayer(),
         ),
         extendBodyBehindAppBar: true,
         appBar: PreferredSize(

@@ -7,7 +7,6 @@ import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_scroll_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
 import 'package:pigallery2_android/ui/app_bar/search/search_app_bar_title.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_state.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
@@ -17,7 +16,7 @@ import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
-enum AppBarAction { back, search, clearSearch, flatten, backdrop, saveAlbum, deleteAlbum, sort }
+enum AppBarAction { back, search, clearSearch, flatten, saveAlbum, deleteAlbum, sort }
 
 class AppBarState {
   final String title;
@@ -59,7 +58,6 @@ class HomeAppBar extends StatelessWidget {
     final tab = context.select<TabStateModel, TabEntry>((it) => it.currentTab);
     if (tab != TabEntry.website) {
       actions.add(AppBarAction.sort);
-      actions.add(AppBarAction.backdrop);
     }
     if (isFlattenResultShown) return actions;
 
@@ -139,9 +137,6 @@ class _HomeAppBarInner extends StatelessWidget {
           icon: const Icon(Icons.search),
         ),
       );
-    }
-    if (state.actions.contains(AppBarAction.backdrop)) {
-      actions.add(const AnimatedBackdropToggleButton());
     }
     if (state.actions.contains(AppBarAction.flatten)) {
       actions.add(const FlattenDirButton());

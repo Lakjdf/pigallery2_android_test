@@ -222,6 +222,9 @@ class MyApp extends StatelessWidget {
                   thumbColor: WidgetStateProperty.all(colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
                 ),
                 tabBarTheme: CustomThemeData.tabBarTheme(colorScheme),
+                sliderTheme: SliderThemeData(
+                  inactiveTrackColor: colorScheme.primary.withAlpha(0x1f), // 12% opacity
+                ),
               );
             }
             WidgetsBinding.instance.addPostFrameCallback((_) {

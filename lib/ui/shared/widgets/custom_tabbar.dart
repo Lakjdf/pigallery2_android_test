@@ -124,6 +124,7 @@ class _CustomTabBarWidgetState extends State<CustomTabBarWidget> with TickerProv
                         isScrollable: false,
                         controller: _tabController,
                         tabs: widget.tabData.map((tab) => tab.title).toList(),
+                        labelPadding: EdgeInsets.zero,
                       ),
                     ),
                     buildRightArrow(context),

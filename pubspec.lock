@@ -25,15 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
-  backdrop:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "76ac91f34178d95068dfb7a54c59a4aaaa9957b0"
-      url: "https://github.com/Lakjdf/backdrop.git"
-    source: git
-    version: "0.8.1"
   boolean_selector:
     dependency: transitive
     description:
