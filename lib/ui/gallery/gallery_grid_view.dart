@@ -8,7 +8,7 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_scroll_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_preview_model.dart';
-import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_scroll_model.dart';
+import 'package:pigallery2_android/ui/app_bar/app_bar_scroll_sync.dart';
 import 'package:pigallery2_android/ui/home/views/error_screen.dart';
 import 'package:pigallery2_android/ui/home/views/refresh_wrapper.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
@@ -34,10 +34,13 @@ class GalleryViewGridView extends StatefulWidget {
   State<GalleryViewGridView> createState() => _GalleryViewGridViewState();
 }
 
-class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerProviderStateMixin {
+class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerProviderStateMixin, AppBarScrollSync {
   late ScrollController _scrollController;
   late List<Item> items;
   int chunkSize = 100;
+
+  @override
+  ScrollController get appBarScrollController => _scrollController;
 
   @override
   void initState() {
@@ -54,17 +57,9 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
           });
         }
       }
-      _syncAppBarOffset();
+      syncAppBarOffset();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncAppBarOffset());
-  }
-
-  void _syncAppBarOffset() {
-    if (!mounted || !_scrollController.hasClients) return;
-    context.read<AppBarScrollModel>().update(
-      offset: _scrollController.position.pixels,
-      direction: _scrollController.position.userScrollDirection,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => attachAppBar());
   }
 
   /// Total height of slivers above the grid: app bar + status bar + (optionally) top picks.
@@ -200,6 +195,8 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   Widget build(BuildContext context) {
     GlobalSettingsModel model = Provider.of<GlobalSettingsModel>(context);
     final topInset = SystemUi.getPadding().top + toolbarHeight;
+    watchTabForAppBarSync(context);
+
     return OrientationBuilder(
       builder: (context, orientation) => GalleryErrorScreen(
         child: RefreshWrapper(

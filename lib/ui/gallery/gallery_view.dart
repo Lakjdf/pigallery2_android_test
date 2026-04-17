@@ -34,12 +34,15 @@ class GalleryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<GalleryModel, bool>(
-      selector: (context, model) => model.stateOf(stackPosition).isLoading,
-      builder: (context, isLoading, child) {
-        if (isLoading) return const LoadingIndicator();
-        return buildBody(context);
-      },
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Selector<GalleryModel, bool>(
+        selector: (context, model) => model.stateOf(stackPosition).isLoading,
+        builder: (context, isLoading, child) {
+          if (isLoading) return const LoadingIndicator();
+          return buildBody(context);
+        },
+      ),
     );
   }
 }

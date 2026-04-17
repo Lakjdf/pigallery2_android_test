@@ -48,6 +48,7 @@ class HomeViewGalleryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Navigator(
       key: navigatorKeys[position]!,
+      observers: [galleryRouteObservers[position]!],
       onGenerateRoute: (routeSettings) {
         int stackPosition =
             routeSettings.arguments as int? ??

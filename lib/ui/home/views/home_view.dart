@@ -37,7 +37,7 @@ class HomeView extends StatelessWidget {
                 child: Selector<AppBarScrollModel, bool>(
                   selector: (_, m) => m.offset > 10,
                   builder: (_, hasScrolled, child) => AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: 350),
                     curve: Curves.easeOut,
                     opacity: hasScrolled ? 1.0 : 0.0,
                     child: child,

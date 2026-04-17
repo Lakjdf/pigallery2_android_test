@@ -15,6 +15,23 @@ class AppBarScrollModel extends SafeChangeNotifier {
   /// Whether the bar background and actions should currently be revealed.
   bool get showActions => !_hidden;
 
+  /// Called when a different scroll source becomes active (tab switch, route
+  /// pop). Adopts the new offset and always reveals the bar so the user sees
+  /// it after navigation, regardless of which direction they last scrolled in
+  /// the previous view.
+  void attach(double offset) {
+    bool changed = false;
+    if (_offset != offset) {
+      _offset = offset;
+      changed = true;
+    }
+    if (_hidden) {
+      _hidden = false;
+      changed = true;
+    }
+    if (changed) notifyListeners();
+  }
+
   void update({required double offset, required ScrollDirection direction}) {
     bool changed = false;
     if (_offset != offset) {

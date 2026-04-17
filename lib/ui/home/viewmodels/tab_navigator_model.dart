@@ -13,6 +13,14 @@ final Map<int, GlobalKey<NavigatorState>> navigatorKeys = {
   for (var it in TabEntry.values) it.pos: GlobalKey<NavigatorState>(),
 };
 
+/// One observer per tab Navigator ([NavigatorObserver] can't be attached to
+/// more than one Navigator). Lets gallery views subscribe via [RouteAware] so
+/// they can re-sync the app bar scroll state when a child route is popped and
+/// they become visible again.
+final Map<int, RouteObserver<PageRoute>> galleryRouteObservers = {
+  for (var it in TabEntry.values) it.pos: RouteObserver<PageRoute>(),
+};
+
 class TabNavigatorModel extends SafeChangeNotifier {
   final TabStateModel _tabStateModel;
   final AppBarModel _appBarModel;
