@@ -19,19 +19,9 @@ class FullscreenModel extends SafeChangeNotifier {
 
   FullscreenModel(this._fullscreenModels, this._currentPage, this._scrollModel);
 
-  bool _hideDetailedOverlay = true;
   int _currentPage;
   double _opacity = 1;
   double _heroAnimationProgress = 0;
-
-  bool get hideDetailedOverlay => _hideDetailedOverlay;
-
-  set hideDetailedOverlay(bool value) {
-    if (value != _hideDetailedOverlay) {
-      _hideDetailedOverlay = value;
-      notifyListeners();
-    }
-  }
 
   set media(List<Media> media) {
     _items.clear();

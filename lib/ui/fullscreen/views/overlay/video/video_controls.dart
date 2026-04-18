@@ -161,7 +161,7 @@ class _VideoControlsState extends State<VideoControls> {
       child: Icon(
         iconData,
         size: 100,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        color: Colors.white,
       ),
     );
     if (isPlaying) {

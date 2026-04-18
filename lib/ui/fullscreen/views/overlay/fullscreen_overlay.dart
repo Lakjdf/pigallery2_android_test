@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -112,65 +110,72 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     }
   }
 
-  Widget buildVideoSeekBar(BuildContext context, double opacity) {
+  Widget buildVideoPrecisionScrubZone(BuildContext context) {
     return SelectorGuard<VideoModel, VideoControllerItem>(
       selector: (model) => model.videoControllerItem,
       condition: (item) => !item.hasError,
-      then: (context, item) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          VideoPrecisionScrubZone(controllerItem: item),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: VideoProgressBar(key: ObjectKey(item), controller: item.controller, opacity: opacity),
-          ),
-        ],
+      then: (context, item) => VideoPrecisionScrubZone(controllerItem: item),
+    );
+  }
+
+  Widget buildVideoProgressBar(BuildContext context, double opacity) {
+    return SelectorGuard<VideoModel, VideoControllerItem>(
+      selector: (model) => model.videoControllerItem,
+      condition: (item) => !item.hasError,
+      then: (context, item) => Align(
+        alignment: Alignment.bottomCenter,
+        child: VideoProgressBar(key: ObjectKey(item), controller: item.controller, opacity: opacity),
       ),
     );
   }
 
   Widget buildTopBar(BuildContext context, Media item) {
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.metadata.date.toInt() * 1000);
-    return Container(
-      height: toolbarHeight + statusBarHeight,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
-        height: toolbarHeight,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                item.name,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-              ),
-            ),
-            SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color.fromARGB(160, 0, 0, 0), Color(0x00000000)],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
+            height: toolbarHeight + statusBarHeight,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  DateFormat("dd/MM/yyyy").format(dateTime),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                Expanded(
+                  child: Text(
+                    item.name,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+                  ),
                 ),
-                Text(
-                  DateFormat("HH:mm:ss").format(dateTime),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      DateFormat("dd/MM/yyyy").format(dateTime),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white),
+                    ),
+                    Text(
+                      DateFormat("HH:mm:ss").format(dateTime),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+        ],
       ),
     );
   }
@@ -189,55 +194,60 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   }
 
   Widget buildBottomBar(BuildContext context, Media item) {
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaY: 5, sigmaX: 5, tileMode: TileMode.clamp),
-        child: Container(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
-          padding: EdgeInsets.only(bottom: navigationBarHeight),
-          height: kBottomNavigationBarHeight + navigationBarHeight,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              DownloadWidget(),
-              bigIconButton(Icons.color_lens_outlined, () {
-                showModalBottomSheet(
-                  context: context,
-                  barrierColor: Colors.transparent,
-                  builder: (context) => MediaSettingsBottomSheet(),
-                );
-              }),
-              bigIconButton(Icons.info_outline, () {
-                showModalBottomSheet(
-                  context: context,
-                  barrierColor: Colors.transparent,
-                  builder: (context) => MediaInfoBottomSheet(item),
-                );
-              }),
-              bigIconButton(Icons.screen_rotation, () => rotateScreen(context)),
-              bigIconButton(Icons.close, () {
-                _controller.value = 0.0;
-                Navigator.maybePop(context, item);
-              }),
-            ],
-          ),
-        ),
+    return Container(
+      padding: EdgeInsets.only(bottom: navigationBarHeight),
+      height: kBottomNavigationBarHeight + navigationBarHeight,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          DownloadWidget(),
+          bigIconButton(Icons.color_lens_outlined, () {
+            showModalBottomSheet(
+              context: context,
+              barrierColor: Colors.transparent,
+              builder: (context) => MediaSettingsBottomSheet(),
+            );
+          }),
+          bigIconButton(Icons.info_outline, () {
+            showModalBottomSheet(
+              context: context,
+              barrierColor: Colors.transparent,
+              builder: (context) => MediaInfoBottomSheet(item),
+            );
+          }),
+          bigIconButton(Icons.screen_rotation, () => rotateScreen(context)),
+          bigIconButton(Icons.close, () {
+            _controller.value = 0.0;
+            Navigator.maybePop(context, item);
+          }),
+        ],
       ),
     );
   }
 
-  Widget buildFloatingHideOverlayWidget(BuildContext context, Media item) {
-    if (MediaQuery.of(context).orientation == Orientation.portrait) return SizedBox.shrink();
-    return Selector<FullscreenModel, bool>(
-      selector: (context, model) => model.hideDetailedOverlay,
-      builder: (context, bool hideDetailedOverlay, child) {
-        return FloatingActionWidget(
-          icon: hideDetailedOverlay ? Icons.zoom_out_map_outlined : Icons.zoom_in_map_outlined,
-          onPressed: () {
-            context.read<FullscreenModel>().hideDetailedOverlay = !hideDetailedOverlay;
-          },
-        );
-      },
+  Widget buildBottomSection(BuildContext context, Media item) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (item.isVideo) buildVideoPrecisionScrubZone(context),
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0x00000000), Color.fromARGB(160, 0, 0, 0)],
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              if (item.isVideo) buildVideoProgressBar(context, 1.0),
+              buildBottomBar(context, item),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -254,29 +264,17 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   }
 
   Widget buildOverlayBars(BuildContext context) {
-    return Selector<FullscreenModel, ({Media item, bool hideDetailedOverlay})>(
-      selector: (context, model) => (item: model.currentItem, hideDetailedOverlay: model.hideDetailedOverlay),
-      builder: (context, ({Media item, bool hideDetailedOverlay}) data, child) {
-        bool showDetailedOverlay =
-            MediaQuery.of(context).orientation == Orientation.portrait ||
-            !data.item.isVideo ||
-            !data.hideDetailedOverlay;
+    return Selector<FullscreenModel, Media>(
+      selector: (context, model) => model.currentItem,
+      builder: (context, Media item, child) {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (showDetailedOverlay)
-              ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaY: 5, sigmaX: 5, tileMode: TileMode.clamp),
-                  child: buildTopBar(context, data.item),
-                ),
-              ),
+            buildTopBar(context, item),
             Spacer(),
-            if (data.item.isVideo) buildFloatingHideOverlayWidget(context, data.item),
-            if (data.item.isImage) buildFloatingMotionPhotoWidget(context, data.item),
-            if (data.item.isVideo) buildVideoSeekBar(context, 1.0),
-            if (showDetailedOverlay) buildBottomBar(context, data.item),
+            if (item.isImage) buildFloatingMotionPhotoWidget(context, item),
+            buildBottomSection(context, item),
           ],
         );
       },

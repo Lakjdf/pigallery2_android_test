@@ -33,18 +33,8 @@ class VideoProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.0),
-            Colors.black.withValues(alpha: 0.52 * opacity),
-          ],
-        ),
-      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
