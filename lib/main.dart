@@ -36,6 +36,7 @@ import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_state.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
@@ -162,8 +163,16 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<TabStateModel>(
           create: ((context) {
-            return TabStateModel();
+            final storage = context.read<SharedPrefsStorage>();
+            return TabStateModel(initialTab: TabStatePersistence.readInitialTab(storage));
           }),
+        ),
+        Provider<TabStatePersistence>(
+          lazy: false,
+          create: ((context) {
+            return TabStatePersistence(context.read<TabStateModel>(), context.read<SharedPrefsStorage>());
+          }),
+          dispose: (_, persistence) => persistence.dispose(),
         ),
         ChangeNotifierProvider<TabModelsProvider>(
           create: ((context) {
@@ -171,6 +180,13 @@ class MyApp extends StatelessWidget {
               context.read(),
               GalleryModel(context.read(), context.read(), context.read(), false),
               GalleryModel(context.read(), context.read(), context.read(), true),
+              GalleryModel(
+                context.read(),
+                context.read(),
+                context.read(),
+                false,
+                initialStateType: TimelineGalleryModelStateType(),
+              ),
             );
           }),
         ),

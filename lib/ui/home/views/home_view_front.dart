@@ -18,6 +18,7 @@ class HomeViewFront extends StatelessWidget {
     return [
       KeepAliveWidget(child: HomeViewGalleryPage(position: 0)),
       KeepAliveWidget(child: HomeViewGalleryPage(position: 1)),
+      KeepAliveWidget(child: HomeViewGalleryPage(position: 2)),
       KeepAliveWidget(child: WebsiteView()),
     ];
   }
@@ -25,14 +26,15 @@ class HomeViewFront extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> tabs = _getTabs(context);
+    final tabState = context.read<TabStateModel>();
     return Stack(
       fit: StackFit.expand,
       children: [
         HomeTabView(
-          initialIndex: 0,
+          initialIndex: tabState.currentTab.pos,
           itemCount: tabs.length,
           builder: (context, index) => tabs[index],
-          onPageScroll: context.read<TabStateModel>().setTabScroll,
+          onPageScroll: tabState.setTabScroll,
         ),
       ],
     );

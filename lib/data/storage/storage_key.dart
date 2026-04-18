@@ -15,6 +15,7 @@ enum StorageKey<T> {
   showVideoSeekPreview<bool>(false),
   mediaBackgroundMode<MediaBackgroundMode>(MediaBackgroundMode.ambient),
   mediaBackgroundBlur<int>(45),
+  selectedTab<int>(0),
   serverSettings<ServerSettings>(
     ServerSettings(
       servers: [],

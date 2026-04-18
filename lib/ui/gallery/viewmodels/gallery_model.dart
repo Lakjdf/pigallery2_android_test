@@ -18,8 +18,28 @@ class GalleryModel extends SafeChangeNotifier {
   final List<GalleryModelState> _state;
   final bool isAlbumView;
 
-  GalleryModel(this._albumRepository, this._itemRepository, this._sortOptionsRepository, this.isAlbumView)
-    : _state = [GalleryModelState(DirectoryGalleryModelStateType(), null, _sortOptionsRepository)] {
+  bool _initialFetchDone = false;
+
+  GalleryModel(
+    this._albumRepository,
+    this._itemRepository,
+    this._sortOptionsRepository,
+    this.isAlbumView, {
+    GalleryModelStateType? initialStateType,
+  }) : _state = [
+         GalleryModelState(
+           initialStateType ?? DirectoryGalleryModelStateType(),
+           null,
+           _sortOptionsRepository,
+         ),
+       ];
+
+  /// Trigger the first fetch. No-op once the initial load has already
+  /// happened. Tabs call this when they actually become visible so that
+  /// background tabs don't pay for a fetch the user may never look at.
+  void ensureInitialFetch() {
+    if (_initialFetchDone) return;
+    _initialFetchDone = true;
     fetch();
   }
 
@@ -174,6 +194,9 @@ class GalleryModel extends SafeChangeNotifier {
     }, isRefresh),
     FlattenGalleryModelStateType(:final target) => _cancelableApiRequest(() {
       return _itemRepository.flattenDirectory(target);
+    }, isRefresh),
+    TimelineGalleryModelStateType() => _cancelableApiRequest(() {
+      return _itemRepository.flattenDirectory(null);
     }, isRefresh),
     AlbumGalleryModelStateType() => _cancelableApiRequest(() {
       return _albumRepository.getAlbumContent(currentState.baseDirectory as Album);

@@ -58,6 +58,7 @@ class HomeView extends StatelessWidget {
               tabIcons: [
                 Ionicons.image_outline,
                 Ionicons.images_outline,
+                Ionicons.time_outline,
                 Ionicons.globe_outline,
               ],
               actions: [Icons.settings],

@@ -23,6 +23,8 @@ class FlattenGalleryModelStateType extends GalleryModelStateType {
   FlattenGalleryModelStateType({required this.target});
 }
 
+class TimelineGalleryModelStateType extends GalleryModelStateType {}
+
 class TopPicksGalleryModelStateType extends GalleryModelStateType {}
 
 class AlbumGalleryModelStateType extends GalleryModelStateType {}
@@ -54,12 +56,25 @@ class GalleryModelState {
 
   List<Directory> _directories = List.unmodifiable([]);
 
+  /// Cached [items]
+  List<Item>? _itemsCache;
+
   /// [Item]s received from the backend.
-  List<Item> get items => List<Item>.unmodifiable([..._directories, ..._media]);
+  List<Item> get items => _itemsCache ??= List<Item>.unmodifiable([..._directories, ..._media]);
 
   set items(List<Item> val) {
-    _media = List.unmodifiable(_sort(val.whereType<Media>().toList()));
-    _directories = List.unmodifiable(_sort(val.whereType<Directory>().toList()));
+    final mediaList = <Media>[];
+    final dirList = <Directory>[];
+    for (final item in val) {
+      if (item is Media) {
+        mediaList.add(item);
+      } else if (item is Directory) {
+        dirList.add(item);
+      }
+    }
+    _media = List.unmodifiable(_sort(mediaList));
+    _directories = List.unmodifiable(_sort(dirList));
+    _itemsCache = null;
   }
 
   /// All [items] of type [Media].
@@ -89,6 +104,12 @@ class GalleryModelState {
         _title = target?.name;
         isSearching = true;
         sortingKey = FlattenSortingKey();
+      case TimelineGalleryModelStateType():
+        _title = "Timeline";
+        isSearching = true;
+        sortingKey = TimelineSortingKey();
+        _sortOption = SortOption(order: SortOrder.desc, type: SortType.date, onlyThisFolder: false);
+        return;
       case TopPicksGalleryModelStateType():
         isSearching = true;
         sortingKey = TopPicksSortingKey();
@@ -108,6 +129,7 @@ class GalleryModelState {
       _sortOption = sortOption.copyWith(type: type);
       _media = List.unmodifiable(_sort(_media.toList()));
       _directories = List.unmodifiable(_sort(_directories.toList()));
+      _itemsCache = null;
     }
   }
 
@@ -122,13 +144,14 @@ class GalleryModelState {
       _sortOption = sortOption.copyWith(order: order);
       _media = List.unmodifiable(_media.reversed);
       _directories = List.unmodifiable(_directories.reversed);
+      _itemsCache = null;
     }
   }
 
   List<Item> _sort(List<Item> toSort) {
     if (sortOption.type == SortType.random) toSort.shuffle();
-    toSort.sort(_compare(sortOption.type));
-    return sortOption.order == SortOrder.asc ? toSort : toSort.reversed.toList();
+    toSort.sort(_compare(sortOption.type, sortOption.order));
+    return toSort;
   }
 
   int _compareItems(Item a, Item b, SortType? sortType) {
@@ -141,19 +164,24 @@ class GalleryModelState {
     };
   }
 
-  int Function(Item, Item) _compare(SortType? sortType) {
-    // Create consistent results by sorting by name or id if items are equal according to the current sort option.
+
+  /// Builds the primary + tiebreaker comparator for one sort run. Folds the
+  /// [order] into the comparator directly rather than sorting asc and then
+  /// reversing a list of thousands of items. Falls back to name (then id)
+  /// whenever the primary comparison ties — keeps burst-shot photos with
+  /// identical timestamps in a stable, human-readable order.
+  int Function(Item, Item) _compare(SortType? sortType, SortOrder order) {
+    final sign = order == SortOrder.asc ? 1 : -1;
     return (Item a, Item b) {
       int result = _compareItems(a, b, sortType);
-      if (result != 0) return result;
-
+      if (result != 0) return sign * result;
       if (sortType != SortType.name) {
         result = _compareItems(a, b, SortType.name);
-        if (result != 0) return result;
+        if (result != 0) return sign * result;
       }
-      return _compareItems(a, b, null);
+      return sign * a.id.compareTo(b.id);
     };
   }
-
+  
   //endregion
 }

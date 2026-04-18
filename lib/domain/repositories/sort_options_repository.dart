@@ -33,6 +33,11 @@ class FlattenSortingKey implements SortingKey {
   String get key => ".Flatten";
 }
 
+class TimelineSortingKey implements SortingKey {
+  @override
+  String get key => ".Timeline";
+}
+
 class SearchSortingKey implements SortingKey {
   @override
   String get key => ".Search";

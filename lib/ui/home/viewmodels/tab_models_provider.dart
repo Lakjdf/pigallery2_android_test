@@ -8,17 +8,20 @@ class TabModelsProvider extends SafeChangeNotifier {
   final List<GalleryModel> _models;
   final List<SearchViewModel> _searchModels;
   final TabStateModel _tabStateModel;
-  int _currentTab = 0;
+  int _currentTab;
 
   TabModelsProvider(
     this._tabStateModel,
     GalleryModel home,
     GalleryModel albums,
-  ) : _models = [home, albums],
-      _searchModels = [SearchViewModel()] {
+    GalleryModel timeline,
+  ) : _models = [home, albums, timeline],
+      _searchModels = [SearchViewModel()],
+      _currentTab = _tabStateModel.currentTab.pos {
     model?.addListener(_galleryModelNotify);
     searchModel?.addListener(_searchModelNotify);
     _tabStateModel.addListener(_tabChangedListener);
+    model?.ensureInitialFetch();
   }
 
   GalleryModel? get model => _models.elementAtOrNull(_currentTab);
@@ -48,6 +51,7 @@ class TabModelsProvider extends SafeChangeNotifier {
       _currentTab = _tabStateModel.currentTab.pos;
       model?.addListener(_galleryModelNotify);
       searchModel?.addListener(_searchModelNotify);
+      model?.ensureInitialFetch();
       notifyListeners();
     }
   }

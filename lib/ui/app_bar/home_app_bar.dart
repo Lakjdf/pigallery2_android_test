@@ -20,9 +20,16 @@ enum AppBarAction { back, search, clearSearch, flatten, saveAlbum, deleteAlbum, 
 
 class AppBarState {
   final String title;
+  final String? subtitle;
+  final double subtitleProgress;
   final Set<AppBarAction> actions;
 
-  AppBarState({required this.title, required this.actions});
+  AppBarState({
+    required this.title,
+    required this.subtitle,
+    required this.subtitleProgress,
+    required this.actions,
+  });
 }
 
 class HomeAppBar extends StatelessWidget {
@@ -39,7 +46,9 @@ class HomeAppBar extends StatelessWidget {
       (it) => it.model?.currentState.type is SearchGalleryModelStateType,
     );
     bool isFlattenResultShown = context.select<TabModelsProvider, bool>(
-      (it) => it.model?.currentState.type is FlattenGalleryModelStateType,
+      (it) =>
+          it.model?.currentState.type is FlattenGalleryModelStateType ||
+          it.model?.currentState.type is TimelineGalleryModelStateType,
     );
     if (canGoBack || isSearchOverlayShown) {
       actions.add(AppBarAction.back);
@@ -56,7 +65,12 @@ class HomeAppBar extends StatelessWidget {
     }
 
     final tab = context.select<TabStateModel, TabEntry>((it) => it.currentTab);
-    if (tab != TabEntry.website) {
+    bool isTimelineRoot = context.select<TabModelsProvider, bool>(
+      (it) => it.model?.currentState.type is TimelineGalleryModelStateType,
+    );
+    // Timeline is always date-sorted by design; exposing a sort menu there
+    // would let the user degrade the experience into a month-less flat grid.
+    if (tab != TabEntry.website && !isTimelineRoot) {
       actions.add(AppBarAction.sort);
     }
     if (isFlattenResultShown) return actions;
@@ -96,6 +110,8 @@ class HomeAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     AppBarState state = AppBarState(
       title: context.select<AppBarModel, String>((it) => it.title),
+      subtitle: context.select<AppBarModel, String?>((it) => it.subtitle),
+      subtitleProgress: context.select<AppBarModel, double>((it) => it.subtitleProgress),
       actions: buildActions(context),
     );
     return buildAppBarContainer(
@@ -175,12 +191,69 @@ class _HomeAppBarInner extends StatelessWidget {
       return SearchAppBarTitle();
     }
 
+    final displayedTitle = state.title == "." ? "" : state.title;
+    final subtitle = state.subtitle;
+    if (subtitle == null) {
+      return Expanded(
+        child: Text(
+          displayedTitle,
+          overflow: TextOverflow.fade,
+          softWrap: false,
+          style: theme.textTheme.titleLarge,
+        ),
+      );
+    }
+    // When a date subtitle is available, the directory title and date swap
+    // prominence as the user scrolls into the month grid. The swap is driven
+    // by subtitleProgress (0 = title dominant, 1 = date dominant) so the
+    // transition tracks the gesture directly. The title renders at a fixed
+    // titleLarge size and shrinks via Transform.scale — not fontSize lerp,
+    // which re-measures the text every frame and makes Align jitter by a
+    // pixel on slow scroll.
+    final progress = state.subtitleProgress;
+    final titleBaseStyle = theme.textTheme.titleLarge;
+    final titleBaseSize = titleBaseStyle?.fontSize ?? 22.0;
+    final titleTargetSize = theme.textTheme.labelSmall?.fontSize ?? 11.0;
+    final titleScale = 1.0 + (titleTargetSize / titleBaseSize - 1.0) * progress;
+    final titleBaseColor = titleBaseStyle?.color ?? theme.colorScheme.onSurface;
+    final titleStyle = titleBaseStyle?.copyWith(
+      color: Color.lerp(titleBaseColor, theme.colorScheme.onSurfaceVariant, progress),
+    );
+    final subtitleStyle = titleBaseStyle?.copyWith(fontWeight: FontWeight.w600);
     return Expanded(
-      child: Text(
-        state.title == "." ? "" : state.title,
-        overflow: TextOverflow.fade,
-        softWrap: false,
-        style: theme.textTheme.titleLarge,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Opacity(
+              opacity: progress,
+              child: Transform.scale(
+                alignment: Alignment.bottomLeft,
+                scale: 0.92 + 0.08 * progress,
+                child: Text(
+                  subtitle,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: subtitleStyle,
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.lerp(Alignment.centerLeft, Alignment.topLeft, progress)!,
+            child: Transform.scale(
+              alignment: Alignment.topLeft,
+              scale: titleScale,
+              child: Text(
+                displayedTitle,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: titleStyle,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

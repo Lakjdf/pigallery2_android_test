@@ -7,6 +7,8 @@ import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dar
 
 class AppBarModel extends SafeChangeNotifier {
   String _title = "";
+  String? _subtitle;
+  double _subtitleProgress = 0;
   bool _canGoBack = false;
   bool _areDirectoriesDisplayed = false;
 
@@ -31,17 +33,22 @@ class AppBarModel extends SafeChangeNotifier {
 
   /// Update when current tab changes
   void _tabStateNotify() {
-    if (_currentTab == TabEntry.website && _tabStateModel.currentTab != TabEntry.website) {
-      _currentTab = _tabStateModel.currentTab;
+    final newTab = _tabStateModel.currentTab;
+    if (newTab != _currentTab) {
+      setSubtitle(null);
+      setSubtitleProgress(0);
+    }
+    if (_currentTab == TabEntry.website && newTab != TabEntry.website) {
+      _currentTab = newTab;
       _notify();
       return;
     }
-    if (_currentTab != TabEntry.website && _tabStateModel.currentTab == TabEntry.website) {
-      _currentTab = _tabStateModel.currentTab;
+    if (_currentTab != TabEntry.website && newTab == TabEntry.website) {
+      _currentTab = newTab;
       _webviewNotify();
       return;
     }
-    _currentTab = _tabStateModel.currentTab;
+    _currentTab = newTab;
   }
 
   void _webviewNotify() {
@@ -94,9 +101,31 @@ class AppBarModel extends SafeChangeNotifier {
     }
   }
 
+  void setSubtitle(String? value) {
+    if (_subtitle != value) {
+      _subtitle = value;
+      notifyListeners();
+    }
+  }
+
+  /// Progress (0..1) of the title↔subtitle prominence swap. Driven by the
+  /// active view's scroll offset so the transition reads as direct gesture
+  /// feedback rather than a timed animation.
+  void setSubtitleProgress(double value) {
+    final clamped = value.clamp(0.0, 1.0);
+    if (_subtitleProgress != clamped) {
+      _subtitleProgress = clamped;
+      notifyListeners();
+    }
+  }
+
   bool get canGoBack => _canGoBack;
 
   String get title => _title;
+
+  String? get subtitle => _subtitle;
+
+  double get subtitleProgress => _subtitleProgress;
 
   bool get areDirectoriesDisplayed => _areDirectoriesDisplayed;
 }

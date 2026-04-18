@@ -7,7 +7,7 @@ class SortOption {
 
   SortOption({required this.order, required this.type, required this.onlyThisFolder});
 
-  SortOption.initial() : this(order: SortOrder.asc, type: SortType.name, onlyThisFolder: false);
+  SortOption.initial() : this(order: SortOrder.desc, type: SortType.date, onlyThisFolder: false);
 
   SortOption copyWith({
     SortOrder? order,
