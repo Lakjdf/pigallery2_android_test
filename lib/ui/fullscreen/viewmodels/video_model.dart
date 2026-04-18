@@ -25,6 +25,12 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
 
   double _videoScale = 1.0;
 
+  /// Fractional page position of the fullscreen carousel, used to cross-fade video volume.
+  final ValueNotifier<double> pageScrollPosition = ValueNotifier(0);
+
+  FullscreenItem? _currentFullscreenItem;
+  int _currentPageIndex = 0;
+
   VideoControllerItem? _currentVideoControllerItem;
 
   VideoModel(MediaRepository mediaRepository) {
@@ -38,6 +44,8 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
         notifyListeners();
       }
     });
+
+    pageScrollPosition.addListener(_updateVolumes);
   }
 
   set videoScale(double val) {
@@ -125,7 +133,7 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
 
   void _preload(models.Media? media) {
     if (media != null && media.isVideo) {
-      _initializeVideoController(media, autoPlay: false);
+      _initializeVideoController(media, autoPlay: false).listen((_) => _updateVolumes());
     }
   }
 
@@ -133,6 +141,8 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   @override
   set currentItem(FullscreenItem item) {
     _videoScale = 1.0;
+    _currentFullscreenItem = item;
+    _currentPageIndex = pageScrollPosition.value.round();
 
     /// Remove controller if new item is not a video.
     if (!item.item.isVideo) {
@@ -147,9 +157,49 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
       _initializeVideoController(item.item).listen((_) {
         _preload(item.previous?.item);
         _preload(item.next?.item);
+        _updateVolumes();
       });
     }
     notifyListeners();
+  }
+
+  /// Cross-fades the volume of the current video with its neighbour as the user swipes.
+  void _updateVolumes() {
+    final current = _currentFullscreenItem;
+    if (current == null) return;
+    double delta = pageScrollPosition.value - _currentPageIndex;
+
+    _setVolumeFromVisibility(current.item.id, (1 - delta.abs()).clamp(0.0, 1.0));
+    final next = current.next;
+    if (next != null) {
+      _setVolumeFromVisibility(next.item.id, delta > 0 ? delta.clamp(0.0, 1.0) : 0.0);
+    }
+    final prev = current.previous;
+    if (prev != null) {
+      _setVolumeFromVisibility(prev.item.id, delta < 0 ? (-delta).clamp(0.0, 1.0) : 0.0);
+    }
+  }
+
+  void _setVolumeFromVisibility(int id, double visibleFraction) {
+    final controller = _state.getController(id)?.controller;
+    if (controller == null) return;
+
+    const int target = 70; // volume of both videos when they are 50% visible
+    const double threshold = 0.2; // threshold at which the volume will be changed (0.2 -> at 50-+20% visibility)
+    const double lowerThreshold = 0.5 - threshold;
+    const double upperThreshold = 0.5 + threshold;
+
+    double volume;
+    if (visibleFraction >= lowerThreshold && visibleFraction <= 0.5) {
+      volume = (visibleFraction - lowerThreshold) * target / threshold;
+    } else if (visibleFraction > 0.5 && visibleFraction <= upperThreshold) {
+      volume = (visibleFraction - 0.5) * (100 - target) / threshold + target;
+    } else if (visibleFraction > upperThreshold) {
+      volume = 100;
+    } else {
+      volume = 0;
+    }
+    controller.player.setVolume(volume).catchError((_) {});
   }
 
   @override

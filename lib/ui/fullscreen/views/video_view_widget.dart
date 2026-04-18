@@ -12,7 +12,6 @@ import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.da
 import 'package:pigallery2_android/ui/shared/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoViewWidget extends StatefulWidget {
   final models.Media item;
@@ -32,7 +31,6 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
   @override
   void initState() {
     super.initState();
-    VisibilityDetectorController.instance.updateInterval = Duration.zero;
     videoModel = Provider.of<VideoModel>(context, listen: false);
     videoModel.registerMountedWidget(widget.item.id);
   }
@@ -61,28 +59,6 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     );
   }
 
-  /// smoothly transition audio when swiping between videos.
-  void onVisibilityChanged(double visibleFraction, VideoController videoController) {
-    int target = 70; // volume of both videos when they are 50% visible
-    double threshold = 0.2; // threshold at which the volume will be changed (0.2 -> at 50-+20% visibility)
-
-    double lowerThreshold = 0.5 - threshold;
-    double upperThreshold = 0.5 + threshold;
-    if (visibleFraction >= lowerThreshold && visibleFraction <= 0.5) {
-      // 0 at lowerThreshold and target at 0.5
-      videoController.player.setVolume((visibleFraction - lowerThreshold) * target / threshold).catchError((_) {});
-    } else if (visibleFraction > 0.5 && visibleFraction <= upperThreshold) {
-      // target at 0.5 & 100 at upperThreshold
-      videoController.player
-          .setVolume((visibleFraction - 0.5) * (100 - target) / threshold + target)
-          .catchError((_) {});
-    } else if (visibleFraction > upperThreshold) {
-      videoController.player.setVolume(100).catchError((_) {});
-    } else if (visibleFraction < lowerThreshold) {
-      videoController.player.setVolume(0).catchError((_) {});
-    }
-  }
-
   Widget buildVideo(BuildContext context, VideoController videoController) {
     Size screenSize = MediaQuery.of(context).size;
     Size childSize;
@@ -96,22 +72,18 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     // required for the Video widget to update its dimensions; defaults to source metadata
     videoController.setSize(width: childSize.width.toInt(), height: childSize.height.toInt()).catchError((_) => {});
     return Center(
-      child: VisibilityDetector(
+      child: Video(
+        // has to include the screenSize; won't update on orientation changes otherwise
         key: ValueKey("${widget.item.id}: ${screenSize.hashCode}"),
-        onVisibilityChanged: (info) => onVisibilityChanged(info.visibleFraction, videoController),
-        child: Video(
-          // has to include the screenSize; won't update on orientation changes otherwise
-          key: ValueKey("${widget.item.id}: ${screenSize.hashCode}"),
-          controller: videoController,
-          fit: BoxFit.contain,
-          aspectRatio: aspectRatio,
-          controls: NoVideoControls,
-          width: childSize.width,
-          height: childSize.height,
-          alignment: Alignment.center,
-          pauseUponEnteringBackgroundMode: true,
-          resumeUponEnteringForegroundMode: true,
-        ),
+        controller: videoController,
+        fit: BoxFit.contain,
+        aspectRatio: aspectRatio,
+        controls: NoVideoControls,
+        width: childSize.width,
+        height: childSize.height,
+        alignment: Alignment.center,
+        pauseUponEnteringBackgroundMode: true,
+        resumeUponEnteringForegroundMode: true,
       ),
     );
   }

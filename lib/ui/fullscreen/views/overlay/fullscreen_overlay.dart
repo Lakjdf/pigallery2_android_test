@@ -131,6 +131,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
 
   Widget buildTopBar(BuildContext context, Media item) {
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.metadata.date.toInt() * 1000);
+    Color color = Color.lerp(Colors.white, Theme.of(context).colorScheme.onSurfaceVariant, .2)!;
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -153,7 +154,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                     item.name,
                     overflow: TextOverflow.fade,
                     softWrap: false,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color),
                   ),
                 ),
                 SizedBox(width: 8),
@@ -163,11 +164,11 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
                   children: [
                     Text(
                       DateFormat("dd/MM/yyyy").format(dateTime),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: color),
                     ),
                     Text(
                       DateFormat("HH:mm:ss").format(dateTime),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: color),
                     ),
                   ],
                 ),

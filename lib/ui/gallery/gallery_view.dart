@@ -23,6 +23,7 @@ class GalleryView extends StatelessWidget {
 
   Widget buildBody(BuildContext context) {
     final showTopPicks = stackPosition == 0 && context.read<TabEntry>() == TabEntry.home;
+    final leading = showTopPicks ? TopPicksView(key: _topPicksKey) : null;
     return Selector<GalleryModel, _GalleryBodyState>(
       selector: (context, model) {
         final state = model.stateOf(stackPosition);
@@ -30,12 +31,12 @@ class GalleryView extends StatelessWidget {
       },
       builder: (context, bodyState, child) {
         if (bodyState.useTimeline) {
-          return TimelineGridView(stackPosition, bodyState.items);
+          return TimelineGridView(stackPosition, bodyState.items, leading: leading);
         }
         return GalleryViewGridView(
           stackPosition,
           bodyState.items,
-          leading: showTopPicks ? TopPicksView(key: _topPicksKey) : null,
+          leading: leading,
         );
       },
     );

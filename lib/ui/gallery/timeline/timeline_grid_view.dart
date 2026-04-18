@@ -15,6 +15,7 @@ import 'package:pigallery2_android/ui/home/views/refresh_wrapper.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
+import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -25,8 +26,9 @@ import 'package:provider/provider.dart';
 class TimelineGridView extends StatefulWidget {
   final int stackPosition;
   final List<Item> items;
+  final Widget? leading;
 
-  TimelineGridView(this.stackPosition, this.items) : super(key: ValueKey(items));
+  TimelineGridView(this.stackPosition, this.items, {this.leading}) : super(key: ValueKey(items));
 
   @override
   State<TimelineGridView> createState() => _TimelineGridViewState();
@@ -190,9 +192,21 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
     return rows * imageHeight + (rows - 1) * spacing;
   }
 
+  /// Height contributed by the optional [TimelineGridView.leading] slot when
+  /// it is currently rendering content. Mirrors the conditions used by
+  /// [TopPicksView] so section offsets stay aligned as top picks appear or
+  /// collapse.
+  double _leadingWidgetHeight(BuildContext context) {
+    if (widget.leading == null) return 0;
+    final showTopPicks = context.read<GlobalSettingsModel>().showTopPicks;
+    final topPicksEmpty = context.read<TopPicksModel>().isUpToDateAndEmpty;
+    return showTopPicks && !topPicksEmpty ? 132 : 0;
+  }
+
   void _recomputeSectionOffsets(BuildContext context, int crossAxisCount, double spacing) {
     final imageHeight = _getImageHeight(context);
-    final leadingHeight = _gridHeightForItems(_directories.length, crossAxisCount, imageHeight, spacing);
+    final leadingHeight = _leadingWidgetHeight(context) +
+        _gridHeightForItems(_directories.length, crossAxisCount, imageHeight, spacing);
 
     final offsets = <double>[];
     double cumulative = leadingHeight;
@@ -300,6 +314,10 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
     final topInset = SystemUi.getPadding().top + toolbarHeight;
     final bottomInset = _getBottomInset(context);
     watchTabForAppBarSync(context);
+    // Rebuild when top picks appears/collapses so section offsets track it.
+    if (widget.leading != null) {
+      context.select<TopPicksModel, bool>((m) => m.isUpToDateAndEmpty);
+    }
 
     return OrientationBuilder(
       builder: (context, orientation) {
@@ -326,6 +344,7 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
                   controller: _scrollController,
                   slivers: [
                     SliverToBoxAdapter(child: SizedBox(height: topInset)),
+                    if (widget.leading != null) SliverToBoxAdapter(child: widget.leading),
                     if (_directories.isNotEmpty)
                       SliverPadding(
                         padding: horizontalPadding,

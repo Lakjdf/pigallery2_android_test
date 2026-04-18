@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_background_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/fullscreen_overlay.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
@@ -78,6 +79,8 @@ class _FullscreenViewState extends State<FullscreenView> {
   @override
   void initState() {
     super.initState();
+    final media = context.read<TabModelsProvider>().model?.currentState.media ?? [];
+    context.read<VideoModel>().pageScrollPosition.value = media.indexOf(widget.item).toDouble();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemUi.setFullscreenSystemBarColors(context);
     });
@@ -87,9 +90,11 @@ class _FullscreenViewState extends State<FullscreenView> {
   Widget build(BuildContext context) {
     List<Media> media = context.read<TabModelsProvider>().model?.currentState.media ?? [];
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
+    VideoModel videoModel = Provider.of<VideoModel>(context, listen: false);
     fullscreenModel.media = media;
+    int initialIndex = media.indexOf(widget.item);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      fullscreenModel.currentPage = media.indexOf(widget.item);
+      fullscreenModel.currentPage = initialIndex;
     });
     return PopScope(
       canPop: false,
@@ -112,7 +117,8 @@ class _FullscreenViewState extends State<FullscreenView> {
           viewPadding: SystemUi.getPadding(),
           child: HorizontalCarouselWrapper(
             onPageChanged: (idx) => fullscreenModel.currentPage = idx,
-            initialIndex: media.indexOf(widget.item),
+            onPageScroll: (pos) => videoModel.pageScrollPosition.value = pos,
+            initialIndex: initialIndex,
             itemCount: media.length,
             builder: ((context, index) {
               return PhotoViewGestureDetectorScope(

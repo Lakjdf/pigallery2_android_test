@@ -6,9 +6,13 @@ import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dar
 /// and reveal them again when they start scrolling up.
 class AppBarScrollModel extends SafeChangeNotifier {
   static const double _topThreshold = 8.0;
+  // Pixels of accumulated upward scroll required to reveal the actions once
+  // hidden. Hysteresis prevents tiny flicks from bringing them back.
+  static const double _revealThreshold = 60.0;
 
   double _offset = 0.0;
   bool _hidden = false;
+  double _upAccumulator = 0.0;
 
   double get offset => _offset;
 
@@ -25,6 +29,7 @@ class AppBarScrollModel extends SafeChangeNotifier {
       _offset = offset;
       changed = true;
     }
+    _upAccumulator = 0.0;
     if (_hidden) {
       _hidden = false;
       changed = true;
@@ -34,21 +39,30 @@ class AppBarScrollModel extends SafeChangeNotifier {
 
   void update({required double offset, required ScrollDirection direction}) {
     bool changed = false;
+    final delta = offset - _offset;
     if (_offset != offset) {
       _offset = offset;
       changed = true;
     }
     if (offset <= _topThreshold) {
+      _upAccumulator = 0.0;
       if (_hidden) {
         _hidden = false;
         changed = true;
       }
-    } else if (direction == ScrollDirection.reverse && !_hidden) {
-      _hidden = true;
-      changed = true;
+    } else if (direction == ScrollDirection.reverse) {
+      _upAccumulator = 0.0;
+      if (!_hidden) {
+        _hidden = true;
+        changed = true;
+      }
     } else if (direction == ScrollDirection.forward && _hidden) {
-      _hidden = false;
-      changed = true;
+      if (delta < 0) _upAccumulator += -delta;
+      if (_upAccumulator >= _revealThreshold) {
+        _hidden = false;
+        _upAccumulator = 0.0;
+        changed = true;
+      }
     }
     if (changed) notifyListeners();
   }

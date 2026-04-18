@@ -35,6 +35,7 @@ class _PhotoViewWidgetState extends State<PhotoViewWidget> {
   @override
   void initState() {
     super.initState();
+    VisibilityDetectorController.instance.updateInterval = Duration.zero;
     PhotoModel model = context.read();
     _controller.outputStateStream.listen((val) {
       double? scale = val.scale;
