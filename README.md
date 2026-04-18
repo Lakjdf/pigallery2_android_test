@@ -7,17 +7,17 @@ Note that this project is labelled as a test project since I use it to test out 
 It might be unstable and will likely never adopt all the features of the webapp.
 
 Currently supported features:
-- Browse directories
+- Browse directories & albums
 - View images, videos, motion photos
-- "any_text" search
+- search (partly)
 - Directory flattening
 - Share media using Android's share dialog
 - View media from x years ago
 
 There's no metadata displayed at the moment.
 
-Should work with PiGallery2 v2.0.0 and the latest docker image at the time of the last release.\
-Check Settings > Compatibility if images are not displayed or videos are not playing.\
+Should work with PiGallery2 v3.5.2 and the latest docker image at the time of the last release.\
+Check Settings > Server for compatibility options if images are not displayed or videos are not playing.\
 For example for PiGallery2 v2.0.0, you need to update the API path for thumbnails to `/thumbnail` or `/thumbnail/<size>`, where `<size>` is the configured size of the generated thumbnails (defaults to 240 for v2.0.0).
 
 ## Packages used
@@ -46,7 +46,6 @@ For example for PiGallery2 v2.0.0, you need to update the API path for thumbnail
 - [photo_view](https://pub.dev/packages/photo_view) - display images with zoom gestures
 - [media_kit](https://pub.dev/packages/media_kit) - video playback using libmpv
 
-- [backdrop](https://pub.dev/packages/backdrop) - show a back layer for some settings
 - [visibility_detector](https://pub.dev/packages/visibility_detector) - detect visibility fraction to update video volume
 - [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) - show admin panel within a WebView that respects cookies
 

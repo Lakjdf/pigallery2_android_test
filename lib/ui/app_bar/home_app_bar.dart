@@ -65,12 +65,7 @@ class HomeAppBar extends StatelessWidget {
     }
 
     final tab = context.select<TabStateModel, TabEntry>((it) => it.currentTab);
-    bool isTimelineRoot = context.select<TabModelsProvider, bool>(
-      (it) => it.model?.currentState.type is TimelineGalleryModelStateType,
-    );
-    // Timeline is always date-sorted by design; exposing a sort menu there
-    // would let the user degrade the experience into a month-less flat grid.
-    if (tab != TabEntry.website && !isTimelineRoot) {
+    if (tab != TabEntry.website && tab != TabEntry.timeline) {
       actions.add(AppBarAction.sort);
     }
     if (isFlattenResultShown) return actions;
