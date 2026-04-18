@@ -15,67 +15,62 @@ class VideoProgressBar extends StatelessWidget {
     this.height = 50,
   });
 
-  Widget _buildProgressBar(Color color) {
+  Widget _buildProgressBar(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final onSurface = Colors.white;
     return VideoSeekBar(
       controller,
       key: ObjectKey(controller),
       height: height,
       colors: VideoProgressBarColors(
-        handleColor: color.withValues(alpha: opacity),
-        playedColor: color.withValues(alpha: opacity),
-        bufferedColor: color.withValues(alpha: .5 * opacity),
-        backgroundColor: color.withValues(alpha: .2 * opacity),
+        handleColor: primary.withValues(alpha: opacity),
+        playedColor: primary.withValues(alpha: opacity),
+        bufferedColor: onSurface.withValues(alpha: 0.3 * opacity),
+        backgroundColor: onSurface.withValues(alpha: 0.12 * opacity),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        Container(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-          height: height,
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.black.withValues(alpha: 0.0),
+            Colors.black.withValues(alpha: 0.52 * opacity),
+          ],
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              SizedBox(
-                height: height,
-                child: Align(
-                  alignment: Alignment.center,
-                  child: VideoProgressBarText(
-                    initialValue: controller.player.state.position,
-                    stream: controller.player.stream.position,
-                    opacity: opacity,
-                  ),
-                ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            VideoProgressBarText(
+              initialValue: controller.player.state.position,
+              stream: controller.player.stream.position,
+              opacity: opacity,
+              color: Colors.white,
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: _buildProgressBar(context),
               ),
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: _buildProgressBar(onSurfaceVariant),
-                ),
-              ),
-              SizedBox(
-                height: height,
-                child: Align(
-                  alignment: Alignment.center,
-                  child: VideoProgressBarText(
-                    initialValue: controller.player.state.duration,
-                    stream: controller.player.stream.duration,
-                    opacity: opacity,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+            VideoProgressBarText(
+              initialValue: controller.player.state.duration,
+              stream: controller.player.stream.duration,
+              opacity: opacity,
+              color: Colors.white,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

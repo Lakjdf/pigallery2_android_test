@@ -123,16 +123,15 @@ class VideoProgress {
 
 class VideoProgressBarColors {
   VideoProgressBarColors({
-    required Color playedColor,
+    required this.playedColor,
     required Color bufferedColor,
     required Color handleColor,
     required Color backgroundColor,
-  })  : playedPaint = Paint()..color = playedColor,
-        bufferedPaint = Paint()..color = bufferedColor,
-        handlePaint = Paint()..color = handleColor,
-        backgroundPaint = Paint()..color = backgroundColor;
+  }) : bufferedPaint = Paint()..color = bufferedColor,
+       handlePaint = Paint()..color = handleColor,
+       backgroundPaint = Paint()..color = backgroundColor;
 
-  final Paint playedPaint;
+  final Color playedColor;
   final Paint bufferedPaint;
   final Paint handlePaint;
   final Paint backgroundPaint;
@@ -142,21 +141,19 @@ class _ProgressBarPainter extends CustomPainter {
   _ProgressBarPainter(this.videoProgress, this.colors);
 
   final VideoProgress videoProgress;
-  VideoProgressBarColors colors;
-  final double height = 2;
+  final VideoProgressBarColors colors;
+  static const double _barHeight = 4.0;
+  static const double _handleRadius = 7.0;
+  static const double _dragHandleRadius = 9.0;
 
   @override
-  bool shouldRepaint(CustomPainter painter) {
-    return true;
-  }
+  bool shouldRepaint(CustomPainter painter) => true;
 
-  void _paintBar(Canvas canvas, double width, Paint paint, double yPos) {
+  void _paintRRect(Canvas canvas, double start, double end, double y, double h, Paint paint) {
+    if (end <= start) return;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromPoints(
-          Offset(0, yPos),
-          Offset(width, yPos + height),
-        ),
+        Rect.fromLTWH(start, y, end - start, h),
         const Radius.circular(4),
       ),
       paint,
@@ -165,29 +162,46 @@ class _ProgressBarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double centerY = size.height / 2 - height / 2;
+    final double y = size.height / 2 - _barHeight / 2;
+    final double playedEnd = videoProgress.getPlayedPartEnd(size);
+    final double bufferedEnd = videoProgress.getBufferedPartEnd(size);
+    final bool isDragging = videoProgress.dragPosition != null;
+    final double handleX = videoProgress.dragPosition ?? playedEnd;
+    final Offset handleCenter = Offset(handleX, y + _barHeight / 2);
 
-    double playedPartEnd = videoProgress.getPlayedPartEnd(size);
-    double bufferedPartEnd = videoProgress.getBufferedPartEnd(size);
+    _paintRRect(canvas, 0, size.width, y, _barHeight, colors.backgroundPaint);
+    _paintRRect(canvas, 0, bufferedEnd, y, _barHeight, colors.bufferedPaint);
 
-    _paintBar(canvas, size.width, colors.backgroundPaint, centerY);
-    _paintBar(canvas, bufferedPartEnd, colors.bufferedPaint, centerY);
-    _paintBar(canvas, playedPartEnd, colors.playedPaint, centerY);
+    if (playedEnd > 0) {
+      final gradientPaint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            colors.playedColor.withValues(alpha: 0.45),
+            colors.playedColor,
+          ],
+        ).createShader(Rect.fromLTWH(0, y, playedEnd, _barHeight));
+      _paintRRect(canvas, 0, playedEnd, y, _barHeight, gradientPaint);
+    }
 
-    // draw bigger handle while dragging
-    double? dragPosition = videoProgress.dragPosition;
-    if (dragPosition == null) {
+    if (isDragging) {
       canvas.drawCircle(
-        Offset(playedPartEnd, centerY + height / 2),
-        height * 3,
-        colors.handlePaint,
+        handleCenter,
+        _dragHandleRadius * 2.5,
+        Paint()
+          ..color = colors.playedColor.withValues(alpha: 0.14)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
       );
+      canvas.drawCircle(
+        handleCenter,
+        _dragHandleRadius + 4,
+        Paint()
+          ..color = colors.playedColor.withValues(alpha: 0.35)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+      canvas.drawCircle(handleCenter, _dragHandleRadius, colors.handlePaint);
     } else {
-      canvas.drawCircle(
-        Offset(dragPosition, centerY + height / 2),
-        height * 5,
-        colors.handlePaint,
-      );
+      canvas.drawCircle(handleCenter, _handleRadius, colors.handlePaint);
     }
   }
 }

@@ -7,12 +7,14 @@ class VideoProgressBarText extends StatefulWidget {
     required this.initialValue,
     required this.stream,
     required this.opacity,
+    this.color,
     super.key,
   });
 
   final Duration initialValue;
   final Stream<Duration> stream;
   final double opacity;
+  final Color? color;
 
   @override
   State createState() => _VideoProgressBarTextState();
@@ -34,10 +36,15 @@ class _VideoProgressBarTextState extends State<VideoProgressBarText> {
 
   @override
   Widget build(BuildContext context) {
-    Color onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
+    final Color base = widget.color ?? Theme.of(context).colorScheme.onSurfaceVariant;
     return Text(
       _duration.format(),
-      style: TextStyle(color: onSurfaceVariant.withValues(alpha: widget.opacity)),
+      style: TextStyle(
+        color: base.withValues(alpha: widget.opacity),
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.3,
+      ),
     );
   }
 }

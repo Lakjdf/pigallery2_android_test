@@ -11,6 +11,7 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/download_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/floating_action_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_controls.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_precision_scrub_zone.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_progress_bar.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_zoom_detector.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selector_guard.dart';
@@ -115,9 +116,15 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
     return SelectorGuard<VideoModel, VideoControllerItem>(
       selector: (model) => model.videoControllerItem,
       condition: (item) => !item.hasError,
-      then: (context, item) => Align(
-        alignment: Alignment.bottomCenter,
-        child: VideoProgressBar(key: ObjectKey(item), controller: item.controller, opacity: opacity),
+      then: (context, item) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          VideoPrecisionScrubZone(controllerItem: item),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: VideoProgressBar(key: ObjectKey(item), controller: item.controller, opacity: opacity),
+          ),
+        ],
       ),
     );
   }
