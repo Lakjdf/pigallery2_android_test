@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/ui/gallery/timeline/month_sections.dart';
 
-/// Right-edge drag thumb that jumps through the timeline. While the user is
-/// dragging, a floating bubble next to the thumb shows the month they'd land
-/// on. Outside of drags, the thumb simply mirrors the current scroll offset.
-class TimelineScrubber extends StatefulWidget {
+/// Right-edge drag thumb for vertically scrolling content. While the user is
+/// dragging, a floating bubble next to the thumb shows a contextual label for
+/// the current scroll offset (month, first letter, file size, etc.). Outside
+/// of drags, the thumb simply mirrors the current scroll offset.
+class GalleryScrubber extends StatefulWidget {
   final ScrollController scrollController;
-  final List<double> sectionHeadOffsets;
-  final double totalContentHeight;
-  final List<TimelineSection> sections;
-  final String Function(DateTime) formatMonth;
 
-  const TimelineScrubber({
+  /// Label to display in the bubble for a given scroll offset. Return null to
+  /// suppress the bubble (e.g., when the current sort has no per-position
+  /// label that would make sense to the user).
+  final String? Function(double scrollOffset) labelBuilder;
+
+  const GalleryScrubber({
     super.key,
     required this.scrollController,
-    required this.sectionHeadOffsets,
-    required this.totalContentHeight,
-    required this.sections,
-    required this.formatMonth,
+    required this.labelBuilder,
   });
 
   @override
-  State<TimelineScrubber> createState() => _TimelineScrubberState();
+  State<GalleryScrubber> createState() => _GalleryScrubberState();
 }
 
-class _TimelineScrubberState extends State<TimelineScrubber> with SingleTickerProviderStateMixin {
+class _GalleryScrubberState extends State<GalleryScrubber> with SingleTickerProviderStateMixin {
   static const double _trackWidth = 28;
   static const double _thumbWidth = 14;
   static const double _thumbHeight = 40;
@@ -45,7 +43,7 @@ class _TimelineScrubberState extends State<TimelineScrubber> with SingleTickerPr
   }
 
   @override
-  void didUpdateWidget(covariant TimelineScrubber oldWidget) {
+  void didUpdateWidget(covariant GalleryScrubber oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.scrollController != widget.scrollController) {
       oldWidget.scrollController.removeListener(_onScroll);
@@ -95,30 +93,6 @@ class _TimelineScrubberState extends State<TimelineScrubber> with SingleTickerPr
     return (thumbY.clamp(0.0, thumbRange) / thumbRange) * maxScroll;
   }
 
-  int _sectionIndexForScrollOffset(double scrollOffset) {
-    if (widget.sectionHeadOffsets.isEmpty) return 0;
-    int lo = 0;
-    int hi = widget.sectionHeadOffsets.length - 1;
-    int result = 0;
-    while (lo <= hi) {
-      final mid = (lo + hi) >> 1;
-      if (widget.sectionHeadOffsets[mid] <= scrollOffset) {
-        result = mid;
-        lo = mid + 1;
-      } else {
-        hi = mid - 1;
-      }
-    }
-    return result;
-  }
-
-  String _currentBubbleLabel() {
-    if (widget.sections.isEmpty) return "";
-    final idx = _sectionIndexForScrollOffset(_currentScroll());
-    final clamped = idx.clamp(0, widget.sections.length - 1);
-    return widget.formatMonth(widget.sections[clamped].month);
-  }
-
   void _jumpToThumbY(double thumbY, double trackHeight) {
     final target = _scrollFromThumbY(thumbY, trackHeight);
     if (!widget.scrollController.hasClients) return;
@@ -139,7 +113,7 @@ class _TimelineScrubberState extends State<TimelineScrubber> with SingleTickerPr
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final maxScroll = _maxScroll();
-    if (maxScroll <= 0 || widget.sections.isEmpty) {
+    if (maxScroll <= 0) {
       return const SizedBox.shrink();
     }
 
@@ -148,6 +122,7 @@ class _TimelineScrubberState extends State<TimelineScrubber> with SingleTickerPr
         final trackHeight = constraints.maxHeight;
         final thumbY = _thumbYFromScroll(trackHeight);
         final bubbleCenterY = thumbY + _thumbHeight / 2;
+        final label = widget.labelBuilder(_currentScroll());
 
         return SizedBox(
           width: _trackWidth + _trackRightInset + 4,
@@ -194,28 +169,30 @@ class _TimelineScrubberState extends State<TimelineScrubber> with SingleTickerPr
                   ),
                 ),
               ),
-              Positioned(
-                right: _trackRightInset + _thumbWidth + 8,
-                top: bubbleCenterY - 18,
-                child: IgnorePointer(
-                  child: FadeTransition(
-                    opacity: _bubbleController,
-                    child: ScaleTransition(
-                      scale: Tween<double>(begin: 0.85, end: 1).animate(
-                        CurvedAnimation(parent: _bubbleController, curve: Curves.easeOut),
-                      ),
-                      alignment: Alignment.centerRight,
-                      child: Material(
-                        elevation: 4,
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(16),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          child: Text(
-                            _currentBubbleLabel(),
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
+              if (label != null)
+                Positioned(
+                  right: _trackRightInset + _thumbWidth + 16,
+                  top: bubbleCenterY - 18,
+                  child: IgnorePointer(
+                    child: FadeTransition(
+                      opacity: _bubbleController,
+                      child: ScaleTransition(
+                        scale: Tween<double>(begin: 0.85, end: 1).animate(
+                          CurvedAnimation(parent: _bubbleController, curve: Curves.easeOut),
+                        ),
+                        alignment: Alignment.centerRight,
+                        child: Material(
+                          elevation: 4,
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: Text(
+                              label,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: theme.colorScheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -223,7 +200,6 @@ class _TimelineScrubberState extends State<TimelineScrubber> with SingleTickerPr
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         );

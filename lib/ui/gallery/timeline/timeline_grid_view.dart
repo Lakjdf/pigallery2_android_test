@@ -5,9 +5,9 @@ import 'package:pigallery2_android/ui/app_bar/app_bar_scroll_sync.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/open_fullscreen.dart';
 import 'package:pigallery2_android/ui/gallery/directory_item.dart';
+import 'package:pigallery2_android/ui/gallery/gallery_scrubber.dart';
 import 'package:pigallery2_android/ui/gallery/media_item.dart';
 import 'package:pigallery2_android/ui/gallery/timeline/month_sections.dart';
-import 'package:pigallery2_android/ui/gallery/timeline/timeline_scrubber.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/home/views/error_screen.dart';
 import 'package:pigallery2_android/ui/home/views/glass_nav_bar.dart';
@@ -51,7 +51,6 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
   /// top of section `i`'s header. When directories precede the month grid,
   /// these offsets already include the directory-grid height.
   List<double> _sectionHeadOffsets = const [];
-  double _totalContentHeight = 0;
 
   @override
   ScrollController get appBarScrollController => _scrollController;
@@ -162,6 +161,12 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
 
   String _formatMonth(DateTime month) => DateFormat.yMMMM().format(month);
 
+  String? _labelForScrollOffset(double scrollOffset) {
+    if (_sections.isEmpty || _sectionHeadOffsets.isEmpty) return null;
+    final idx = _sectionIndexForScrollOffset(scrollOffset).clamp(0, _sections.length - 1);
+    return _formatMonth(_sections[idx].month);
+  }
+
   double _getImageHeight(BuildContext context) {
     final settings = context.read<GlobalSettingsModel>();
     final crossAxisCount = settings.getGridCrossAxisCount(MediaQuery.of(context).orientation);
@@ -197,7 +202,6 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
       cumulative += _headerHeight + gridHeight;
     }
     _sectionHeadOffsets = offsets;
-    _totalContentHeight = cumulative;
   }
 
   void _openDirectory(BuildContext context, Directory directory) {
@@ -369,12 +373,9 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
                 top: topInset,
                 right: 0,
                 bottom: bottomInset,
-                child: TimelineScrubber(
+                child: GalleryScrubber(
                   scrollController: _scrollController,
-                  sectionHeadOffsets: _sectionHeadOffsets,
-                  totalContentHeight: _totalContentHeight,
-                  sections: _sections,
-                  formatMonth: _formatMonth,
+                  labelBuilder: _labelForScrollOffset,
                 ),
               ),
             ],

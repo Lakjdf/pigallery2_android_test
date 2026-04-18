@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:pigallery2_android/data/storage/models/sort_option.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/app_bar/app_bar_scroll_sync.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/open_fullscreen.dart';
 import 'package:pigallery2_android/ui/home/views/error_screen.dart';
 import 'package:pigallery2_android/ui/home/views/refresh_wrapper.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/ui/gallery/gallery_scrubber.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/gallery/directory_item.dart';
 import 'package:pigallery2_android/ui/gallery/media_item.dart';
 import 'package:pigallery2_android/ui/home/views/glass_nav_bar.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
+import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -137,60 +141,123 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     );
   }
 
+  String? _labelForScrollOffset(
+    double scrollOffset,
+    double leadingOffset,
+    double rowHeight,
+    int crossAxisCount,
+    SortType sortType,
+  ) {
+    if (sortType == SortType.random) return null;
+    if (widget.items.isEmpty || rowHeight <= 0) return null;
+    final gridOffset = (scrollOffset - leadingOffset).clamp(0.0, double.infinity);
+    final row = (gridOffset / rowHeight).floor();
+    final itemIndex = (row * crossAxisCount).clamp(0, widget.items.length - 1);
+    final item = widget.items[itemIndex];
+    return switch (sortType) {
+      SortType.name => item.name.isNotEmpty ? item.name[0].toUpperCase() : null,
+      SortType.size => _sizeLabel(item),
+      SortType.date => DateFormat.yMMMM().format(
+          DateTime.fromMillisecondsSinceEpoch(item.metadata.date.toInt() * 1000),
+        ),
+      SortType.random => null,
+    };
+  }
+
+  String _sizeLabel(Item item) {
+    if (item is Directory) {
+      final count = item.metadata.size;
+      return count == 1 ? "1 item" : "$count items";
+    }
+    return item.metadata.size.toHumanReadableFileSize();
+  }
+
   @override
   Widget build(BuildContext context) {
     GlobalSettingsModel model = Provider.of<GlobalSettingsModel>(context);
     final topInset = SystemUi.getPadding().top + toolbarHeight;
+    final bottomInset = MediaQuery.paddingOf(context).bottom +
+        GlassNavBarTheme.barHeight +
+        GlassNavBarTheme.bottomPadding +
+        16;
     watchTabForAppBarSync(context);
+    final sortType = context.read<GalleryModel>().stateOf(widget.stackPosition).sortOption.type;
 
     return OrientationBuilder(
-      builder: (context, orientation) => GalleryErrorScreen(
-        child: RefreshWrapper(
-          child: CustomScrollView(
-            key: PageStorageKey(widget.stackPosition),
-            controller: _scrollController,
-            slivers: [
-              SliverToBoxAdapter(child: SizedBox(height: topInset)),
-              if (widget.leading != null) SliverToBoxAdapter(child: widget.leading),
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  MediaQuery.paddingOf(context).left,
-                  0,
-                  MediaQuery.paddingOf(context).right,
-                  MediaQuery.paddingOf(context).bottom +
-                      GlassNavBarTheme.barHeight +
-                      GlassNavBarTheme.bottomPadding +
-                      16, // extra padding to clear the nav bar properly
+      builder: (context, orientation) {
+        final crossAxisCount = model.getGridCrossAxisCount(orientation);
+        final spacing = model.gridSpacing.toDouble();
+        final imageHeight = _getImageHeight(context);
+        final rowHeight = imageHeight + spacing;
+        final leadingOffset = _getLeadingOffset(context);
+
+        return GalleryErrorScreen(
+          // RefreshWrapper wraps the CustomScrollView directly — its
+          // SmartRefresher needs a Scrollable child. The scrubber sits as a
+          // sibling overlay on the right edge.
+          child: Stack(
+            children: [
+              RefreshWrapper(
+                child: CustomScrollView(
+                  key: PageStorageKey(widget.stackPosition),
+                  controller: _scrollController,
+                  slivers: [
+                    SliverToBoxAdapter(child: SizedBox(height: topInset)),
+                    if (widget.leading != null) SliverToBoxAdapter(child: widget.leading),
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(
+                        MediaQuery.paddingOf(context).left,
+                        0,
+                        MediaQuery.paddingOf(context).right,
+                        bottomInset,
+                      ),
+                      sliver: SliverGrid.builder(
+                        itemCount: items.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: spacing,
+                          mainAxisSpacing: spacing,
+                          childAspectRatio: model.gridAspectRatio,
+                        ),
+                        itemBuilder: (BuildContext context, int index) {
+                          Item item = items[index];
+                          return item is Directory
+                              ? DirectoryItem(
+                                  dir: item,
+                                  borderRadius: model.gridRoundedCorners,
+                                  showDirectoryItemCount: model.showDirectoryItemCount,
+                                  onTap: () => openDirectory(context, item),
+                                )
+                              : MediaItem(
+                                  item: item as Media,
+                                  borderRadius: model.gridRoundedCorners,
+                                  onTap: () => _openFullscreen(context, items, index),
+                                );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                sliver: SliverGrid.builder(
-                  itemCount: items.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: model.getGridCrossAxisCount(orientation),
-                    crossAxisSpacing: model.gridSpacing.toDouble(),
-                    mainAxisSpacing: model.gridSpacing.toDouble(),
-                    childAspectRatio: model.gridAspectRatio,
+              ),
+              Positioned(
+                top: topInset,
+                right: 0,
+                bottom: bottomInset,
+                child: GalleryScrubber(
+                  scrollController: _scrollController,
+                  labelBuilder: (offset) => _labelForScrollOffset(
+                    offset,
+                    leadingOffset,
+                    rowHeight,
+                    crossAxisCount,
+                    sortType,
                   ),
-                  itemBuilder: (BuildContext context, int index) {
-                    Item item = items[index];
-                    return item is Directory
-                        ? DirectoryItem(
-                            dir: item,
-                            borderRadius: model.gridRoundedCorners,
-                            showDirectoryItemCount: model.showDirectoryItemCount,
-                            onTap: () => openDirectory(context, item),
-                          )
-                        : MediaItem(
-                            item: item as Media,
-                            borderRadius: model.gridRoundedCorners,
-                            onTap: () => _openFullscreen(context, items, index),
-                          );
-                  },
                 ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
