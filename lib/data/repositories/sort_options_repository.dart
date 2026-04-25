@@ -14,7 +14,7 @@ class SortOptionsRepositoryImpl implements SortOptionsRepository {
   ServerSettings get _serverSettings => _storage.get(StorageKey.serverSettings);
 
   Server? get _currentServer {
-    return _serverSettings.servers.firstWhereOrNull((it) => it.url == _serverSettings.selectedServer);
+    return _serverSettings.servers.firstWhereOrNull((it) => it.id == _serverSettings.selectedServer);
   }
 
   Map<String, StoredSortOption>? get _sortOptions {
@@ -39,7 +39,7 @@ class SortOptionsRepositoryImpl implements SortOptionsRepository {
   Future<void> _storeSortOptions(Map<String, StoredSortOption> sortOptions) async {
     ServerSettings updatedSettings = _serverSettings.copyWith(
       servers: _serverSettings.servers.map((it) {
-        if (it.url == _currentServer?.url) {
+        if (it.id == _currentServer?.id) {
           return it.copyWith(sortOptions: StoredSortOptions(options: sortOptions));
         }
         return it;
