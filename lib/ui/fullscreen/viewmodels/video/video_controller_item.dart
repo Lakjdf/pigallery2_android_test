@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_player.dart';
 
-/// Holds a [VideoController] alongside its error events.
+/// Holds an [AppVideoController] alongside its error events.
 /// Required since error events are not buffered.
 class VideoControllerItem extends ChangeNotifier {
-  final VideoController controller;
+  final AppVideoController controller;
   final List<String> _errorEvents = [];
   bool _firstFrameRendered = false;
 
   VideoControllerItem(this.controller) {
-    controller.player.stream.error.listen((value) {
+    controller.player.errorStream.listen((value) {
       _errorEvents.add(value);
     });
     controller.waitUntilFirstFrameRendered.then((_) {
@@ -25,10 +25,10 @@ class VideoControllerItem extends ChangeNotifier {
     for (String event in _errorEvents) {
       yield event;
     }
-    yield* controller.player.stream.error;
+    yield* controller.player.errorStream;
   }
 
-  Player get player => controller.player;
+  AppVideoPlayer get player => controller.player;
 
   bool get hasError => _errorEvents.isNotEmpty;
 

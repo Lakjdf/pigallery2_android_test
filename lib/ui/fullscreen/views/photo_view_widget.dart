@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
@@ -9,12 +8,12 @@ import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model_state.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/cached_image_provider.dart';
 import 'package:pigallery2_android/ui/shared/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selector_guard.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
-import 'package:pigallery2_android/util/extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -75,18 +74,18 @@ class _PhotoViewWidgetState extends State<PhotoViewWidget> {
     );
   }
 
-  Widget buildMotionPhoto(String url, VideoController controller) {
+  Widget buildMotionPhoto(String url, AppVideoController controller) {
     // need to rotate the player due to some issue with mpv rotating portrait videos.
     bool rotateVideoPlayer = widget.item.aspectRatio < 1;
     return RotatedBox(
       quarterTurns: rotateVideoPlayer ? 1 : 0,
-      child: Video(key: ValueKey(url), controller: controller),
+      child: controller.buildView(key: ValueKey(url)),
     );
   }
 
   Widget buildPhotoViewInner(BuildContext context) {
     PhotoModelState state = context.read<PhotoModel>().stateOf(widget.item);
-    return SelectorGuard<PhotoModel, VideoController>(
+    return SelectorGuard<PhotoModel, AppVideoController>(
       selector: (model) => model.stateOf(widget.item).videoController,
       condition: (videoController) => videoController.isInitialized,
       then: (context, videoController) => buildMotionPhoto(state.url, videoController),

@@ -3,9 +3,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
@@ -59,36 +59,32 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     );
   }
 
-  Widget buildVideo(BuildContext context, VideoController videoController) {
+  Widget buildVideo(BuildContext context, AppVideoController videoController) {
     Size screenSize = MediaQuery.of(context).size;
     Size childSize;
     // prefer aspectRatio of the player over metadata
-    double aspectRatio = videoController.player.state.videoParams.aspect ?? widget.item.aspectRatio;
+    double aspectRatio = videoController.player.aspectRatio ?? widget.item.aspectRatio;
     if (screenSize.aspectRatio > aspectRatio) {
       childSize = Size(screenSize.height * aspectRatio, screenSize.height);
     } else {
       childSize = Size(screenSize.width, screenSize.width / aspectRatio);
     }
-    // required for the Video widget to update its dimensions; defaults to source metadata
+    // required for the video widget to update its dimensions; defaults to source metadata
     videoController.setSize(width: childSize.width.toInt(), height: childSize.height.toInt()).catchError((_) => {});
     return Center(
-      child: Video(
+      child: videoController.buildView(
         // has to include the screenSize; won't update on orientation changes otherwise
         key: ValueKey("${widget.item.id}: ${screenSize.hashCode}"),
-        controller: videoController,
         fit: BoxFit.contain,
         aspectRatio: aspectRatio,
-        controls: NoVideoControls,
         width: childSize.width,
         height: childSize.height,
         alignment: Alignment.center,
-        pauseUponEnteringBackgroundMode: true,
-        resumeUponEnteringForegroundMode: true,
       ),
     );
   }
 
-  Widget buildVideoView(BuildContext context, VideoController videoController) {
+  Widget buildVideoView(BuildContext context, AppVideoController videoController) {
     return Selector<VideoModel, double>(
       selector: (context, model) => model.videoScale,
       builder: (context, scale, child) => Transform.scale(
@@ -132,32 +128,28 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
 
 class VideoViewWidgetBackground extends StatelessWidget {
   final models.Media item;
-  final VideoController videoController;
+  final AppVideoController videoController;
 
   const VideoViewWidgetBackground({super.key, required this.item, required this.videoController});
 
-  Widget buildVideo(BuildContext context, VideoController videoController) {
+  Widget buildVideo(BuildContext context, AppVideoController videoController) {
     Size screenSize = MediaQuery.of(context).size;
     Size childSize;
     // prefer aspectRatio of the player over metadata
-    double aspectRatio = videoController.player.state.videoParams.aspect ?? item.aspectRatio;
+    double aspectRatio = videoController.player.aspectRatio ?? item.aspectRatio;
     if (screenSize.aspectRatio > aspectRatio) {
       childSize = Size(screenSize.height * aspectRatio, screenSize.height);
     } else {
       childSize = Size(screenSize.width, screenSize.width / aspectRatio);
     }
     return Center(
-      child: Video(
+      child: videoController.buildView(
         key: ValueKey("${item.id}: ${screenSize.hashCode} background"),
-        controller: videoController,
         fit: BoxFit.contain,
         aspectRatio: aspectRatio,
-        controls: NoVideoControls,
         width: childSize.width,
         height: childSize.height,
         alignment: Alignment.center,
-        pauseUponEnteringBackgroundMode: true,
-        resumeUponEnteringForegroundMode: true,
       ),
     );
   }

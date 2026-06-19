@@ -27,9 +27,8 @@ class _VideoZoomDetectorState extends State<VideoZoomDetector> {
   }
 
   double getMaxScale(BuildContext context) {
-    Rect? rect = widget.videoControllerItem.controller.rect.value;
-    if (rect == null) return 1;
-    double aspectRatio = rect.width / rect.height;
+    double? aspectRatio = widget.videoControllerItem.controller.nativeAspectRatio;
+    if (aspectRatio == null) return 1;
     double screenAspectRatio = MediaQuery.of(context).size.aspectRatio;
 
     if (aspectRatio > screenAspectRatio) {

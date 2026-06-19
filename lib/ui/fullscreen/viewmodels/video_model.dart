@@ -1,27 +1,27 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:logging/logging.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:mutex/mutex.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
-import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_config_factory.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_source.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/video_player_factory.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_model_controller_state.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_model_refs.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 
 class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel {
-  final Logger _logger = Logger("VideoModel");
   late final VideoModelControllerState _state;
 
   late final VideoModelRefs _refs;
 
   late final MediaRepository _mediaRepository;
+
+  late final VideoPlayerFactory _videoPlayerFactory;
 
   double _videoScale = 1.0;
 
@@ -33,10 +33,11 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
 
   VideoControllerItem? _currentVideoControllerItem;
 
-  VideoModel(MediaRepository mediaRepository) {
+  VideoModel(MediaRepository mediaRepository, VideoPlayerFactory videoPlayerFactory) {
     _state = VideoModelControllerState();
     _refs = VideoModelRefs(_state);
     _mediaRepository = mediaRepository;
+    _videoPlayerFactory = videoPlayerFactory;
 
     _state.getCurrentController().listen((videoController) {
       if (videoController != _currentVideoControllerItem) {
@@ -76,8 +77,8 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     _refs.registerMountedWidget(id);
   }
 
-  Media _mediaFromModel(models.Media media) {
-    return Media(_mediaRepository.getMediaApiPath(media), httpHeaders: _mediaRepository.headers);
+  AppVideoSource _sourceFromModel(models.Media media) {
+    return AppVideoSource.network(_mediaRepository.getMediaApiPath(media), headers: _mediaRepository.headers);
   }
 
   VideoControllerItem _initVideoController(models.Media media, bool autoPlay) {
@@ -86,22 +87,11 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
       return existingItem;
     }
 
-    Player player = Player(
-      configuration: const PlayerConfiguration(bufferSize: 32 * 1024 * 1024, logLevel: kDebugMode ? MPVLogLevel.debug : MPVLogLevel.warn),
-    )..setVolume(0);
-    // https://github.com/media-kit/media-kit/issues/776#issuecomment-2072158673
-    (player.platform as dynamic).setProperty('cache', 'no'); // --cache=<yes|no|auto>
-    (player.platform as dynamic).setProperty('cache-secs', '0'); // --cache-secs=<seconds> with cache but why not.
-    (player.platform as dynamic).setProperty('demuxer-seekable-cache', 'no'); // --demuxer-seekable-cache=<yes|no|auto> Redundant with cache but why not.
-    (player.platform as dynamic).setProperty('demuxer-max-back-bytes', '0'); // --demuxer-max-back-bytes=<bytesize>
-    (player.platform as dynamic).setProperty('demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer==<yes|no>
-    player.stream.log.listen((event) => _logger.fine(event.toString()));
-    VideoController newController = VideoController(player, configuration: VideoControllerConfigFactory.createConfiguration());
-    VideoControllerItem item = VideoControllerItem(newController);
+    AppVideoController controller = _videoPlayerFactory.createStreamingController();
+    controller.player.setVolume(0);
+    VideoControllerItem item = VideoControllerItem(controller);
 
-    Media playable = _mediaFromModel(media);
-    player.setPlaylistMode(PlaylistMode.loop);
-    player.open(playable, play: autoPlay);
+    controller.player.open(_sourceFromModel(media), play: autoPlay);
 
     _state.addController(media.id, item);
     notifyListeners();

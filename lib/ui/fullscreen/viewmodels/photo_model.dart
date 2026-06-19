@@ -4,8 +4,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:logging/logging.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:motion_photos/motion_photos.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart' as models show Media;
@@ -13,7 +11,9 @@ import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/paginated_fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model_state.dart';
-import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/video_controller_config_factory.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_source.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/video_player_factory.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 import 'package:quiver/collection.dart';
@@ -24,6 +24,7 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
   bool _backgroundActive = true;
   final MediaRepository _mediaRepository;
   final ImagePreloader _imagePreloader;
+  final VideoPlayerFactory _videoPlayerFactory;
   final LruMap<int, PhotoModelState> _state = LruMap(maximumSize: 3);
   void Function()? _pendingPreload;
 
@@ -49,19 +50,14 @@ class PhotoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     return state;
   }
 
-  PhotoModel(this._mediaRepository, this._imagePreloader);
+  PhotoModel(this._mediaRepository, this._imagePreloader, this._videoPlayerFactory);
 
   void _initMotionVideoController(PhotoModelState state, models.Media item, Uint8List bytes) {
     // needs to be recreated since the controller is disposed when the video player is removed from the widget tree
-    Player player = Player();
-    // By default media_kit/mpv rotates the video.
-    // Might be width/height issue of media_kit or related to mpv applying rotation based on (incorrect/missing) metadata.
-    (player.platform as NativePlayer).setProperty("video-rotate", "no").then((_) {
-      player.setPlaylistMode(PlaylistMode.loop);
-      Media.memory(bytes).then((Playable playable) => player.open(playable));
-      state.videoController = VideoController(player, configuration: VideoControllerConfigFactory.createConfiguration())
-        ..waitUntilFirstFrameRendered.then((value) => notifyListeners());
-    });
+    AppVideoController controller = _videoPlayerFactory.createMotionPhotoController();
+    controller.player.open(AppVideoSource.bytes(bytes));
+    controller.waitUntilFirstFrameRendered.then((value) => notifyListeners());
+    state.videoController = controller;
   }
 
   Future<Uint8List?> _loadMotionVideo(Uint8List bytes) async {

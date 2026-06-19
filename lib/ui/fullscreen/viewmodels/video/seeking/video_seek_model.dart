@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_position.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_preview_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
@@ -11,7 +11,7 @@ import 'package:pigallery2_android/util/extensions.dart';
 class VideoSeekModel extends SafeChangeNotifier {
   VideoSeekPosition? _ongoingSeekPosition;
   Offset? _ongoingDragPosition;
-  VideoController? _videoController;
+  AppVideoController? _videoController;
   final VideoSeekPreviewModel _previewModel;
   bool _seekInProgress = false;
   bool? _wasPlaying;
@@ -65,13 +65,13 @@ class VideoSeekModel extends SafeChangeNotifier {
     // allow only one seek at a time
     if (_seekInProgress) return;
     _seekInProgress = true;
-    _wasPlaying ??= (_videoController?.player.state.playing ?? true);
+    _wasPlaying ??= (_videoController?.player.isPlaying ?? true);
     _videoController?.player.seek(position).then((_) async => await _onSeekComplete(position));
   }
 
   Future<void> _onSeekComplete(Duration position) async {
     // wait until the videoController has updated its position. Might be off by > 10 ms
-    await _videoController?.player.stream.position.firstWhere((it) {
+    await _videoController?.player.positionStream.firstWhere((it) {
       return (it.inMilliseconds / 100).round() == (position.inMilliseconds / 100).round();
     }).timeout(Duration(milliseconds: 100), onTimeout: () => Duration());
 

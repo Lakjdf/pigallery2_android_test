@@ -50,7 +50,7 @@ class _VideoControlsState extends State<VideoControls> {
       if (!mounted) return;
       setState(() {});
     });
-    controller.player.stream.buffering.listen((event) {
+    controller.player.bufferingStream.listen((event) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         setState(() {});
@@ -112,7 +112,7 @@ class _VideoControlsState extends State<VideoControls> {
         ],
       ),
     );
-    Duration newPosition = controller.player.state.position - const Duration(seconds: 10);
+    Duration newPosition = controller.player.position - const Duration(seconds: 10);
     if (newPosition > Duration.zero) {
       controller.player.seek(newPosition);
     } else {
@@ -144,8 +144,8 @@ class _VideoControlsState extends State<VideoControls> {
         ],
       ),
     );
-    Duration newPosition = controller.player.state.position + const Duration(seconds: 10);
-    if (newPosition < controller.player.state.duration) {
+    Duration newPosition = controller.player.position + const Duration(seconds: 10);
+    if (newPosition < controller.player.duration) {
       controller.player.seek(newPosition);
     } else {
       controller.player.seek(Duration.zero);
@@ -153,7 +153,7 @@ class _VideoControlsState extends State<VideoControls> {
   }
 
   void handlePlayPause() {
-    bool isPlaying = controller.player.state.playing;
+    bool isPlaying = controller.player.isPlaying;
     IconData iconData = isPlaying ? Icons.pause : Icons.play_arrow;
 
     imageFadeAnim = FadeAnimation(
@@ -235,7 +235,7 @@ class _VideoControlsState extends State<VideoControls> {
               ),
             ),
             Center(
-              child: controller.player.state.buffering && !controller.hasError
+              child: controller.player.isBuffering && !controller.hasError
                   ? SpinKitRipple(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       size: 0.5 *

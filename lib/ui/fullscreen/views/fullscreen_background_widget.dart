@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
@@ -21,7 +21,7 @@ class FullscreenBackgroundWidget extends StatelessWidget {
 
   Widget buildVideoBackground(BuildContext context, Media item) {
     Size screenSize = MediaQuery.of(context).size;
-    return Selector<VideoModel, VideoController?>(
+    return Selector<VideoModel, AppVideoController?>(
       selector: (context, model) => model.getVideoControllerItem(item.id)?.controller,
       builder: (context, videoController, child) {
         if (videoController == null) return buildDefaultBackground();
@@ -36,17 +36,13 @@ class FullscreenBackgroundWidget extends StatelessWidget {
                 tileMode: TileMode.clamp,
               ),
               child: Center(
-                child: Video(
+                child: videoController.buildView(
                   key: ValueKey("${item.id}: ${screenSize.hashCode} background"),
-                  controller: videoController,
                   fit: BoxFit.cover,
                   aspectRatio: item.aspectRatio,
-                  controls: NoVideoControls,
                   width: screenSize.width,
                   height: screenSize.height,
                   alignment: Alignment.center,
-                  pauseUponEnteringBackgroundMode: true,
-                  resumeUponEnteringForegroundMode: true,
                 ),
               ),
             ),

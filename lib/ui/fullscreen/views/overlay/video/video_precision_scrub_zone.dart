@@ -23,8 +23,8 @@ class _VideoPrecisionScrubZoneState extends State<VideoPrecisionScrubZone> {
 
   void _onDragStart(DragStartDetails details) {
     _dragStartX = details.localPosition.dx;
-    _dragStartPosition = _item.player.state.position;
-    _wasPlaying = _item.player.state.playing;
+    _dragStartPosition = _item.player.position;
+    _wasPlaying = _item.player.isPlaying;
     if (_wasPlaying) _item.player.pause();
     setState(() => _scrubLabel = '0.00 s');
   }
@@ -38,7 +38,7 @@ class _VideoPrecisionScrubZoneState extends State<VideoPrecisionScrubZone> {
     final deltaX = details.localPosition.dx - startX;
     final seekDelta = _precisionWindow * (deltaX / screenWidth);
     final newPosition = startPos + seekDelta;
-    final duration = _item.player.state.duration;
+    final duration = _item.player.duration;
     final clamped = newPosition < Duration.zero
         ? Duration.zero
         : newPosition > duration

@@ -1,12 +1,12 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/seeking/video_seek_preview.dart';
 import 'package:provider/provider.dart';
 
 class VideoSeekBar extends StatelessWidget {
-  final VideoController videoController;
+  final AppVideoController videoController;
   final double height;
   final VideoProgressBarColors colors;
 
@@ -44,7 +44,7 @@ class VideoSeekBar extends StatelessWidget {
             width: MediaQuery.of(context).size.width,
             color: Colors.transparent,
             child: StreamProvider.value(
-              value: StreamGroup.merge([videoController.player.stream.buffer, videoController.player.stream.position]),
+              value: StreamGroup.merge([videoController.player.bufferStream, videoController.player.positionStream]),
               initialData: Duration(),
               child: Consumer<Duration>(
                 builder: (BuildContext context, Duration value, Widget? child) {
@@ -82,14 +82,14 @@ class VideoSeekBar extends StatelessWidget {
     final double relative = localPosition.dx / width;
     if (relative < 0 || relative > 1) return null;
 
-    return videoController.player.state.duration * relative;
+    return videoController.player.duration * relative;
   }
 
   VideoProgress _getValue(BuildContext context) {
     return VideoProgress(
-      duration: videoController.player.state.duration,
-      position: videoController.player.state.position,
-      buffered: videoController.player.state.buffer,
+      duration: videoController.player.duration,
+      position: videoController.player.position,
+      buffered: videoController.player.buffer,
       dragPosition: context.select<VideoSeekModel, double?>((model) => model.ongoingDragPosition?.dx),
     );
   }

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/repositories/album_repository.dart';
 import 'package:pigallery2_android/data/repositories/sort_options_repository.dart';
@@ -26,6 +25,8 @@ import 'package:pigallery2_android/domain/repositories/sort_options_repository.d
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_scroll_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/mediakit/media_kit_video_player_factory.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/video_player_factory.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
@@ -75,7 +76,8 @@ void setupLogging() {
 void main() async {
   MyWidgetsBinding();
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
+  VideoPlayerFactory videoPlayerFactory = MediaKitVideoPlayerFactory();
+  videoPlayerFactory.ensureInitialized();
   SharedPrefsStorage storage = SharedPrefsStorage();
   await storage.init();
   bool allowBadCertificate = storage.get(StorageKey.allowBadCertificates);
@@ -89,7 +91,7 @@ void main() async {
   );
   SessionStorage sessionStorage = SessionStorage(secureStorage);
   await sessionStorage.init();
-  runApp(MyApp(storage, secureStorage, sessionStorage));
+  runApp(MyApp(storage, secureStorage, sessionStorage, videoPlayerFactory));
 }
 
 class MyApp extends StatelessWidget {
@@ -97,8 +99,9 @@ class MyApp extends StatelessWidget {
   late final CredentialStorage _credentialStorage;
   late final SessionStorage _sessionStorage;
   late final GlobalSettingsModel _settingsModel;
+  final VideoPlayerFactory _videoPlayerFactory;
 
-  MyApp(this._storage, FlutterSecureStorage secureStorage, this._sessionStorage, {super.key}) {
+  MyApp(this._storage, FlutterSecureStorage secureStorage, this._sessionStorage, this._videoPlayerFactory, {super.key}) {
     _credentialStorage = CredentialStorage(secureStorage);
     _settingsModel = GlobalSettingsModel(_storage);
   }
@@ -147,10 +150,15 @@ class MyApp extends StatelessWidget {
             return ImagePreloader(context.read(), context);
           },
         ),
+        Provider<VideoPlayerFactory>(
+          create: (context) {
+            return _videoPlayerFactory;
+          },
+        ),
         // needs to be defined here already since the photo view
         // is part of the hero animation to the fullscreen view
-        ChangeNotifierProvider<PhotoModel>(create: ((context) => PhotoModel(context.read(), context.read()))),
-        ChangeNotifierProvider<VideoModel>(create: ((context) => VideoModel(context.read()))),
+        ChangeNotifierProvider<PhotoModel>(create: ((context) => PhotoModel(context.read(), context.read(), context.read()))),
+        ChangeNotifierProvider<VideoModel>(create: ((context) => VideoModel(context.read(), context.read()))),
         ChangeNotifierProvider<ServerModel>(
           create: ((context) {
             return ServerModel(Provider.of<ServerRepository>(context, listen: false));

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
 
 class PhotoModelState {
   Uint8List? video;
@@ -10,7 +10,7 @@ class PhotoModelState {
 
   /// For playing the video part of the motion photo.
   /// Returns null if it is not a motion video, or has not been downloaded yet.
-  VideoController? videoController;
+  AppVideoController? videoController;
 
   /// Whether the photo is a motion photo.
   /// Always returns false until it has been downloaded.

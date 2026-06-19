@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/seeking/video_seek_bar.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/video/video_progress_bar_text.dart';
 
 class VideoProgressBar extends StatelessWidget {
-  final VideoController controller;
+  final AppVideoController controller;
   final double opacity;
   final double height;
 
@@ -41,8 +41,8 @@ class VideoProgressBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             VideoProgressBarText(
-              initialValue: controller.player.state.position,
-              stream: controller.player.stream.position,
+              initialValue: controller.player.position,
+              stream: controller.player.positionStream,
               opacity: opacity,
               color: Colors.white,
             ),
@@ -53,8 +53,8 @@ class VideoProgressBar extends StatelessWidget {
               ),
             ),
             VideoProgressBarText(
-              initialValue: controller.player.state.duration,
-              stream: controller.player.stream.duration,
+              initialValue: controller.player.duration,
+              stream: controller.player.durationStream,
               opacity: opacity,
               color: Colors.white,
             ),

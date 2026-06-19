@@ -1,4 +1,3 @@
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pigallery2_android/data/storage/models/sort_option.dart';
 
 /// Alternatives for some Kotlin functions.
@@ -96,11 +95,6 @@ extension FileSizeExtensions on num {
 
     return "$result ${affixes[affix]}";
   }
-}
-
-extension VideoControllerExtension on VideoController {
-  /// Whether the [VideoController] has been initialized.
-  bool get isInitialized => player.platform?.videoControllerCompleter.isCompleted ?? false;
 }
 
 extension ParseToString on SortType {
