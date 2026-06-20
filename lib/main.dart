@@ -26,7 +26,9 @@ import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_scroll_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/mediakit/media_kit_video_player_factory.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/switchable_video_player_factory.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/video_player_factory.dart';
+import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/videoplayer/vp_video_player_factory.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
@@ -76,10 +78,14 @@ void setupLogging() {
 void main() async {
   MyWidgetsBinding();
   WidgetsFlutterBinding.ensureInitialized();
-  VideoPlayerFactory videoPlayerFactory = MediaKitVideoPlayerFactory();
-  videoPlayerFactory.ensureInitialized();
   SharedPrefsStorage storage = SharedPrefsStorage();
   await storage.init();
+  VideoPlayerFactory videoPlayerFactory = SwitchableVideoPlayerFactory(
+    storage,
+    MediaKitVideoPlayerFactory(),
+    VpVideoPlayerFactory(),
+  );
+  videoPlayerFactory.ensureInitialized();
   bool allowBadCertificate = storage.get(StorageKey.allowBadCertificates);
   if (allowBadCertificate) {
     HttpOverrides.global = MyHttpOverrides();

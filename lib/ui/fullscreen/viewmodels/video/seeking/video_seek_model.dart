@@ -44,6 +44,7 @@ class VideoSeekModel extends SafeChangeNotifier {
 
     // seek directly when no preview is available
     if (!_previewModel.isAvailable) {
+      _wasPlaying ??= _videoController?.player.isPlaying ?? true;
       _videoController?.player.pause();
       _seekToPosition(videoPosition);
     }
@@ -71,9 +72,11 @@ class VideoSeekModel extends SafeChangeNotifier {
 
   Future<void> _onSeekComplete(Duration position) async {
     // wait until the videoController has updated its position. Might be off by > 10 ms
-    await _videoController?.player.positionStream.firstWhere((it) {
-      return (it.inMilliseconds / 100).round() == (position.inMilliseconds / 100).round();
-    }).timeout(Duration(milliseconds: 100), onTimeout: () => Duration());
+    await _videoController?.player.positionStream
+        .firstWhere((it) {
+          return (it.inMilliseconds / 100).round() == (position.inMilliseconds / 100).round();
+        })
+        .timeout(Duration(milliseconds: 100), onTimeout: () => Duration());
 
     Duration? pendingSeek = _ongoingSeekPosition?.videoPosition;
     if (pendingSeek != null && pendingSeek != position) {

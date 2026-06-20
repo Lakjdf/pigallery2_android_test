@@ -150,6 +150,18 @@ class GlobalSettingsModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
+  /// Whether to use the `video_player` backend instead of `media_kit`.
+  /// Applies to newly opened videos. See [SwitchableVideoPlayerFactory].
+  bool get useVideoPlayerBackend => _useVideoPlayerBackend;
+
+  set useVideoPlayerBackend(bool value) {
+    if (value != _useVideoPlayerBackend) {
+      _useVideoPlayerBackend = value;
+      _storage.set(StorageKey.useVideoPlayerBackend, value);
+      notifyListeners();
+    }
+  }
+
   bool _useMaterial3;
   bool _showTopPicks;
   int _topPicksDaysLength;
@@ -162,6 +174,7 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   bool _showVideoSeekPreview;
   int _mediaBackgroundBlur;
   MediaBackgroundMode _mediaBackgroundMode;
+  bool _useVideoPlayerBackend;
   final SharedPrefsStorage _storage;
 
   GlobalSettingsModel(this._storage)
@@ -176,5 +189,6 @@ class GlobalSettingsModel extends SafeChangeNotifier {
       _gridCrossAxisCountLandscape = _storage.get(StorageKey.gridCrossAxisCountLandscape),
       _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview),
       _mediaBackgroundBlur = _storage.get(StorageKey.mediaBackgroundBlur),
-      _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode);
+      _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode),
+      _useVideoPlayerBackend = _storage.get(StorageKey.useVideoPlayerBackend);
 }

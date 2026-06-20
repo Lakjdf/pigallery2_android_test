@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:ionicons_plus/ionicons_plus.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';

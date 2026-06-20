@@ -13,6 +13,7 @@ enum StorageKey<T> {
   gridCrossAxisCountLandscape<int>(6),
   allowBadCertificates<bool>(false),
   showVideoSeekPreview<bool>(false),
+  useVideoPlayerBackend<bool>(false),
   mediaBackgroundMode<MediaBackgroundMode>(MediaBackgroundMode.ambient),
   mediaBackgroundBlur<int>(45),
   selectedTab<int>(0),

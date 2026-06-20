@@ -55,6 +55,21 @@ class SettingsBottomSheet extends StatelessWidget {
               ),
 
               ListTile(
+                title: const Text("Use video_player backend"),
+                subtitle: const Text("Applies to newly opened videos"),
+                leading: Icon(Icons.video_settings, color: theme.colorScheme.onSurfaceVariant),
+                trailing: Selector<GlobalSettingsModel, bool>(
+                  selector: (context, model) => model.useVideoPlayerBackend,
+                  builder: (BuildContext context, useVideoPlayerBackend, Widget? child) => Switch(
+                    value: useVideoPlayerBackend,
+                    onChanged: (value) {
+                      model.useVideoPlayerBackend = value;
+                    },
+                  ),
+                ),
+              ),
+
+              ListTile(
                 title: const Text("Directory Item Count"),
                 leading: Icon(Icons.onetwothree, color: theme.colorScheme.onSurfaceVariant),
                 trailing: Selector<GlobalSettingsModel, bool>(
