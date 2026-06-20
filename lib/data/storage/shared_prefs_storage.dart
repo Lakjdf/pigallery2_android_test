@@ -1,6 +1,7 @@
 import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
+import 'package:pigallery2_android/domain/models/video_player_backend.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,6 +28,7 @@ class SharedPrefsStorage {
       <= const TypeHelper<double>() => _prefs.getDouble(key) as T?,
       <= const TypeHelper<List<String>>() => _prefs.getStringList(key) as T?,
       <= const TypeHelper<MediaBackgroundMode>() => _prefs.getInt(key)?.let((it) => MediaBackgroundMode.values[it]) as T?,
+      <= const TypeHelper<VideoPlayerBackend>() => _prefs.getInt(key)?.let((it) => VideoPlayerBackend.values[it]) as T?,
       <= const TypeHelper<ServerSettings>() => _prefs.getString(key)?.let((it) => ServerSettings.fromRawJson(it) as T),
       _ => throw UnsupportedError("Unsupported data type $T")
     };

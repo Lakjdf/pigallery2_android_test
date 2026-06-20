@@ -15,6 +15,17 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/video
 class MediaKitVideoPlayerFactory implements VideoPlayerFactory {
   final Logger _logger = Logger("MediaKitVideoPlayer");
 
+  /// Whether to use the Android `mediacodec_embed` video output (hardware
+  /// surface embedding). When false, media_kit's default render configuration
+  /// is used — texture rendering, the same internal view path as `video_player`.
+  final bool useEmbeddedCodec;
+
+  /// Whether to disable libmpv read-ahead caching for low streaming latency
+  /// (applies to streaming controllers only).
+  final bool lowLatencyCache;
+
+  MediaKitVideoPlayerFactory({this.useEmbeddedCodec = true, this.lowLatencyCache = true});
+
   @override
   void ensureInitialized() {
     MediaKit.ensureInitialized();
@@ -28,14 +39,16 @@ class MediaKitVideoPlayerFactory implements VideoPlayerFactory {
         logLevel: kDebugMode ? MPVLogLevel.debug : MPVLogLevel.warn,
       ),
     );
-    // https://github.com/media-kit/media-kit/issues/776#issuecomment-2072158673
-    // Disable read-ahead caching to keep streaming latency/memory low.
-    final platform = player.platform as dynamic;
-    platform.setProperty('cache', 'no'); // --cache=<yes|no|auto>
-    platform.setProperty('cache-secs', '0'); // --cache-secs=<seconds>
-    platform.setProperty('demuxer-seekable-cache', 'no'); // --demuxer-seekable-cache=<yes|no|auto>
-    platform.setProperty('demuxer-max-back-bytes', '0'); // --demuxer-max-back-bytes=<bytesize>
-    platform.setProperty('demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer=<yes|no>
+    if (lowLatencyCache) {
+      // https://github.com/media-kit/media-kit/issues/776#issuecomment-2072158673
+      // Disable read-ahead caching to keep streaming latency/memory low.
+      final platform = player.platform as dynamic;
+      platform.setProperty('cache', 'no'); // --cache=<yes|no|auto>
+      platform.setProperty('cache-secs', '0'); // --cache-secs=<seconds>
+      platform.setProperty('demuxer-seekable-cache', 'no'); // --demuxer-seekable-cache=<yes|no|auto>
+      platform.setProperty('demuxer-max-back-bytes', '0'); // --demuxer-max-back-bytes=<bytesize>
+      platform.setProperty('demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer=<yes|no>
+    }
     player.setPlaylistMode(PlaylistMode.loop);
     player.stream.log.listen((event) => _logger.fine(event.toString()));
 
@@ -60,7 +73,11 @@ class MediaKitVideoPlayerFactory implements VideoPlayerFactory {
   }
 
   /// Platform-specific render configuration (formerly VideoControllerConfigFactory).
-  static VideoControllerConfiguration _configuration() {
+  VideoControllerConfiguration _configuration() {
+    if (!useEmbeddedCodec) {
+      // media_kit defaults: libmpv texture rendering.
+      return const VideoControllerConfiguration();
+    }
     if (Platform.isAndroid) {
       return const VideoControllerConfiguration(
         vo: "mediacodec_embed",

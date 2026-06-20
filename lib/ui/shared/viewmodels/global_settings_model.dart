@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
+import 'package:pigallery2_android/domain/models/video_player_backend.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 /// Wrapper around [SharedPrefsStorage] to enable Widgets to listen for changes.
@@ -150,14 +151,26 @@ class GlobalSettingsModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
-  /// Whether to use the `video_player` backend instead of `media_kit`.
-  /// Applies to newly opened videos. See [SwitchableVideoPlayerFactory].
-  bool get useVideoPlayerBackend => _useVideoPlayerBackend;
+  /// Which video playback engine to use. Applies to newly opened videos.
+  /// See [SwitchableVideoPlayerFactory].
+  VideoPlayerBackend get videoPlayerBackend => _videoPlayerBackend;
 
-  set useVideoPlayerBackend(bool value) {
-    if (value != _useVideoPlayerBackend) {
-      _useVideoPlayerBackend = value;
-      _storage.set(StorageKey.useVideoPlayerBackend, value);
+  set videoPlayerBackend(VideoPlayerBackend value) {
+    if (value != _videoPlayerBackend) {
+      _videoPlayerBackend = value;
+      _storage.set(StorageKey.videoPlayerBackend, value);
+      notifyListeners();
+    }
+  }
+
+  /// Whether the `media_kit` variants disable libmpv read-ahead caching for low
+  /// streaming latency. Has no effect when [videoPlayerBackend] is `video_player`.
+  bool get mediaKitLowLatencyCache => _mediaKitLowLatencyCache;
+
+  set mediaKitLowLatencyCache(bool value) {
+    if (value != _mediaKitLowLatencyCache) {
+      _mediaKitLowLatencyCache = value;
+      _storage.set(StorageKey.mediaKitLowLatencyCache, value);
       notifyListeners();
     }
   }
@@ -174,7 +187,8 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   bool _showVideoSeekPreview;
   int _mediaBackgroundBlur;
   MediaBackgroundMode _mediaBackgroundMode;
-  bool _useVideoPlayerBackend;
+  VideoPlayerBackend _videoPlayerBackend;
+  bool _mediaKitLowLatencyCache;
   final SharedPrefsStorage _storage;
 
   GlobalSettingsModel(this._storage)
@@ -190,5 +204,6 @@ class GlobalSettingsModel extends SafeChangeNotifier {
       _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview),
       _mediaBackgroundBlur = _storage.get(StorageKey.mediaBackgroundBlur),
       _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode),
-      _useVideoPlayerBackend = _storage.get(StorageKey.useVideoPlayerBackend);
+      _videoPlayerBackend = _storage.get(StorageKey.videoPlayerBackend),
+      _mediaKitLowLatencyCache = _storage.get(StorageKey.mediaKitLowLatencyCache);
 }

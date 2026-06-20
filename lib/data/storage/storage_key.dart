@@ -1,5 +1,6 @@
 import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
+import 'package:pigallery2_android/domain/models/video_player_backend.dart';
 
 enum StorageKey<T> {
   useMaterial3<bool>(true),
@@ -13,7 +14,8 @@ enum StorageKey<T> {
   gridCrossAxisCountLandscape<int>(6),
   allowBadCertificates<bool>(false),
   showVideoSeekPreview<bool>(false),
-  useVideoPlayerBackend<bool>(false),
+  videoPlayerBackend<VideoPlayerBackend>(VideoPlayerBackend.mediaKit),
+  mediaKitLowLatencyCache<bool>(true),
   mediaBackgroundMode<MediaBackgroundMode>(MediaBackgroundMode.ambient),
   mediaBackgroundBlur<int>(45),
   selectedTab<int>(0),

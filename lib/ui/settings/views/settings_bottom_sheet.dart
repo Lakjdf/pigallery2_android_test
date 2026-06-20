@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_image_cache.dart';
+import 'package:pigallery2_android/domain/models/video_player_backend.dart';
 import 'package:pigallery2_android/ui/settings/views/server_selection/bad_certificate_selection.dart';
 import 'package:pigallery2_android/ui/settings/views/server_selection/bottom_sheet_handle.dart';
 import 'package:pigallery2_android/ui/settings/views/server_selection/server_selection.dart';
 import 'package:pigallery2_android/ui/settings/views/clear_cache_list_tile.dart';
+import 'package:pigallery2_android/ui/settings/views/video_player_settings_dialog.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/custom_tabbar.dart';
 import 'package:pigallery2_android/util/path.dart';
@@ -49,21 +51,6 @@ class SettingsBottomSheet extends StatelessWidget {
                     value: useMaterial3,
                     onChanged: (value) {
                       model.useMaterial3 = value;
-                    },
-                  ),
-                ),
-              ),
-
-              ListTile(
-                title: const Text("Use video_player backend"),
-                subtitle: const Text("Applies to newly opened videos"),
-                leading: Icon(Icons.video_settings, color: theme.colorScheme.onSurfaceVariant),
-                trailing: Selector<GlobalSettingsModel, bool>(
-                  selector: (context, model) => model.useVideoPlayerBackend,
-                  builder: (BuildContext context, useVideoPlayerBackend, Widget? child) => Switch(
-                    value: useVideoPlayerBackend,
-                    onChanged: (value) {
-                      model.useVideoPlayerBackend = value;
                     },
                   ),
                 ),
@@ -234,6 +221,16 @@ class SettingsBottomSheet extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
+              ListTile(
+                title: const Text("Video Player"),
+                subtitle: Selector<GlobalSettingsModel, VideoPlayerBackend>(
+                  selector: (context, model) => model.videoPlayerBackend,
+                  builder: (BuildContext context, backend, Widget? child) => Text(backend.displayName),
+                ),
+                leading: Icon(Icons.video_settings, color: theme.colorScheme.onSurfaceVariant),
+                trailing: Icon(Icons.chevron_right, color: theme.colorScheme.onSurfaceVariant),
+                onTap: () => VideoPlayerSettingsDialog.show(context),
               ),
             ],
           ),
