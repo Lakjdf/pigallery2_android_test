@@ -16,7 +16,7 @@ dependencies:
   provider: ^6.1.5
 
   shared_preferences: ^2.5.3
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^10.3.1
   path_provider: ^2.1.5
   flutter_cache_manager: ^3.4.1
 
@@ -30,7 +30,7 @@ dependencies:
   mime: ^2.0.0
 
   dynamic_color: ^1.8.1
-  share_plus: ^11.1.0
+  share_plus: ^13.1.0
   motion_photos:
     git:
       url: https://github.com/Lakjdf/motion_photos.git
@@ -38,14 +38,13 @@ dependencies:
   photo_view:
     git:
       url: https://github.com/Lakjdf/photo_view.git
-  media_kit: 1.2.2
+  media_kit: 1.2.6
   # not upgrading yet since the start of the audio playback causes lag & the first frame is delayed
   # - possibly due to SurfaceProducer migration (& android-surface-size 1x1 + resizing)
   media_kit_video: 1.2.4
   media_kit_libs_android_video: 1.3.8
   media_kit_libs_linux: ^1.2.1
 
-  # alternative video backend, toggleable at runtime via Settings (see SwitchableVideoPlayerFactory)
   video_player: ^2.9.2
 
   flutter_inappwebview: ^6.1.5
