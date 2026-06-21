@@ -7,3 +7,8 @@ extension ParseToString on MediaBackgroundMode {
     return toString().split('.').last.toCapitalized();
   }
 }
+
+extension MediaBackgroundModeBackground on MediaBackgroundMode {
+  /// Whether the background depends on the specific item being shown.
+  bool get isItemSpecific => this == MediaBackgroundMode.fill;
+}

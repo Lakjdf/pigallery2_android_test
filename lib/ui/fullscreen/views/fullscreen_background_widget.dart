@@ -10,14 +10,28 @@ import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.da
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
 import 'package:provider/provider.dart';
 
-/// Custom background for fullscreen view. Does not move with the item when dismissing/scaling it.
+Widget buildDefaultBackground() => const ColoredBox(color: Colors.black);
+
+/// Renders [buildDefaultBackground] once behind the whole fullscreen carousel.
+class FullscreenSharedBackground extends StatelessWidget {
+  const FullscreenSharedBackground({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<FullscreenModel, double>(
+      selector: (context, model) => model.opacity,
+      builder: (context, opacity, child) => Opacity(opacity: opacity, child: child),
+      child: const ColoredBox(color: Colors.black),
+    );
+  }
+}
+
+/// Custom background for fullscreen view.
+/// Moves with the item while swiping to the next one.
+/// Does not move with the item when dismissing/scaling it.
 class FullscreenBackgroundWidget extends StatelessWidget {
   final Media item;
   const FullscreenBackgroundWidget({super.key, required this.item});
-
-  Widget buildDefaultBackground() {
-    return Container(color: Colors.black);
-  }
 
   Widget buildVideoBackground(BuildContext context, Media item) {
     Size screenSize = MediaQuery.of(context).size;
@@ -92,5 +106,4 @@ class FullscreenBackgroundWidget extends StatelessWidget {
       },
     );
   }
-
 }

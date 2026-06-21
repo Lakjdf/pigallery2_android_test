@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_background_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/fullscreen_overlay.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
+import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/horizontal_carousel_wrapper.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/photo_view_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/vertical_dismiss_wrapper.dart';
@@ -30,38 +32,39 @@ class _FullscreenViewState extends State<FullscreenView> {
     double screenWidth = PlatformDispatcher.instance.views.first.physicalSize.width;
     double heightDiff = screenWidth * (item.dimension.height / item.dimension.width) - screenWidth;
     return Hero(
-      flightShuttleBuilder: (
-        BuildContext flightContext,
-        Animation<double> animation,
-        HeroFlightDirection flightDirection,
-        BuildContext fromHeroContext,
-        BuildContext toHeroContext,
-      ) {
-        animation.addListener(() {
-          context.read<FullscreenModel>().heroAnimationProgress = animation.value;
-        });
-        final Hero hero = toHeroContext.widget as Hero;
-        if (flightDirection == HeroFlightDirection.pop) {
-          // Invoking this here as a workaround since there's no easy way to detect when the route starts to pop.
-          // The user can tap fast enough on another item before the previous fullscreen route is fully popped.
-          context.read<FullscreenModel>().close();
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, _) {
-              // make sure that thumbnail does not expand
-              return FittedBox(
-                fit: BoxFit.fitWidth,
-                child: SizedBox(
-                  width: screenWidth,
-                  height: screenWidth + ((animation.value) * heightDiff),
-                  child: hero.child,
-                ),
+      flightShuttleBuilder:
+          (
+            BuildContext flightContext,
+            Animation<double> animation,
+            HeroFlightDirection flightDirection,
+            BuildContext fromHeroContext,
+            BuildContext toHeroContext,
+          ) {
+            animation.addListener(() {
+              context.read<FullscreenModel>().heroAnimationProgress = animation.value;
+            });
+            final Hero hero = toHeroContext.widget as Hero;
+            if (flightDirection == HeroFlightDirection.pop) {
+              // Invoking this here as a workaround since there's no easy way to detect when the route starts to pop.
+              // The user can tap fast enough on another item before the previous fullscreen route is fully popped.
+              context.read<FullscreenModel>().close();
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, _) {
+                  // make sure that thumbnail does not expand
+                  return FittedBox(
+                    fit: BoxFit.fitWidth,
+                    child: SizedBox(
+                      width: screenWidth,
+                      height: screenWidth + ((animation.value) * heightDiff),
+                      child: hero.child,
+                    ),
+                  );
+                },
               );
-            },
-          );
-        }
-        return hero.child;
-      },
+            }
+            return hero.child;
+          },
       transitionOnUserGestures: true,
       tag: item.id.toString(),
       child: item.isVideo
@@ -112,27 +115,38 @@ class _FullscreenViewState extends State<FullscreenView> {
       }),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: FullscreenOverlay(
-          key: ValueKey(widget.item.id),
-          viewPadding: SystemUi.getPadding(),
-          child: HorizontalCarouselWrapper(
-            onPageChanged: (idx) => fullscreenModel.currentPage = idx,
-            onPageScroll: (pos) => videoModel.pageScrollPosition.value = pos,
-            initialIndex: initialIndex,
-            itemCount: media.length,
-            builder: ((context, index) {
-              return PhotoViewGestureDetectorScope(
-                axis: Axis.horizontal,
-                child: ClipRect(
-                  child: VerticalDismissWrapper(
-                    onOpacityChanged: (val) => context.read<FullscreenModel>().opacity = val,
-                    background: FullscreenBackgroundWidget(item: media[index]),
-                    child: buildItemWithHero(context, media[index]),
+        body: Selector<GlobalSettingsModel, MediaBackgroundMode>(
+          selector: (context, model) => model.mediaBackgroundMode,
+          builder: (context, mode, child) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                if (!mode.isItemSpecific) const FullscreenSharedBackground(),
+                FullscreenOverlay(
+                  key: ValueKey(widget.item.id),
+                  viewPadding: SystemUi.getPadding(),
+                  child: HorizontalCarouselWrapper(
+                    onPageChanged: (idx) => fullscreenModel.currentPage = idx,
+                    onPageScroll: (pos) => videoModel.pageScrollPosition.value = pos,
+                    initialIndex: initialIndex,
+                    itemCount: media.length,
+                    builder: ((context, index) {
+                      return PhotoViewGestureDetectorScope(
+                        axis: Axis.horizontal,
+                        child: ClipRect(
+                          child: VerticalDismissWrapper(
+                            onOpacityChanged: (val) => context.read<FullscreenModel>().opacity = val,
+                            background: mode.isItemSpecific ? FullscreenBackgroundWidget(item: media[index]) : null,
+                            child: buildItemWithHero(context, media[index]),
+                          ),
+                        ),
+                      );
+                    }),
                   ),
                 ),
-              );
-            }),
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
