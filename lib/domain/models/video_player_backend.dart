@@ -18,8 +18,8 @@ enum VideoPlayerBackend {
 
 extension VideoPlayerBackendInfo on VideoPlayerBackend {
   String get displayName => switch (this) {
-    VideoPlayerBackend.mediaKit => "media_kit (hardware)",
-    VideoPlayerBackend.mediaKitDefault => "media_kit (default config) [Default]",
+    VideoPlayerBackend.mediaKit => "media_kit (hardware) [Default]",
+    VideoPlayerBackend.mediaKitDefault => "media_kit (default config)",
     VideoPlayerBackend.videoPlayer => "video_player",
   };
 
@@ -31,7 +31,5 @@ extension VideoPlayerBackendInfo on VideoPlayerBackend {
     VideoPlayerBackend.videoPlayer => "ExoPlayer, texture rendering. Common formats; causes crashes on some devices.",
   };
 
-  /// Whether this backend is one of the `media_kit` variants (and therefore
-  /// honours the low-latency cache toggle).
   bool get isMediaKit => this != VideoPlayerBackend.videoPlayer;
 }

@@ -8,19 +8,21 @@ class VideoModelControllerState {
   final StreamController<VideoControllerItem?> _currentVideoControllerStream = StreamController();
   int? _currentItemId;
 
+  /// Controllers detached by [detach], already paused and awaiting the deferred
+  /// native disposal performed by [disposeDetached].
+  final List<VideoControllerItem> _pendingDisposal = [];
+
   VideoModelControllerState() {
     _cache = VideoControllerCache(
-      onRemove: _onRemove,
+      onRemove: _onEvicted,
       maximumSize: 4,
     );
   }
 
-  void _onRemove(VideoControllerItem item) {
+  /// Disposes a controller the cache evicted because [maximumSize] was exceeded.
+  /// Close-time teardown does not go through here; see [detach]/[disposeDetached].
+  void _onEvicted(VideoControllerItem item) {
     item.controller.player.dispose();
-    if (_cache.length == 0) {
-      _currentItemId = null;
-      _currentVideoControllerStream.add(null);
-    }
   }
 
   void addController(int id, VideoControllerItem controller) {
@@ -48,9 +50,26 @@ class VideoModelControllerState {
     }
   }
 
-  void free() {
-    while (_cache.length > 0) {
-      _cache.removeLru();
+  /// Detaches every controller from the live cache so a re-opened view starts
+  /// with fresh controllers. Their expensive native teardown
+  /// is deferred to [disposeDetached] to keep it off the animation.
+  void detach() {
+    final detached = _cache.drain();
+    for (final item in detached) {
+      item.controller.player.pause().catchError((_) {});
+    }
+    _pendingDisposal.addAll(detached);
+    setCurrentItemId(null);
+  }
+
+  /// Disposes the controllers detached by [detach].
+  /// Since the disposal is partly running on the main thread, this is not to be invoked during an animation.
+  Future<void> disposeDetached() async {
+    if (_pendingDisposal.isEmpty) return;
+    final items = List<VideoControllerItem>.of(_pendingDisposal);
+    _pendingDisposal.clear();
+    for (final item in items) {
+      await item.controller.player.dispose();
     }
   }
 }

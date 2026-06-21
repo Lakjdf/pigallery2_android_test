@@ -28,6 +28,8 @@ class FullscreenView extends StatefulWidget {
 }
 
 class _FullscreenViewState extends State<FullscreenView> {
+  late final VideoModel _videoModel;
+
   Widget buildItemWithHero(BuildContext context, Media item) {
     double screenWidth = PlatformDispatcher.instance.views.first.physicalSize.width;
     double heightDiff = screenWidth * (item.dimension.height / item.dimension.width) - screenWidth;
@@ -45,9 +47,6 @@ class _FullscreenViewState extends State<FullscreenView> {
             });
             final Hero hero = toHeroContext.widget as Hero;
             if (flightDirection == HeroFlightDirection.pop) {
-              // Invoking this here as a workaround since there's no easy way to detect when the route starts to pop.
-              // The user can tap fast enough on another item before the previous fullscreen route is fully popped.
-              context.read<FullscreenModel>().close();
               return AnimatedBuilder(
                 animation: animation,
                 builder: (context, _) {
@@ -82,11 +81,18 @@ class _FullscreenViewState extends State<FullscreenView> {
   @override
   void initState() {
     super.initState();
+    _videoModel = context.read<VideoModel>();
     final media = context.read<TabModelsProvider>().model?.currentState.media ?? [];
-    context.read<VideoModel>().pageScrollPosition.value = media.indexOf(widget.item).toDouble();
+    _videoModel.pageScrollPosition.value = media.indexOf(widget.item).toDouble();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemUi.setFullscreenSystemBarColors(context);
     });
+  }
+
+  @override
+  void dispose() {
+    _videoModel.disposeDetached();
+    super.dispose();
   }
 
   @override
@@ -103,6 +109,7 @@ class _FullscreenViewState extends State<FullscreenView> {
       canPop: false,
       onPopInvokedWithResult: ((bool didPop, _) {
         if (didPop) return;
+        fullscreenModel.close();
         SystemUi.setDefaultSystemBarColors(context);
         SystemUi.showSystemBars();
         Navigator.pop(context);

@@ -192,8 +192,15 @@ class VideoModel extends SafeChangeNotifier implements PaginatedFullscreenModel 
     controller.player.setVolume(volume).catchError((_) {});
   }
 
+  /// Detaches controllers from the live state so a re-opened view starts fresh.
+  /// Disposal is deferred to [disposeDetached] to keep it off the close animation.
   @override
   void close() {
-    _state.free();
+    _state.detach();
+  }
+
+  /// Disposes the controllers detached by [close]. Call after the close animation.
+  void disposeDetached() {
+    _state.disposeDetached();
   }
 }

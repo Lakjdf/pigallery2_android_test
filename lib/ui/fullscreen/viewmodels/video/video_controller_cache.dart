@@ -26,8 +26,8 @@ class VideoControllerCache<K, V> {
   VideoControllerCache({
     void Function(V)? onRemove,
     int maximumSize = 5,
-  })  : _maximumSize = maximumSize,
-        _onRemove = onRemove;
+  }) : _maximumSize = maximumSize,
+       _onRemove = onRemove;
 
   _LinkedEntry<K, V>? _head;
   _LinkedEntry<K, V>? _tail;
@@ -98,6 +98,21 @@ class VideoControllerCache<K, V> {
     if (removedEntry != null) {
       _onRemove?.let((it) => it(removedEntry.value));
     }
+  }
+
+  /// Removes all entries without invoking [onRemove] and returns their values,
+  /// handing ownership to the caller.
+  List<V> drain() {
+    final values = <V>[];
+    var cur = _head;
+    while (cur != null) {
+      values.add(cur.value);
+      cur = cur.next;
+    }
+    _entries.clear();
+    _head = null;
+    _tail = null;
+    return values;
   }
 
   /// Get the value for a [key] in the [Map].
