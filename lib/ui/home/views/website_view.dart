@@ -26,47 +26,49 @@ class WebsiteView extends StatelessWidget {
       canPop: false,
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.paddingOf(context).bottom +
+          top: MediaQuery.paddingOf(context).top,
+          bottom:
+              MediaQuery.paddingOf(context).bottom +
               GlassNavBarTheme.barHeight +
               GlassNavBarTheme.bottomPadding +
               16, // extra padding to clear the nav bar properly
         ),
         child: InAppWebView(
-        key: ValueKey(serverUrl),
-        onWebViewCreated: (controller) {
-          tabNavigatorModel.unregisterWebViewBackHandler();
-        },
-        gestureRecognizers: {Factory<VerticalDragGestureRecognizer>(() => VerticalDragGestureRecognizer())},
-        initialUrlRequest: URLRequest(url: WebUri("$serverUrl/admin")),
-        initialSettings: InAppWebViewSettings(
-          forceDark: ForceDark.ON,
-          algorithmicDarkeningAllowed: true,
-          mediaPlaybackRequiresUserGesture: false,
-          allowsInlineMediaPlayback: true,
-          transparentBackground: true,
-        ),
-        onUpdateVisitedHistory: (controller, _, _) async {
-          bool canGoBack = await controller.canGoBack();
-          if (canGoBack) {
-            tabNavigatorModel.registerWebViewBackHandler(() {
-              controller.goBack();
-            });
-          } else {
+          key: ValueKey(serverUrl),
+          onWebViewCreated: (controller) {
             tabNavigatorModel.unregisterWebViewBackHandler();
-          }
-          webViewModel.canGoBack = canGoBack;
-        },
-        onTitleChanged: (controller, title) async {
-          context.read<WebViewModel>().title = title ?? "";
-        },
-        onReceivedServerTrustAuthRequest: (controller, challenge) async {
-          if (context.read<SharedPrefsStorage>().get(StorageKey.allowBadCertificates) == true) {
-            return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.PROCEED);
-          } else {
-            return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.CANCEL);
-          }
-        },
-      ),
+          },
+          gestureRecognizers: {Factory<VerticalDragGestureRecognizer>(() => VerticalDragGestureRecognizer())},
+          initialUrlRequest: URLRequest(url: WebUri("$serverUrl/admin")),
+          initialSettings: InAppWebViewSettings(
+            forceDark: ForceDark.ON,
+            algorithmicDarkeningAllowed: true,
+            mediaPlaybackRequiresUserGesture: false,
+            allowsInlineMediaPlayback: true,
+            transparentBackground: true,
+          ),
+          onUpdateVisitedHistory: (controller, _, _) async {
+            bool canGoBack = await controller.canGoBack();
+            if (canGoBack) {
+              tabNavigatorModel.registerWebViewBackHandler(() {
+                controller.goBack();
+              });
+            } else {
+              tabNavigatorModel.unregisterWebViewBackHandler();
+            }
+            webViewModel.canGoBack = canGoBack;
+          },
+          onTitleChanged: (controller, title) async {
+            context.read<WebViewModel>().title = title ?? "";
+          },
+          onReceivedServerTrustAuthRequest: (controller, challenge) async {
+            if (context.read<SharedPrefsStorage>().get(StorageKey.allowBadCertificates) == true) {
+              return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.PROCEED);
+            } else {
+              return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.CANCEL);
+            }
+          },
+        ),
       ),
     );
   }
