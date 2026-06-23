@@ -1,15 +1,12 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_cache_manager.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
-import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model_state.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/playback/app_video_controller.dart';
-import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/ui/fullscreen/views/media_item_background.dart';
 import 'package:pigallery2_android/ui/shared/widgets/cached_image_provider.dart';
 import 'package:pigallery2_android/ui/shared/widgets/error_image.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selector_guard.dart';
@@ -51,7 +48,10 @@ class _PhotoViewWidgetState extends State<PhotoViewWidget> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        PhotoViewWidgetBackground(item: widget.item),
+        Selector<PhotoModel, bool>(
+          selector: (context, model) => model.backgroundActive,
+          builder: (context, active, child) => AmbientBackground(item: widget.item, active: active),
+        ),
         Image(
           key: ValueKey(widget.item.id),
           frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
@@ -125,42 +125,5 @@ class _PhotoViewWidgetState extends State<PhotoViewWidget> {
         ),
       ),
     );
-  }
-}
-
-class PhotoViewWidgetBackground extends StatelessWidget {
-  final Media item;
-
-  const PhotoViewWidgetBackground({super.key, required this.item});
-
-  Widget buildAmbientBackground(BuildContext context) {
-    double imageHeight = MediaQuery.of(context).size.width * (item.dimension.height / item.dimension.width);
-    double imageWidth = MediaQuery.of(context).size.height * (item.dimension.width / item.dimension.height);
-    return Selector<GlobalSettingsModel, int>(
-      selector: (context, model) => model.mediaBackgroundBlur,
-      builder: (context, blur, child) => ImageFiltered(
-        imageFilter: ui.ImageFilter.blur(sigmaX: blur.toDouble(), sigmaY: blur.toDouble(), tileMode: TileMode.decal),
-        // imageFilter: ImageFilter.compose(
-        //   outer: ImageFilter.blur(sigmaX: blur.toDouble(), sigmaY: blur.toDouble(), tileMode: TileMode.decal),
-        //   inner: ColorFilter.matrix([
-        //     1, 0, 0, 0, 30, // Red
-        //     0, 1, 0, 0, 30, // Green
-        //     0, 0, 1, 0, 30, // Blue
-        //     0, 0, 0, 1, 0, // Alpha
-        //   ]),
-        // ),
-        child: ThumbnailImage(key: ObjectKey(item), fit: BoxFit.cover, height: imageHeight, width: imageWidth, item),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    bool isAmbientMode = context.select<GlobalSettingsModel, bool>((it) => it.mediaBackgroundMode == MediaBackgroundMode.ambient);
-    bool isBackgroundActive = context.select<PhotoModel, bool>((it) => it.backgroundActive);
-    if (isAmbientMode && isBackgroundActive) {
-      return buildAmbientBackground(context);
-    }
-    return SizedBox.shrink();
   }
 }
