@@ -7,7 +7,7 @@
         android:label="PiGallery2"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
-        largeHeap="true"
+        android:largeHeap="true"
         android:icon="@mipmap/splash_icon">
         <activity
             android:name=".MainActivity"
