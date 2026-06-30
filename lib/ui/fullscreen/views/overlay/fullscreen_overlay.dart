@@ -285,6 +285,7 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
   @override
   Widget build(BuildContext context) {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         widget.child,
         Selector<VideoModel, VideoControllerItem?>(

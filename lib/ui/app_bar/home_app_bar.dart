@@ -136,25 +136,6 @@ class _HomeAppBarInner extends StatelessWidget {
 
   List<Widget> _buildActions(BuildContext context) {
     List<Widget> actions = [];
-    if (state.actions.contains(AppBarAction.clearSelection)) {
-      actions.add(
-        IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            context.read<TabModelsProvider>().model?.clearSelection();
-          },
-        ),
-      );
-    }
-
-    if (state.actions.contains(AppBarAction.share)) {
-      actions.add(
-        IconButton(
-          icon: const Icon(Icons.share_outlined),
-          onPressed: () async => _shareSelectedMedia(context),
-        ),
-      );
-    }
 
     if (state.actions.contains(AppBarAction.clearSearch)) {
       actions.add(
@@ -254,6 +235,24 @@ class _HomeAppBarInner extends StatelessWidget {
     }
   }
 
+  Widget _buildAlwaysVisibleActions(BuildContext context) {
+    List<Widget> actions = [];
+    
+    if (state.actions.contains(AppBarAction.share)) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.share_outlined),
+          onPressed: () async => _shareSelectedMedia(context),
+        ),
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: actions,
+    );
+  }
+
   Widget _buildTitle(BuildContext context) {
     ThemeData theme = Theme.of(context);
 
@@ -350,6 +349,7 @@ class _HomeAppBarInner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ..._buildLeading(context),
+          _buildAlwaysVisibleActions(context),
           AnimatedOpacity(
             duration: const Duration(milliseconds: 150),
             curve: Curves.easeOut,
