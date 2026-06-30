@@ -108,7 +108,7 @@ class HomeAppBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
       height: statusBarHeight + toolbarHeight,
-      color: Colors.transparent,
+      color: Theme.of(context).colorScheme.surface,
       child: child,
     );
   }
