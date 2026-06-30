@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/delete_album_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
@@ -15,8 +19,9 @@ import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
-enum AppBarAction { back, search, clearSearch, flatten, saveAlbum, deleteAlbum, sort }
+enum AppBarAction { back, search, clearSearch, flatten, saveAlbum, deleteAlbum, sort, share, clearSelection }
 
 class AppBarState {
   final String title;
@@ -37,6 +42,13 @@ class HomeAppBar extends StatelessWidget {
 
   Set<AppBarAction> buildActions(BuildContext context) {
     Set<AppBarAction> actions = {};
+
+    bool isSelectionActive = context.select<TabModelsProvider, bool>((it) => it.model?.isSelectionActive == true);
+    if (isSelectionActive) {
+      actions.add(AppBarAction.share);
+      actions.add(AppBarAction.clearSelection);
+      return actions;
+    }
 
     bool canGoBack = context.select<AppBarModel, bool>((it) => it.canGoBack);
     bool isSearchOverlayShown = context.select<TabModelsProvider, bool>(
@@ -124,6 +136,26 @@ class _HomeAppBarInner extends StatelessWidget {
 
   List<Widget> _buildActions(BuildContext context) {
     List<Widget> actions = [];
+    if (state.actions.contains(AppBarAction.clearSelection)) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            context.read<TabModelsProvider>().model?.clearSelection();
+          },
+        ),
+      );
+    }
+
+    if (state.actions.contains(AppBarAction.share)) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.share_outlined),
+          onPressed: () async => _shareSelectedMedia(context),
+        ),
+      );
+    }
+
     if (state.actions.contains(AppBarAction.clearSearch)) {
       actions.add(
         IconButton(
@@ -164,7 +196,51 @@ class _HomeAppBarInner extends StatelessWidget {
     return actions;
   }
 
+  Future<void> _shareSelectedMedia(BuildContext context) async {
+    final galleryModel = context.read<TabModelsProvider>().model;
+    final selectedMedia = galleryModel?.selectedMedia ?? const <Media>[];
+    if (selectedMedia.isEmpty) return;
+
+    final repository = context.read<MediaRepository>();
+    final files = <XFile>[];
+    for (final media in selectedMedia) {
+      String? filePath = await repository.getFilePath(media);
+      if (filePath != null) {
+        files.add(XFile(filePath));
+        continue;
+      }
+
+      final completer = Completer<void>();
+      final subscription = repository.download(media);
+      subscription.onData((_) {});
+      subscription.onDone(() async {
+        final downloadedPath = await repository.getFilePath(media);
+        if (downloadedPath != null) {
+          files.add(XFile(downloadedPath));
+        }
+        completer.complete();
+      });
+      subscription.onError((_) => completer.complete());
+      await completer.future;
+    }
+
+    if (files.isNotEmpty) {
+      await SharePlus.instance.share(ShareParams(files: files));
+      galleryModel?.clearSelection();
+    }
+  }
+
   Widget _buildNavigation(BuildContext context) {
+    if (state.actions.contains(AppBarAction.clearSelection)) {
+      return IconButton(
+        onPressed: () {
+          context.read<TabModelsProvider>().model?.clearSelection();
+        },
+        icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface),
+        padding: EdgeInsets.zero,
+      );
+    }
+
     if (state.actions.contains(AppBarAction.back)) {
       return IconButton(
         onPressed: () {

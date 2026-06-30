@@ -228,11 +228,26 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                                   showDirectoryItemCount: model.showDirectoryItemCount,
                                   onTap: () => openDirectory(context, item),
                                 )
-                              : MediaItem(
-                                  item: item as Media,
-                                  borderRadius: model.gridRoundedCorners,
-                                  onTap: () => _openFullscreen(context, items, index),
-                                );
+                              : () {
+                              final media = item as Media;
+                              final selectionActive = context.select<GalleryModel, bool>((galleryModel) => galleryModel.isSelectionActive);
+                              final isSelected = context.select<GalleryModel, bool>((galleryModel) => galleryModel.isMediaSelected(media));
+                              return MediaItem(
+                                item: media,
+                                borderRadius: model.gridRoundedCorners,
+                                isSelected: isSelected,
+                                selectionActive: selectionActive,
+                                onLongPress: () => context.read<GalleryModel>().enterSelectionMode(media),
+                                onTap: () {
+                                  final galleryModel = context.read<GalleryModel>();
+                                  if (selectionActive) {
+                                    galleryModel.toggleSelection(media);
+                                  } else {
+                                    _openFullscreen(context, items, index);
+                                  }
+                                },
+                              );
+                            }();
                         },
                       ),
                     ),
