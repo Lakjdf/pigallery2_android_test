@@ -43,7 +43,7 @@ class _TopPicksImageWrapperState extends State<TopPicksImageWrapper> with Ticker
             ],
             stops: const [0, 1],
           ),
-          borderRadius: BorderRadius.circular(45),
+          shape: BoxShape.circle,
         ),
       ),
     );
@@ -54,32 +54,32 @@ class _TopPicksImageWrapperState extends State<TopPicksImageWrapper> with Ticker
     bool isLoading = context.select<TopPicksModel, bool>((it) => it.isLoading);
     double height = 90;
     double borderWidth = 2;
-    return SizedBox(
-      height: height,
-      child: CircleAvatar(
-        radius: height / 2,
-        backgroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        child: Stack(
-          children: [
-            if (isLoading) _buildAnimatedBackground(),
-            Padding(
-              padding: EdgeInsets.all(borderWidth),
-              child: ClipOval(
-                child: SizedBox(
-                  height: height - 2 * borderWidth,
-                  width: height - 2 * borderWidth,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    fit: StackFit.passthrough,
-                    children: [
-                      Container(color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                      widget.image,
-                    ],
+    return SizedBox.square(
+      dimension: height,
+      child: ClipOval(
+        child: Container(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          child: Stack(
+            children: [
+              if (isLoading) _buildAnimatedBackground(),
+              Padding(
+                padding: EdgeInsets.all(borderWidth),
+                child: ClipOval(
+                  child: SizedBox.square(
+                    dimension: height - 2 * borderWidth,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      fit: StackFit.expand,
+                      children: [
+                        Container(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+                        widget.image,
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

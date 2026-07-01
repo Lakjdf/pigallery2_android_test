@@ -375,21 +375,25 @@ class _TimelineGridViewState extends State<TimelineGridView> with TickerProvider
                                 .take(i)
                                 .fold<int>(0, (acc, s) => acc + s.items.length) +
                                 index;
-                            final selectionActive = context.select<GalleryModel, bool>((galleryModel) => galleryModel.isSelectionActive);
-                            final isSelected = context.select<GalleryModel, bool>((galleryModel) => galleryModel.isMediaSelected(media));
-                            return MediaItem(
-                              item: media,
-                              borderRadius: settings.gridRoundedCorners,
-                              isSelected: isSelected,
-                              selectionActive: selectionActive,
-                              onLongPress: () => context.read<GalleryModel>().enterSelectionMode(media),
-                              onTap: () {
-                                final galleryModel = context.read<GalleryModel>();
-                                if (selectionActive) {
-                                  galleryModel.toggleSelection(media);
-                                } else {
-                                  _openFullscreen(context, absoluteIndex);
-                                }
+                            return Builder(
+                              builder: (context) {
+                                final selectionActive = context.select<GalleryModel, bool>((galleryModel) => galleryModel.isSelectionActive);
+                                final isSelected = context.select<GalleryModel, bool>((galleryModel) => galleryModel.isMediaSelected(media));
+                                return MediaItem(
+                                  item: media,
+                                  borderRadius: settings.gridRoundedCorners,
+                                  isSelected: isSelected,
+                                  selectionActive: selectionActive,
+                                  onLongPress: () => context.read<GalleryModel>().enterSelectionMode(media),
+                                  onTap: () {
+                                    final galleryModel = context.read<GalleryModel>();
+                                    if (selectionActive) {
+                                      galleryModel.toggleSelection(media);
+                                    } else {
+                                      _openFullscreen(context, absoluteIndex);
+                                    }
+                                  },
+                                );
                               },
                             );
                           },
