@@ -17,6 +17,7 @@ class GalleryModel extends SafeChangeNotifier {
   final SortOptionsRepository _sortOptionsRepository;
   final List<GalleryModelState> _state;
   final bool isAlbumView;
+  final Set<int> _selectedMediaIds = <int>{};
 
   bool _initialFetchDone = false;
 
@@ -45,6 +46,37 @@ class GalleryModel extends SafeChangeNotifier {
 
   /// [GalleryModelState] of the given position in the [Navigator] stack.
   GalleryModelState stateOf(int stackPosition) => _state[stackPosition];
+
+  bool get isSelectionActive => _selectedMediaIds.isNotEmpty;
+
+  int get selectedMediaCount => _selectedMediaIds.length;
+
+  List<Media> get selectedMedia => currentState.media.where((media) => _selectedMediaIds.contains(media.id)).toList();
+
+  bool isMediaSelected(Media media) => _selectedMediaIds.contains(media.id);
+
+  void enterSelectionMode(Media media) {
+    if (!_selectedMediaIds.contains(media.id)) {
+      _selectedMediaIds.add(media.id);
+      notifyListeners();
+    }
+  }
+
+  void toggleSelection(Media media) {
+    if (_selectedMediaIds.contains(media.id)) {
+      _selectedMediaIds.remove(media.id);
+    } else {
+      _selectedMediaIds.add(media.id);
+    }
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    if (_selectedMediaIds.isNotEmpty) {
+      _selectedMediaIds.clear();
+      notifyListeners();
+    }
+  }
 
   /// How many pages are on the [Navigator] stack.
   int get stackPosition => _state.length - 1;
@@ -114,6 +146,7 @@ class GalleryModel extends SafeChangeNotifier {
 
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
+    clearSelection();
     final type = baseDirectory is Album ? AlbumGalleryModelStateType() : DirectoryGalleryModelStateType();
     _addStack(GalleryModelState(type, baseDirectory, _sortOptionsRepository));
     fetch();
@@ -125,6 +158,7 @@ class GalleryModel extends SafeChangeNotifier {
       // never remove last screen; should be unreachable
       return;
     }
+    clearSelection();
     _currentRequest?.cancel();
     _currentRequest = null;
     _state.removeLast();
@@ -212,6 +246,7 @@ class GalleryModel extends SafeChangeNotifier {
 
   /// Result will be available via [currentState].
   void search(SearchQueryDTO query) {
+    clearSelection();
     if (!currentState.isSearching) {
       var type = SearchGalleryModelStateType(query: query);
       _addStack(GalleryModelState(type, null, _sortOptionsRepository));
@@ -224,6 +259,7 @@ class GalleryModel extends SafeChangeNotifier {
   /// Flatten the current directory.
   /// Result will be available via [currentState].
   void flattenDir() {
+    clearSelection();
     var type = FlattenGalleryModelStateType(target: currentState.baseDirectory);
     _addStack(GalleryModelState(type, null, _sortOptionsRepository));
     fetch();
@@ -231,6 +267,7 @@ class GalleryModel extends SafeChangeNotifier {
 
   /// Add a new stack displaying the content of the given [directory]. No api requests done here.
   void topPicksSearch(Directory directory) {
+    clearSelection();
     _addStack(GalleryModelState(TopPicksGalleryModelStateType(), directory, _sortOptionsRepository));
     currentState.items = directory.media;
     notifyListeners();
